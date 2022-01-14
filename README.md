@@ -1,9 +1,9 @@
 ## GlucoStatusFX
 
 
-[![GitHub stars](https://badgen.net/github/stars/HanSolo/tilesfx)](https://GitHub.com/HanSolo/glucostatusfx/stargazers/)
+[![GitHub stars](https://badgen.net/github/stars/HanSolo/glucostatusfx)](https://GitHub.com/HanSolo/glucostatusfx/stargazers/)
 
-[![GitHub license](https://badgen.net/github/license/HanSolo/tilesfx)](https://github.com/HanSolo/glucostatusfx/blob/master/LICENSE)
+[![GitHub license](https://badgen.net/github/license/HanSolo/glucostatusfx)](https://github.com/HanSolo/glucostatusfx/blob/master/LICENSE)
 
 <br>
 A glucose status monitor for Nightscout implemented in JavaFX.
