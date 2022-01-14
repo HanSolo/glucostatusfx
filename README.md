@@ -3,6 +3,8 @@
 <br>
 A glucose status monitor for Nightscout implemented in JavaFX.
 
+<br>
+
 Donations are welcome at [Paypal](https://paypal.me/hans0l0)
 
 ## Intro
