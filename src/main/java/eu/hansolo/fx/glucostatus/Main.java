@@ -137,6 +137,7 @@ import static eu.hansolo.toolbox.unit.UnitDefinition.MILLIMOL_PER_LITER;
 public class Main extends Application {
     private static final Insets                     GRAPH_INSETS  = new Insets(20, 10, 20, 10);
     private final        Image                      icon          = new Image(Main.class.getResourceAsStream("icon48x48.png"));
+    private final        Image                      stageIcon     = new Image(Main.class.getResourceAsStream("icon128x128.png"));
     private              ZonedDateTime              lastUpdate    = ZonedDateTime.now().minusMinutes(6);
     private final        Translator                 translator    = new Translator(I18nKeys.RESOURCE_NAME);
     private              String                     nightscoutUrl = "";
@@ -510,6 +511,7 @@ public class Main extends Application {
         stage.setScene(scene);
         //stage.setAlwaysOnTop(true);
         stage.show();
+        stage.getIcons().add(stageIcon);
         stage.centerOnScreen();
         stage.setOnShowing(e -> {
             ZonedDateTime now = ZonedDateTime.now();
