@@ -827,7 +827,7 @@ public class Main extends Application {
         nightscoutUrl = nightscoutUrlTextField.getText();
         if (null != nightscoutUrl && !nightscoutUrl.isEmpty() && allEntries.isEmpty()) {
             updateEntries();
-            service.cancel();
+            if (null != service) { service.cancel(); }
 
             Helper.getEntriesFromLast30Days(nightscoutUrl + Constants.URL_API).thenAccept(l -> allEntries.addAll(l));
 
