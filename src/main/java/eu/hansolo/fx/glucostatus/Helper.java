@@ -26,6 +26,7 @@ import eu.hansolo.fx.glucostatus.Records.DataPoint;
 import eu.hansolo.fx.glucostatus.Records.GlucoEntry;
 import eu.hansolo.fx.glucostatus.Statistics.StatisticCalculation;
 import eu.hansolo.fx.glucostatus.Statistics.StatisticRange;
+import eu.hansolo.toolbox.OperatingSystem;
 import eu.hansolo.toolbox.tuples.Pair;
 import eu.hansolo.toolbox.unit.Converter;
 import eu.hansolo.toolbox.unit.UnitDefinition;
@@ -249,15 +250,37 @@ public class Helper {
         return avgPoints;
     }
 
-    public static final BufferedImage createTextTrayIcon(final String text, final Color color) {
-        Canvas          canvas = new Canvas(64, 18);
+    public static final BufferedImage createTextTrayIcon(final String text, final Color color, final OperatingSystem operatingSystem) {
+        int    width;
+        int    height;
+        double fontSize;
+        double x;
+        double y;
+        switch(operatingSystem) {
+            case WINDOWS -> {
+                width    = 16;
+                height   = 16;
+                fontSize = 12;
+                x        = 8;
+                y        = 8;
+            }
+            default      -> {
+                width    = 64;
+                height   = 18;
+                fontSize = 14;
+                x        = 32;
+                y        = 14;
+            }
+        }
+
+        Canvas          canvas = new Canvas(width, height);
         GraphicsContext ctx    = canvas.getGraphicsContext2D();
-        ctx.setFont(Fonts.sfProRoundedRegular(14));
+        ctx.setFont(Fonts.sfProRoundedRegular(fontSize));
         ctx.setTextAlign(TextAlignment.CENTER);
         ctx.setFill(color);
-        ctx.fillText(text, 32, 14);
+        ctx.fillText(text, x, y);
 
-        WritableImage img = new WritableImage(64, 18);
+        WritableImage img = new WritableImage(width, height);
         SnapshotParameters parameters = new SnapshotParameters();
         parameters.setFill(Color.TRANSPARENT);
         canvas.snapshot(parameters, img);

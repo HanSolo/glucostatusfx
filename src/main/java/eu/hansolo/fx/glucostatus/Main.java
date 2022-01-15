@@ -400,7 +400,7 @@ public class Main extends Application {
         this.trayIconSupported = FXTrayIcon.isSupported();
 
         if (trayIconSupported) {
-            java.awt.Image icon = Helper.createTextTrayIcon("--", Constants.BRIGHT_TEXT);
+            java.awt.Image icon = Helper.createTextTrayIcon("--", Constants.BRIGHT_TEXT, operatingSystem);
 
             if (OperatingSystem.LINUX == operatingSystem && (Architecture.AARCH64 == architecture || Architecture.ARM64 == architecture)) {
                 trayIcon = new FXTrayIcon(stage, icon);
@@ -909,7 +909,12 @@ public class Main extends Application {
         }
 
         if (null != trayIcon) {
-            SwingUtilities.invokeLater(() -> Platform.runLater(() -> trayIcon.setGraphic(Helper.createTextTrayIcon(currentValueText + (outdated ? "\u26A0" : ""), darkMode ? Color.WHITE : Color.BLACK))));
+            String text;
+            switch (operatingSystem) {
+                case WINDOWS -> text = currentEntry.trend().getSymbol();
+                default      -> text = currentValueText + (outdated ? "\u26A0" : "");
+            }
+            SwingUtilities.invokeLater(() -> Platform.runLater(() -> trayIcon.setGraphic(Helper.createTextTrayIcon(text, darkMode ? Color.WHITE : Color.BLACK, operatingSystem))));
         }
         Platform.runLater(() -> {
             unit.setText(currentUnit.UNIT.getUnitShort() + " (");
