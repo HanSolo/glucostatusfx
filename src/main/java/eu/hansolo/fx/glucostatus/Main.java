@@ -445,8 +445,8 @@ public class Main extends Application {
             menuBar.setUseSystemMenuBar(true);
             menuBar.setTranslateX(16);
 
-            Menu menu = new Menu("GlucoStatusFX");
-            menu.setText("Menu");
+            Menu menu = new Menu(translator.get(I18nKeys.APP_NAME));
+            menu.setText(translator.get(I18nKeys.MENU));
             menu.setOnShowing(e -> hideMenu = false);
             menu.setOnHidden(e -> {
                 if (!hideMenu) {
@@ -455,33 +455,43 @@ public class Main extends Application {
             });
 
             CustomMenuItem aboutItem = new CustomMenuItem();
-            Label          mainLabel = new Label("About");
+            Label          mainLabel = new Label(translator.get(I18nKeys.ABOUT_MENU_ITEM));
             mainLabel.addEventHandler(MouseEvent.MOUSE_ENTERED, e -> hideMenu = false);
             mainLabel.addEventHandler(MouseEvent.MOUSE_EXITED, e -> hideMenu = true);
             aboutItem.setContent(mainLabel);
             aboutItem.setHideOnClick(false);
-            aboutItem.setOnAction(e -> {});
+            aboutItem.setOnAction(e -> { if (!aboutDialog.isShowing()) { aboutDialog.showAndWait(); } });
             menu.getItems().add(aboutItem);
 
             CustomMenuItem chartItem = new CustomMenuItem();
-            Label chartLabel = new Label("Chart");
+            Label chartLabel = new Label(translator.get(I18nKeys.CHART_MENU_ITEM));
             chartLabel.addEventHandler(MouseEvent.MOUSE_ENTERED, e -> hideMenu = false);
             chartLabel.addEventHandler(MouseEvent.MOUSE_EXITED, e -> hideMenu = true);
             chartItem.setContent(chartLabel);
             chartItem.setHideOnClick(false);
-            chartItem.setOnAction(e -> {});
+            chartItem.setOnAction(e -> {
+                prefPane.setVisible(false);
+                prefPane.setManaged(false);
+                stage.show();
+            });
             menu.getItems().add(chartItem);
 
             CheckMenuItem preferencesItem = new CheckMenuItem();
             preferencesItem.setVisible(true);
-            preferencesItem.setText("Preferences");
-            preferencesItem.selectedProperty().addListener(o -> {});
+            preferencesItem.setText(translator.get(I18nKeys.PREFERENCES_MENU_ITEM));
+            preferencesItem.selectedProperty().addListener(o -> {
+                applySettingsToPreferences();
+                prefPane.setPrefSize(stage.getWidth(), stage.getHeight());
+                prefPane.setManaged(true);
+                prefPane.setVisible(true);
+                stage.show();
+            });
             menu.getItems().add(preferencesItem);
 
             menu.getItems().add(new SeparatorMenuItem());
 
             CustomMenuItem quitItem = new CustomMenuItem();
-            Label quitLabel = new Label("Quit");
+            Label quitLabel = new Label(translator.get(I18nKeys.QUIT_MENU_ITEM));
             quitLabel.addEventHandler(MouseEvent.MOUSE_ENTERED, e -> hideMenu = false);
             quitLabel.addEventHandler(MouseEvent.MOUSE_EXITED, e -> hideMenu = true);
             quitItem.setContent(quitLabel);
@@ -909,7 +919,11 @@ public class Main extends Application {
 
         // Set value specific tray icon
         if (null != trayIcon && OperatingSystem.MACOS == operatingSystem) {
-            SwingUtilities.invokeLater(() -> Platform.runLater(() -> trayIcon.setGraphic(Helper.createTextTrayIcon(currentValueText + (outdated ? "\u26A0" : ""), darkMode ? Color.WHITE : Color.BLACK))));
+            SwingUtilities.invokeLater(() -> Platform.runLater(() -> {
+                String text = currentValueText + (outdated ? "\u26A0" : "");
+                trayIcon.setGraphic(Helper.createTextTrayIcon(text, darkMode ? Color.WHITE : Color.BLACK));
+                trayIcon.setTrayIconTooltip(text);
+            }));
         }
         Platform.runLater(() -> {
             unit.setText(currentUnit.UNIT.getUnitShort() + " (");

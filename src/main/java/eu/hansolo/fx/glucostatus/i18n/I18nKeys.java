@@ -21,6 +21,7 @@ package eu.hansolo.fx.glucostatus.i18n;
 public interface I18nKeys {
     String RESOURCE_NAME                                     = "eu.hansolo.fx.glucostatus.i18n.gsfx";
     String APP_NAME                                          = "app_name";
+    String MENU                                              = "menu";
     String ABOUT_MENU_ITEM                                   = "about_menu_item";
     String CHART_MENU_ITEM                                   = "chart_menu_item";
     String PREFERENCES_MENU_ITEM                             = "preferences_menu_item";
