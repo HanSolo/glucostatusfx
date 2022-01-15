@@ -105,6 +105,12 @@ sourceSets {
     }
 }
 
+processResources {
+    from(sourceSets.main.java.srcDirs) {
+        include '**/*.properties'
+    }
+}
+
 run {
     inputs.property("moduleName", moduleName)
     doFirst {

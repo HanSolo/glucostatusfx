@@ -31,6 +31,8 @@ import eu.hansolo.fx.glucostatus.Records.DataPoint;
 import eu.hansolo.fx.glucostatus.Records.GlucoEntry;
 import eu.hansolo.fx.glucostatus.Statistics.StatisticCalculation;
 import eu.hansolo.fx.glucostatus.Statistics.StatisticRange;
+import eu.hansolo.fx.glucostatus.i18n.I18nKeys;
+import eu.hansolo.fx.glucostatus.i18n.Translator;
 import eu.hansolo.fx.glucostatus.notification.Notification;
 import eu.hansolo.fx.glucostatus.notification.NotificationBuilder;
 import eu.hansolo.fx.glucostatus.notification.NotifierBuilder;
@@ -48,6 +50,8 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.concurrent.ScheduledService;
+import javafx.concurrent.Task;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
@@ -121,9 +125,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static eu.hansolo.toolbox.Helper.getArchitecture;
@@ -134,7 +135,9 @@ import static eu.hansolo.toolbox.unit.UnitDefinition.MILLIMOL_PER_LITER;
 
 public class Main extends Application {
     private static final Insets                     GRAPH_INSETS  = new Insets(20, 10, 20, 10);
-    private        final Image                      icon          = new Image(Main.class.getResourceAsStream("icon48x48.png"));
+    private final        Image                      icon          = new Image(Main.class.getResourceAsStream("icon48x48.png"));
+    private              ZonedDateTime              lastUpdate    = ZonedDateTime.now().minusMinutes(6);
+    private final        Translator                 translator    = new Translator(I18nKeys.RESOURCE_NAME);
     private              String                     nightscoutUrl = "";
     private              boolean                    trayIconSupported;
     private              OperatingSystem            operatingSystem;
@@ -198,7 +201,7 @@ public class Main extends Application {
     private              ToggleButton               sixHours;
     private              ToggleButton               threeHours;
     private              Button                     prefButton;
-    private              ScheduledExecutorService   executor;
+    private              ScheduledService<Void>     service;
     private              double                     minAcceptable;
     private              double                     minNormal;
     private              double                     maxNormal;
@@ -231,7 +234,6 @@ public class Main extends Application {
     // ******************** Initialization ************************************
     @Override public void init() {
         nightscoutUrl     = PropertyManager.INSTANCE.getString(Constants.PROPERTIES_NIGHTSCOUT_URL);
-        executor          = Executors.newSingleThreadScheduledExecutor();
         operatingSystem   = getOperatingSystem();
         architecture      = getArchitecture();
         darkMode          = eu.hansolo.applefx.tools.Helper.isDarkMode();
@@ -260,13 +262,13 @@ public class Main extends Application {
         };
 
         intervalToggleGroup = new ToggleGroup();
-        sevenDays        = createToggleButton("7 d", intervalToggleGroup, eventConsumer);
-        seventyTwoHours  = createToggleButton("72 h", intervalToggleGroup, eventConsumer);
-        fourtyEightHours = createToggleButton("48 h", intervalToggleGroup, eventConsumer);
-        twentyFourHours  = createToggleButton("24 h", intervalToggleGroup, eventConsumer);
-        twelveHours      = createToggleButton("12 h", intervalToggleGroup, eventConsumer);
-        sixHours         = createToggleButton("6 h", intervalToggleGroup, eventConsumer);
-        threeHours       = createToggleButton("3 h", intervalToggleGroup, eventConsumer);
+        sevenDays        = createToggleButton(translator.get(I18nKeys.TIME_NAME_168_HOURS), intervalToggleGroup, eventConsumer);
+        seventyTwoHours  = createToggleButton(translator.get(I18nKeys.TIME_NAME_72_HOURS), intervalToggleGroup, eventConsumer);
+        fourtyEightHours = createToggleButton(translator.get(I18nKeys.TIME_NAME_48_HOURS), intervalToggleGroup, eventConsumer);
+        twentyFourHours  = createToggleButton(translator.get(I18nKeys.TIME_NAME_24_HOURS), intervalToggleGroup, eventConsumer);
+        twelveHours      = createToggleButton(translator.get(I18nKeys.TIME_NAME_12_HOURS), intervalToggleGroup, eventConsumer);
+        sixHours         = createToggleButton(translator.get(I18nKeys.TIME_NAME_6_HOURS), intervalToggleGroup, eventConsumer);
+        threeHours       = createToggleButton(translator.get(I18nKeys.TIME_NAME_3_HOURS), intervalToggleGroup, eventConsumer);
 
         twentyFourHours.setSelected(true);
 
@@ -293,7 +295,7 @@ public class Main extends Application {
 
         currentColor = null == currentEntry ? Constants.GRAY : Helper.getColorForValue(currentUnit, currentEntry.sgv());
 
-        Label titleLabel = createLabel("Gluco Status FX", 20, false, false, Pos.CENTER);
+        Label titleLabel = createLabel(translator.get(I18nKeys.APP_NAME), 20, false, false, Pos.CENTER);
         AnchorPane.setTopAnchor(titleLabel, 5d);
         AnchorPane.setRightAnchor(titleLabel, 0d);
         AnchorPane.setLeftAnchor(titleLabel, 0d);
@@ -406,15 +408,15 @@ public class Main extends Application {
                 trayIcon = new FXTrayIcon(stage, icon);
             }
 
-            trayIcon.setTrayIconTooltip("GlucoStatusFX");
+            trayIcon.setTrayIconTooltip(translator.get(I18nKeys.APP_NAME));
             trayIcon.addExitItem(false);
-            trayIcon.setApplicationTitle("GlucoStatusFX");
+            trayIcon.setApplicationTitle(translator.get(I18nKeys.APP_NAME));
 
-            MenuItem aboutItem = new MenuItem("About");
+            MenuItem aboutItem = new MenuItem(translator.get(I18nKeys.ABOUT_MENU_ITEM));
             aboutItem.setOnAction(e -> { if (!aboutDialog.isShowing()) { aboutDialog.showAndWait(); }});
             trayIcon.addMenuItem(aboutItem);
 
-            MenuItem chartItem = new MenuItem("Chart");
+            MenuItem chartItem = new MenuItem(translator.get(I18nKeys.CHART_MENU_ITEM));
             chartItem.setOnAction(e -> {
                 prefPane.setVisible(false);
                 prefPane.setManaged(false);
@@ -422,7 +424,7 @@ public class Main extends Application {
             });
             trayIcon.addMenuItem(chartItem);
 
-            MenuItem preferencesItem = new MenuItem("Preferences");
+            MenuItem preferencesItem = new MenuItem(translator.get(I18nKeys.PREFERENCES_MENU_ITEM));
             preferencesItem.setOnAction(e -> {
                 applySettingsToPreferences();
                 prefPane.setPrefSize(stage.getWidth(), stage.getHeight());
@@ -434,7 +436,7 @@ public class Main extends Application {
 
             trayIcon.addSeparator();
 
-            MenuItem quitItem = new MenuItem("Quit");
+            MenuItem quitItem = new MenuItem(translator.get(I18nKeys.QUIT_MENU_ITEM));
             quitItem.setOnAction(e -> stop());
             trayIcon.addMenuItem(quitItem);
 
@@ -500,6 +502,13 @@ public class Main extends Application {
         //stage.setAlwaysOnTop(true);
         stage.show();
         stage.centerOnScreen();
+        stage.setOnShowing(e -> {
+            ZonedDateTime now = ZonedDateTime.now();
+            if (now.toEpochSecond() - lastUpdate.toEpochSecond() > 300) {
+                allEntries.clear();
+                Helper.getEntriesFromLast30Days(nightscoutUrl + Constants.URL_API).thenAccept(l -> allEntries.addAll(l));
+            }
+        });
 
         postStart();
     }
@@ -507,13 +516,27 @@ public class Main extends Application {
     private void postStart() {
         if (null != nightscoutUrl && !nightscoutUrl.isEmpty()) {
             Helper.getEntriesFromLast30Days(nightscoutUrl + Constants.URL_API).thenAccept(l -> allEntries.addAll(l));
-            executor.scheduleAtFixedRate(() -> updateEntries(), 1, 1, TimeUnit.MINUTES);
+            service = new ScheduledService<>() {
+                @Override protected Task<Void> createTask() {
+                    Task task = new Task() {
+                        @Override protected Object call() {
+                            updateEntries();
+                            return null;
+                        }
+                    };
+                    return task;
+                }
+            };
+            service.setPeriod(Duration.millis(60000));
+            service.setRestartOnFailure(true);
+            service.start();
         }
         canvas.setHeight(337);
         aboutDialog = createAboutDialog();
     }
 
     @Override public void stop() {
+        service.cancel();
         Platform.exit();
         System.exit(0);
     }
@@ -602,6 +625,40 @@ public class Main extends Application {
         if (allEntries.get(0).datelong() == entryFound.datelong()) { return; }
         allEntries.remove(allEntries.size() - 1);
         allEntries.add(0, entryFound);
+        lastUpdate = ZonedDateTime.now();
+    }
+
+    private boolean predict() {
+        if (null == allEntries || allEntries.isEmpty()) { return false; }
+        GlucoEntry       currentEntry = allEntries.get(0);
+        List<GlucoEntry> last3Entries = allEntries.stream().limit(3).collect(Collectors.toList());
+
+        // Soon too low
+        boolean soonTooLow = last3Entries.stream().filter(entry -> Trend.DOUBLE_DOWN == entry.trend() || Trend.SINGLE_DOWN == entry.trend()).count() == 3;
+
+        // Soon too high
+        boolean soonTooHigh = last3Entries.stream().filter(entry -> Trend.DOUBLE_UP == entry.trend() || Trend.SINGLE_UP == entry.trend()).count() == 3;
+
+        if (soonTooLow) {
+            if (currentEntry.sgv() <= Constants.DEFAULT_SOON_TOO_LOW) {
+                String title = translator.get(I18nKeys.PREDICTION_TITLE_TOO_LOW);
+                String msg   = translator.get(I18nKeys.PREDICTION_TOO_LOW);
+                Notification notification = NotificationBuilder.create().title(title).message(msg).image(icon).build();
+                if (PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_PLAY_SOUND_FOR_TOO_LOW_NOTIFICATION)) { notificationSound.play(); }
+                Platform.runLater(() -> notifier.notify(notification));
+                return true;
+            }
+        } else if (soonTooHigh) {
+            if (currentEntry.sgv() > Constants.DEFAULT_SOON_TOO_HIGH) {
+                String title = translator.get(I18nKeys.PREDICTION_TITLE_TOO_HIGH);
+                String msg   = translator.get(I18nKeys.PREDICTION_TOO_HIGH);
+                Notification notification = NotificationBuilder.create().title(title).message(msg).image(icon).build();
+                if (PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_PLAY_SOUND_FOR_TOO_HIGH_NOTIFICATION)) { notificationSound.play(); }
+                Platform.runLater(() -> notifier.notify(notification));
+                return true;
+            }
+        }
+        return false;
     }
 
     private void notifyIfNeeded() {
@@ -628,7 +685,7 @@ public class Main extends Application {
         long          criticalMinNotificationInterval        = PropertyManager.INSTANCE.getLong(Constants.PROPERTIES_CRITICAL_MIN_NOTIFICATION_INTERVAL);
 
         boolean playSound = false;
-        String msg = "";
+        String  msg       = "";
 
         if (value > maxCritical) {
             // TOO HIGH
@@ -636,11 +693,11 @@ public class Main extends Application {
                 return; // Was critical but is falling again -> no notification
             } else if (trend == Trend.FLAT || Trend.FORTY_FIVE_DOWN == trend) {
                 if (now.toEpochSecond() - lastNotification.toEpochSecond() > criticalMaxNotificationInterval) {
-                    msg = "Glucose too high";
+                    msg = translator.get(I18nKeys.NOTIFICATION_GLUCOSE_TOO_HIGH);
                     if (playSoundForTooHighNotification) { playSound = true; }
                 }
             } else {
-                msg = "Glucose too high";
+                msg = translator.get(I18nKeys.NOTIFICATION_GLUCOSE_TOO_HIGH);
                 if (playSoundForTooHighNotification) {  playSound = true;  }
             }
         } else if (value > maxAcceptable) {
@@ -648,9 +705,9 @@ public class Main extends Application {
             if (showHighValueNotification) {
                 // High
                 if (Trend.SINGLE_UP == trend || Trend.DOUBLE_UP == trend) {
-                    msg = "Glucose too high soon";
+                    msg = translator.get(I18nKeys.NOTIFICATION_GLUCOSE_TOO_HIGH_SOON);
                 } else {
-                    msg = "Glucose high";
+                    msg = translator.get(I18nKeys.NOTIFICATION_GLUCOSE_HIGH);
                 }
                 if (playSoundForHighNotification) {  playSound = true;  }
             } else {
@@ -660,9 +717,9 @@ public class Main extends Application {
             // ACCEPTABLE HIGH
             if (showAcceptableHighValueNotification) {
                 if (Trend.SINGLE_UP == trend || Trend.DOUBLE_UP == trend) {
-                    msg = "Glucose high soon";
+                    msg = translator.get(I18nKeys.NOTIFICATION_GLUCOSE_HIGH_SOON);
                 } else {
-                    msg = "Glucose a bit high";
+                    msg = translator.get(I18nKeys.NOTIFICATION_GLUCOSE_A_BIT_HIGH);
                 }
                 if (playSoundForAcceptableHighNotification) {  playSound = true;  }
             } else {
@@ -674,9 +731,9 @@ public class Main extends Application {
             // ACCEPTABLE LOW
             if (showAcceptableLowValueNotification) {
                 if (Trend.SINGLE_DOWN == trend || Trend.DOUBLE_DOWN == trend) {
-                    msg = "Glucose low soon";
+                    msg = translator.get(I18nKeys.NOTIFICATION_GLUCOSE_LOW_SOON);
                 } else {
-                    msg = "Glucose a bit low";
+                    msg = translator.get(I18nKeys.NOTIFICATION_GLUCOSE_A_BIT_LOW);
                 }
                 if (playSoundForAcceptableLowNotification) {  playSound = true;  }
             } else {
@@ -686,9 +743,9 @@ public class Main extends Application {
             // LOW
             if (showLowValueNotification) {
                 if (Trend.SINGLE_DOWN == trend || Trend.DOUBLE_DOWN == trend) {
-                    msg = "Glucose too low soon";
+                    msg = translator.get(I18nKeys.NOTIFICATION_GLUCOSE_TOO_LOW_SOON);
                 } else {
-                    msg = "Glucose low";
+                    msg = translator.get(I18nKeys.NOTIFICATION_GLUCOSE_LOW);
                 }
                 if (playSoundForLowNotification) {  playSound = true;  }
             } else {
@@ -700,20 +757,21 @@ public class Main extends Application {
                 return; // Was critical but is rising again -> no notification
             } else if (Trend.FLAT == trend || Trend.FORTY_FIVE_UP == trend) {
                 if (now.toEpochSecond() - lastNotification.toEpochSecond() > criticalMinNotificationInterval) {
-                    msg = "Glucose too low";
+                    msg = translator.get(I18nKeys.NOTIFICATION_GLUCOSE_TOO_LOW);
                     if (playSoundForTooLowNotification) {  playSound = true;  }
                 }
             } else {
-                msg = "Glucose too low";
+                msg = translator.get(I18nKeys.NOTIFICATION_GLUCOSE_TOO_LOW);
                 if (playSoundForTooLowNotification) {  playSound = true;  }
             }
         }
+
 
         if (msg.isEmpty()) { return; }
 
         String format = MILLIGRAM_PER_DECILITER == currentUnit ? "%.0f" : "%.1f";
         String body = new StringBuilder().append(msg).append(" (").append(String.format(Locale.US, format, currentEntry.sgv())).append(" ").append(currentEntry.trend().getSymbol()).append(")").toString();
-        Notification notification = NotificationBuilder.create().title("Attention").message(body).image(icon).build();
+        Notification notification = NotificationBuilder.create().title(translator.get(I18nKeys.NOTIFICATION_TITLE)).message(body).image(icon).build();
 
         if (playSound) { notificationSound.play(); }
         Platform.runLater(() -> notifier.notify(notification));
@@ -769,10 +827,24 @@ public class Main extends Application {
         nightscoutUrl = nightscoutUrlTextField.getText();
         if (null != nightscoutUrl && !nightscoutUrl.isEmpty() && allEntries.isEmpty()) {
             updateEntries();
-            executor.shutdownNow();
+            service.cancel();
+
             Helper.getEntriesFromLast30Days(nightscoutUrl + Constants.URL_API).thenAccept(l -> allEntries.addAll(l));
-            executor = Executors.newSingleThreadScheduledExecutor();
-            executor.scheduleAtFixedRate(() -> updateEntries(), 1, 1, TimeUnit.MINUTES);
+
+            service = new ScheduledService<>() {
+                @Override protected Task<Void> createTask() {
+                    Task task = new Task() {
+                        @Override protected Object call() {
+                            updateEntries();
+                            return null;
+                        }
+                    };
+                    return task;
+                }
+            };
+            service.setPeriod(Duration.millis(60000));
+            service.setRestartOnFailure(true);
+            service.start();
         }
 
         updateSettings();
@@ -863,6 +935,8 @@ public class Main extends Application {
 
             drawChart();
         });
+
+        predict();
 
         notifyIfNeeded();
     }
@@ -1059,7 +1133,7 @@ public class Main extends Application {
     private Dialog createAboutDialog() {
         Dialog aboutDialog = new Dialog();
         aboutDialog.initOwner(stage);
-        aboutDialog.setTitle("Gluco Status FX");
+        aboutDialog.setTitle(translator.get(I18nKeys.APP_NAME));
         aboutDialog.initStyle(StageStyle.TRANSPARENT);
         aboutDialog.initModality(Modality.WINDOW_MODAL);
 
@@ -1085,7 +1159,7 @@ public class Main extends Application {
         aboutImage.setFitWidth(64);
         aboutImage.setFitHeight(64);
 
-        Label nameLabel = new Label("Gluco Status FX");
+        Label nameLabel = new Label(translator.get(I18nKeys.APP_NAME));
         nameLabel.setPrefWidth(Label.USE_COMPUTED_SIZE);
         nameLabel.setMaxWidth(Double.MAX_VALUE);
         nameLabel.setAlignment(Pos.CENTER);
@@ -1100,7 +1174,7 @@ public class Main extends Application {
         descriptionLabel.setAlignment(Pos.CENTER);
         descriptionLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
 
-        MacosButton closeButton = new MacosButton("Close");
+        MacosButton closeButton = new MacosButton(translator.get(I18nKeys.ABOUT_ALERT_CLOSE_BUTTON));
         closeButton.setPrefWidth(Button.USE_COMPUTED_SIZE);
         closeButton.setMaxWidth(Double.MAX_VALUE);
         closeButton.setOnAction(e -> {
@@ -1160,13 +1234,13 @@ public class Main extends Application {
             savePreferencesToSettings();
         });
 
-        Label settingsLabel = new Label("SETTINGS");
+        Label settingsLabel = new Label(translator.get(I18nKeys.SETTINGS_TITLE));
         settingsLabel.setFont(Fonts.sfProTextBold(14));
         settingsLabel.setTextFill(Constants.BRIGHT_TEXT);
         AnchorPane.setTopAnchor(settingsLabel, 50d);
         AnchorPane.setLeftAnchor(settingsLabel, 30d);
 
-        Label nightscoutUrlLabel = new Label("Nightscout URL");
+        Label nightscoutUrlLabel = new Label(translator.get(I18nKeys.SETTINGS_NIGHTSCOUT_URL));
         nightscoutUrlLabel.setFont(Fonts.sfProTextRegular(14));
         nightscoutUrlLabel.setTextFill(Constants.BRIGHT_TEXT);
         nightscoutUrlTextField = new MacosTextField();
@@ -1186,7 +1260,7 @@ public class Main extends Application {
 
 
         unitSwitch = MacosSwitchBuilder.create().dark(true).selectedColor(accentColor).build();
-        Label unitLabel = new Label("Unit " + currentUnit.UNIT.getUnitShort());
+        Label unitLabel = new Label((UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? translator.get(I18nKeys.SETTINGS_UNIT_MG) : translator.get(I18nKeys.SETTINGS_UNIT_MMOL)) + currentUnit.UNIT.getUnitShort());
         unitLabel.setFont(Fonts.sfProTextRegular(14));
         unitLabel.setTextFill(Constants.BRIGHT_TEXT);
         HBox.setHgrow(unitLabel, Priority.ALWAYS);
@@ -1252,7 +1326,7 @@ public class Main extends Application {
 
 
         deltaChartSwitch = MacosSwitchBuilder.create().dark(true).selectedColor(accentColor).build();
-        Label deltaChartLabel = new Label("Show chart of last 12 delta values");
+        Label deltaChartLabel = new Label(translator.get(I18nKeys.SETTINGS_SHOW_DELTA_CHART));
         deltaChartLabel.setFont(Fonts.sfProTextRegular(14));
         deltaChartLabel.setTextFill(Constants.BRIGHT_TEXT);
         HBox.setHgrow(deltaChartLabel, Priority.ALWAYS);
@@ -1265,13 +1339,13 @@ public class Main extends Application {
         VBox.setMargin(s3, new Insets(5, 0, 5, 0));
 
 
-        Label notificationsLabel = new Label("Notifications");
+        Label notificationsLabel = new Label(translator.get(I18nKeys.SETTINGS_NOTIFICATION_TITLE));
         notificationsLabel.setFont(Fonts.sfProTextBold(14));
         notificationsLabel.setTextFill(Constants.BRIGHT_TEXT);
 
         // Too low
-        Label tooLowLabel      = createLabel("Too low", 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.SOMETIMES);
-        Label tooLowSoundLabel = createLabel("Sound", 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_RIGHT, Priority.ALWAYS);
+        Label tooLowLabel      = createLabel(translator.get(I18nKeys.SETTINGS_TOO_LOW_VALUE_NOTIFICATION), 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.SOMETIMES);
+        Label tooLowSoundLabel = createLabel(translator.get(I18nKeys.SETTINGS_TOO_LOW_VALUE_NOTIFICATION_SOUND), 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_RIGHT, Priority.ALWAYS);
         tooLowSoundLabel.setMaxWidth(Double.MAX_VALUE);
         tooLowSoundSwitch = MacosSwitchBuilder.create().dark(true).selectedColor(accentColor).build();
         HBox tooLowBox = new HBox(10, tooLowLabel, tooLowSoundLabel, tooLowSoundSwitch);
@@ -1279,8 +1353,8 @@ public class Main extends Application {
 
         // Low
         enableLowSoundSwitch = MacosSwitchBuilder.create().dark(true).selectedColor(accentColor).build();
-        Label lowLabel      = createLabel("Low", 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.SOMETIMES);
-        Label lowSoundLabel = createLabel("Sound", 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_RIGHT, Priority.ALWAYS);
+        Label lowLabel      = createLabel(translator.get(I18nKeys.SETTINGS_LOW_VALUE_NOTIFICATION), 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.SOMETIMES);
+        Label lowSoundLabel = createLabel(translator.get(I18nKeys.SETTINGS_LOW_VALUE_NOTIFICATION_SOUND), 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_RIGHT, Priority.ALWAYS);
         lowSoundLabel.setMaxWidth(Double.MAX_VALUE);
         lowSoundSwitch = MacosSwitchBuilder.create().dark(true).selectedColor(accentColor).build();
         HBox lowBox = new HBox(10, enableLowSoundSwitch, lowLabel, lowSoundLabel, lowSoundSwitch);
@@ -1288,8 +1362,8 @@ public class Main extends Application {
 
         // Acceptable low
         enableAcceptableLowSoundSwitch = MacosSwitchBuilder.create().dark(true).selectedColor(accentColor).build();
-        Label acceptableLowLabel      = createLabel("Acceptable low", 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.SOMETIMES);
-        Label acceptableLowSoundLabel = createLabel("Sound", 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_RIGHT, Priority.ALWAYS);
+        Label acceptableLowLabel      = createLabel(translator.get(I18nKeys.SETTINGS_ACCEPTABLE_LOW_VALUE_NOTIFICATION), 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.SOMETIMES);
+        Label acceptableLowSoundLabel = createLabel(translator.get(I18nKeys.SETTINGS_ACCEPTABLE_LOW_VALUE_NOTIFICATION_SOUND), 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_RIGHT, Priority.ALWAYS);
         acceptableLowSoundLabel.setMaxWidth(Double.MAX_VALUE);
         acceptableLowSoundSwitch = MacosSwitchBuilder.create().dark(true).selectedColor(accentColor).build();
         HBox acceptableLowBox = new HBox(10, enableAcceptableLowSoundSwitch, acceptableLowLabel, acceptableLowSoundLabel, acceptableLowSoundSwitch);
@@ -1297,8 +1371,8 @@ public class Main extends Application {
 
         // Acceptable high
         enableAcceptableHighSoundSwitch = MacosSwitchBuilder.create().dark(true).selectedColor(accentColor).build();
-        Label acceptableHighLabel = createLabel("Acceptable high", 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.SOMETIMES);
-        Label acceptableHighSoundLabel = createLabel("Sound", 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_RIGHT, Priority.ALWAYS);
+        Label acceptableHighLabel = createLabel(translator.get(I18nKeys.SETTINGS_ACCEPTABLE_HIGH_VALUE_NOTIFICATION), 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.SOMETIMES);
+        Label acceptableHighSoundLabel = createLabel(translator.get(I18nKeys.SETTINGS_ACCEPTABLE_HIGH_VALUE_NOTIFICATION_SOUND), 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_RIGHT, Priority.ALWAYS);
         acceptableHighSoundLabel.setMaxWidth(Double.MAX_VALUE);
         acceptableHighSoundSwitch = MacosSwitchBuilder.create().dark(true).selectedColor(accentColor).build();
         HBox acceptableHighBox = new HBox(10, enableAcceptableHighSoundSwitch, acceptableHighLabel, acceptableHighSoundLabel, acceptableHighSoundSwitch);
@@ -1306,16 +1380,16 @@ public class Main extends Application {
 
         // High
         enableHighSoundSwitch = MacosSwitchBuilder.create().dark(true).selectedColor(accentColor).build();
-        Label highLabel = createLabel("High", 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.SOMETIMES);
-        Label highSoundLabel = createLabel("Sound", 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_RIGHT, Priority.ALWAYS);
+        Label highLabel = createLabel(translator.get(I18nKeys.SETTINGS_HIGH_VALUE_NOTIFICATION), 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.SOMETIMES);
+        Label highSoundLabel = createLabel(translator.get(I18nKeys.SETTINGS_HIGH_VALUE_NOTIFICATION_SOUND), 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_RIGHT, Priority.ALWAYS);
         highSoundLabel.setMaxWidth(Double.MAX_VALUE);
         highSoundSwitch = MacosSwitchBuilder.create().dark(true).selectedColor(accentColor).build();
         HBox highBox = new HBox(10, enableHighSoundSwitch, highLabel, highSoundLabel, highSoundSwitch);
         highBox.setAlignment(Pos.CENTER_LEFT);
 
         // Too high
-        Label tooHighLabel = createLabel("Too high", 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.SOMETIMES);
-        Label tooHighSoundLabel = createLabel("Sound", 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_RIGHT, Priority.ALWAYS);
+        Label tooHighLabel = createLabel(translator.get(I18nKeys.SETTINGS_TOO_HIGH_VALUE_NOTIFICATION), 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.SOMETIMES);
+        Label tooHighSoundLabel = createLabel(translator.get(I18nKeys.SETTINGS_TOO_HIGH_VALUE_NOTIFICATION_SOUND), 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_RIGHT, Priority.ALWAYS);
         tooHighSoundLabel.setMaxWidth(Double.MAX_VALUE);
         tooHighSoundSwitch = MacosSwitchBuilder.create().dark(true).selectedColor(accentColor).build();
         HBox tooHighBox = new HBox(10, tooHighLabel, tooHighSoundLabel, tooHighSoundSwitch);
@@ -1328,7 +1402,7 @@ public class Main extends Application {
 
 
         // Too low interval
-        Label tooLowIntervalLabel = createLabel("Too low interval: 5 min", 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.SOMETIMES);
+        Label tooLowIntervalLabel = createLabel(translator.get(I18nKeys.SETTINGS_TOO_LOW_NOTIFICATION_INTERVAL) + "5 min", 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.SOMETIMES);
 
         tooLowIntervalSlider = new MacosSlider();
         tooLowIntervalSlider.setDark(true);
@@ -1339,10 +1413,10 @@ public class Main extends Application {
         tooLowIntervalSlider.setMinorTickCount(0);
         tooLowIntervalSlider.setMajorTickUnit(1);
         tooLowIntervalSlider.setBlockIncrement(1);
-        tooLowIntervalSlider.valueProperty().addListener((o, ov, nv) -> tooLowIntervalLabel.setText("Too low interval: " + String.format(Locale.US, "%.0f", tooLowIntervalSlider.getValue()) + " min"));
+        tooLowIntervalSlider.valueProperty().addListener((o, ov, nv) -> tooLowIntervalLabel.setText(translator.get(I18nKeys.SETTINGS_TOO_LOW_NOTIFICATION_INTERVAL) + String.format(Locale.US, "%.0f", tooLowIntervalSlider.getValue()) + " min"));
 
         // Too high interval
-        Label tooHighIntervalLabel = createLabel("Too high interval: 5 min", 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.SOMETIMES);
+        Label tooHighIntervalLabel = createLabel(translator.get(I18nKeys.SETTINGS_TOO_HIGH_NOTIFICATION_INTERVAL) + "5 min", 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.SOMETIMES);
 
         tooHighIntervalSlider = new MacosSlider();
         tooHighIntervalSlider.setDark(true);
@@ -1353,7 +1427,7 @@ public class Main extends Application {
         tooHighIntervalSlider.setMinorTickCount(0);
         tooHighIntervalSlider.setMajorTickUnit(5);
         tooHighIntervalSlider.setBlockIncrement(5);
-        tooHighIntervalSlider.valueProperty().addListener((o, ov, nv) -> tooHighIntervalLabel.setText("Too High interval: " + String.format(Locale.US, "%.0f", tooHighIntervalSlider.getValue()) + " min"));
+        tooHighIntervalSlider.valueProperty().addListener((o, ov, nv) -> tooHighIntervalLabel.setText(translator.get(I18nKeys.SETTINGS_TOO_HIGH_NOTIFICATION_INTERVAL) + String.format(Locale.US, "%.0f", tooHighIntervalSlider.getValue()) + " min"));
 
 
         MacosSeparator s5 = new MacosSeparator(Orientation.HORIZONTAL);
@@ -1361,11 +1435,11 @@ public class Main extends Application {
         VBox.setMargin(s5, new Insets(5, 0, 5, 0));
 
 
-        Label rangesLabel = new Label("Ranges");
+        Label rangesLabel = new Label(translator.get(I18nKeys.SETTINGS_RANGES_TITLE));
         rangesLabel.setFont(Fonts.sfProTextBold(14));
         rangesLabel.setTextFill(Constants.BRIGHT_TEXT);
 
-        Label minAcceptableLabel = createLabel(new StringBuilder().append("Min acceptable: ").append(String.format(Locale.US, format, (UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? Constants.DEFAULT_MIN_ACCEPTABLE : Helper.mgPerDeciliterToMmolPerLiter(Constants.DEFAULT_MIN_ACCEPTABLE)))).append(" ").append(currentUnit.UNIT.getUnitShort()).toString(), 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.SOMETIMES);
+        Label minAcceptableLabel = createLabel(new StringBuilder().append(translator.get(I18nKeys.SETTINGS_MIN_ACCEPTABLE)).append(String.format(Locale.US, format, (UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? Constants.DEFAULT_MIN_ACCEPTABLE : Helper.mgPerDeciliterToMmolPerLiter(Constants.DEFAULT_MIN_ACCEPTABLE)))).append(" ").append(currentUnit.UNIT.getUnitShort()).toString(), 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.SOMETIMES);
 
         minAcceptableSlider = new MacosSlider();
         minAcceptableSlider.setDark(true);
@@ -1377,9 +1451,9 @@ public class Main extends Application {
         minAcceptableSlider.setMajorTickUnit(1);
         minAcceptableSlider.setBlockIncrement(1);
         minAcceptableSlider.setValue(UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? Constants.DEFAULT_MIN_ACCEPTABLE : Helper.mgPerDeciliterToMmolPerLiter(Constants.DEFAULT_MIN_ACCEPTABLE));
-        minAcceptableSlider.valueProperty().addListener((o, ov, nv) -> minAcceptableLabel.setText(new StringBuilder().append("Min acceptable: ").append(String.format(Locale.US, format, minAcceptableSlider.getValue())).append(" ").append(currentUnit.UNIT.getUnitShort()).toString()));
+        minAcceptableSlider.valueProperty().addListener((o, ov, nv) -> minAcceptableLabel.setText(new StringBuilder().append(translator.get(I18nKeys.SETTINGS_MIN_ACCEPTABLE)).append(String.format(Locale.US, format, minAcceptableSlider.getValue())).append(" ").append(currentUnit.UNIT.getUnitShort()).toString()));
 
-        Label minNormalLabel = createLabel(new StringBuilder().append("Min normal: ").append(String.format(Locale.US, format, (UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? Constants.DEFAULT_MIN_NORMAL : Helper.mgPerDeciliterToMmolPerLiter(Constants.DEFAULT_MIN_NORMAL)))).append(" ").append(currentUnit.UNIT.getUnitShort()).toString(), 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.SOMETIMES);
+        Label minNormalLabel = createLabel(new StringBuilder().append(translator.get(I18nKeys.SETTINGS_MIN_NORMAL)).append(String.format(Locale.US, format, (UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? Constants.DEFAULT_MIN_NORMAL : Helper.mgPerDeciliterToMmolPerLiter(Constants.DEFAULT_MIN_NORMAL)))).append(" ").append(currentUnit.UNIT.getUnitShort()).toString(), 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.SOMETIMES);
 
         minNormalSlider = new MacosSlider();
         minNormalSlider.setDark(true);
@@ -1391,9 +1465,9 @@ public class Main extends Application {
         minNormalSlider.setMajorTickUnit(1);
         minNormalSlider.setBlockIncrement(1);
         minNormalSlider.setValue(UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? Constants.DEFAULT_MIN_NORMAL : Helper.mgPerDeciliterToMmolPerLiter(Constants.DEFAULT_MIN_NORMAL));
-        minNormalSlider.valueProperty().addListener((o, ov, nv) -> minNormalLabel.setText(new StringBuilder().append("Min normal: ").append(String.format(Locale.US, format, minNormalSlider.getValue())).append(" ").append(currentUnit.UNIT.getUnitShort()).toString()));
+        minNormalSlider.valueProperty().addListener((o, ov, nv) -> minNormalLabel.setText(new StringBuilder().append(translator.get(I18nKeys.SETTINGS_MIN_NORMAL)).append(String.format(Locale.US, format, minNormalSlider.getValue())).append(" ").append(currentUnit.UNIT.getUnitShort()).toString()));
 
-        Label maxNormalLabel = createLabel(new StringBuilder().append("Max normal: ").append(String.format(Locale.US, format, (UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? Constants.DEFAULT_MAX_NORMAL : Helper.mgPerDeciliterToMmolPerLiter(Constants.DEFAULT_MAX_NORMAL)))).append(" ").append(currentUnit.UNIT.getUnitShort()).toString(), 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.SOMETIMES);
+        Label maxNormalLabel = createLabel(new StringBuilder().append(translator.get(I18nKeys.SETTINGS_MAX_NORMAL)).append(String.format(Locale.US, format, (UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? Constants.DEFAULT_MAX_NORMAL : Helper.mgPerDeciliterToMmolPerLiter(Constants.DEFAULT_MAX_NORMAL)))).append(" ").append(currentUnit.UNIT.getUnitShort()).toString(), 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.SOMETIMES);
 
         maxNormalSlider = new MacosSlider();
         maxNormalSlider.setDark(true);
@@ -1410,7 +1484,7 @@ public class Main extends Application {
             if (nv.doubleValue() > maxAcceptableSlider.getValue()) { maxAcceptableSlider.setValue(nv.doubleValue()); }
         });
 
-        Label maxAcceptableLabel = createLabel(new StringBuilder().append("Max acceptable: ").append(String.format(Locale.US, format, (UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? Constants.DEFAULT_MAX_ACCEPTABLE : Helper.mgPerDeciliterToMmolPerLiter(Constants.DEFAULT_MAX_ACCEPTABLE)))).append(" ").append(currentUnit.UNIT.getUnitShort()).toString(), 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.SOMETIMES);
+        Label maxAcceptableLabel = createLabel(new StringBuilder().append(translator.get(I18nKeys.SETTINGS_MAX_ACCEPTABLE)).append(String.format(Locale.US, format, (UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? Constants.DEFAULT_MAX_ACCEPTABLE : Helper.mgPerDeciliterToMmolPerLiter(Constants.DEFAULT_MAX_ACCEPTABLE)))).append(" ").append(currentUnit.UNIT.getUnitShort()).toString(), 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.SOMETIMES);
 
         maxAcceptableSlider = new MacosSlider();
         maxAcceptableSlider.setDark(true);
@@ -1423,7 +1497,7 @@ public class Main extends Application {
         maxAcceptableSlider.setBlockIncrement(5);
         maxAcceptableSlider.setValue(UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? Constants.DEFAULT_MAX_ACCEPTABLE : Helper.mgPerDeciliterToMmolPerLiter(Constants.DEFAULT_MAX_ACCEPTABLE));
         maxAcceptableSlider.valueProperty().addListener((o, ov, nv) -> {
-            maxAcceptableLabel.setText(new StringBuilder().append("Max acceptable: ").append(String.format(Locale.US, format, maxAcceptableSlider.getValue())).append(" ").append(currentUnit.UNIT.getUnitShort()).toString());
+            maxAcceptableLabel.setText(new StringBuilder().append(translator.get(I18nKeys.SETTINGS_MAX_ACCEPTABLE)).append(String.format(Locale.US, format, maxAcceptableSlider.getValue())).append(" ").append(currentUnit.UNIT.getUnitShort()).toString());
             if (nv.doubleValue() < maxNormalSlider.getValue()) { maxNormalSlider.setValue(nv.doubleValue()); }
         });
 
@@ -1464,7 +1538,7 @@ public class Main extends Application {
         double pLow     = (entries.stream().filter(entry -> entry.sgv() > Constants.DEFAULT_MIN_CRITICAL).filter(entry -> entry.sgv() <= PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MIN_NORMAL)).count() / noOfValues);
         double pTooLow  = (entries.stream().filter(entry -> entry.sgv() < Constants.DEFAULT_MIN_CRITICAL).count() / noOfValues);
 
-        Label titleLabel        = createLabel("IN TARGET RANGE", 24, true, false, Pos.CENTER);
+        Label titleLabel        = createLabel(translator.get(I18nKeys.STATISTICS_TITLE), 24, true, false, Pos.CENTER);
         Label timeIntervalLabel = createLabel(currentInterval.getUiString(), 20, false, false, Pos.CENTER);
 
         double columnSize = 140;
@@ -1476,23 +1550,23 @@ public class Main extends Application {
         VBox rectBox = new VBox(tooHighRect, highRect, normalRect, lowRect, tooLowRect);
 
         Label tooHighValue     = createTimeInRangeLabel(String.format(Locale.US, "%.0f%% ", pTooHigh * 100), 20, Constants.BRIGHT_TEXT, false, Pos.CENTER_RIGHT);
-        Label tooHighValueText = createTimeInRangeLabel("Very high", 20, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT);
+        Label tooHighValueText = createTimeInRangeLabel(translator.get(I18nKeys.STATISTICS_TOO_HIGH), 20, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT);
         HBox  tooHighText      = new HBox(10, tooHighValue, tooHighValueText);
 
         Label highValue        = createTimeInRangeLabel(String.format(Locale.US, "%.0f%% ", pHigh * 100), 20, Constants.BRIGHT_TEXT, false, Pos.CENTER_RIGHT);
-        Label highValueText    = createTimeInRangeLabel("High", 20, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT);
+        Label highValueText    = createTimeInRangeLabel(translator.get(I18nKeys.STATISTICS_HIGH), 20, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT);
         HBox  highText         = new HBox(10, highValue, highValueText);
 
         Label normalValue      = createTimeInRangeLabel(String.format(Locale.US, "%.0f%% ", pNormal * 100), 22, Constants.BRIGHT_TEXT, true, Pos.CENTER_RIGHT);
-        Label normalValueText  = createTimeInRangeLabel("In target range", 22, Constants.BRIGHT_TEXT, true, Pos.CENTER_LEFT);
+        Label normalValueText  = createTimeInRangeLabel(translator.get(I18nKeys.STATISTICS_NORMAL), 22, Constants.BRIGHT_TEXT, true, Pos.CENTER_LEFT);
         HBox  normalText       = new HBox(10, normalValue, normalValueText);
 
         Label lowValue         = createTimeInRangeLabel(String.format(Locale.US, "%.0f%% ", pLow * 100), 20, Constants.BRIGHT_TEXT, false, Pos.CENTER_RIGHT);
-        Label lowValueText     = createTimeInRangeLabel("Low", 20, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT);
+        Label lowValueText     = createTimeInRangeLabel(translator.get(I18nKeys.STATISTICS_LOW), 20, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT);
         HBox  lowText          = new HBox(10, lowValue, lowValueText);
 
         Label tooLowValue      = createTimeInRangeLabel(String.format(Locale.US, "%.0f%% ", pTooLow * 100), 20, Constants.BRIGHT_TEXT, false, Pos.CENTER_RIGHT);
-        Label tooLowValueText  = createTimeInRangeLabel("Very low", 20, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT);
+        Label tooLowValueText  = createTimeInRangeLabel(translator.get(I18nKeys.STATISTICS_TOO_LOW), 20, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT);
         HBox  tooLowText       = new HBox(10, tooLowValue, tooLowValueText);
 
         VBox  textBox = new VBox(5, tooHighText, highText, normalText, lowText, tooLowText);
@@ -1526,6 +1600,7 @@ public class Main extends Application {
         dialog.getDialogPane().setEffect(new DropShadow(BlurType.TWO_PASS_BOX, Color.rgb(0, 0, 0, 0.35), 10.0, 0.0, 0.0, 5));
 
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CLOSE);
+        ((Button) dialog.getDialogPane().lookupButton(ButtonType.CLOSE)).setText(translator.get(I18nKeys.STATISTICS_CLOSE_BUTTON));
         dialog.setOnCloseRequest(e -> dialogVisible.set(false));
         dialog.initStyle(StageStyle.TRANSPARENT);
 
@@ -1566,8 +1641,8 @@ public class Main extends Application {
         if (dialogVisible.get()) { return; }
         dialogVisible.set(true);
 
-        Label titleLabel = createLabel("PATTERN 24H (last week)", 24, true, false, Pos.CENTER);
-        Label hbac1Label = createLabel(String.format(Locale.US, "HbAc1 %.1f%% (from last 30 days)", Helper.getHbA1c(allEntries, currentUnit)), 20, false, false, Pos.CENTER);
+        Label titleLabel = createLabel(translator.get(I18nKeys.PATTERN_TITLE), 24, true, false, Pos.CENTER);
+        Label hbac1Label = createLabel(String.format(Locale.US, "HbAc1 %.1f%% " + translator.get(I18nKeys.HBAC1_RANGE), Helper.getHbA1c(allEntries, currentUnit)), 20, false, false, Pos.CENTER);
 
         long limit = Instant.now().getEpochSecond() - TimeInterval.LAST_168_HOURS.getSeconds();
         List<GlucoEntry> entriesLastWeek = allEntries.stream().filter(entry -> entry.datelong() > limit).collect(Collectors.toList());
@@ -1700,6 +1775,7 @@ public class Main extends Application {
         dialog.getDialogPane().setEffect(new DropShadow(BlurType.TWO_PASS_BOX, Color.rgb(0, 0, 0, 0.35), 10.0, 0.0, 0.0, 5));
 
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CLOSE);
+        ((Button) dialog.getDialogPane().lookupButton(ButtonType.CLOSE)).setText(translator.get(I18nKeys.PATTERN_CLOSE_BUTTON));
         dialog.setOnCloseRequest(e -> dialogVisible.set(false));
         dialog.initStyle(StageStyle.TRANSPARENT);
 
