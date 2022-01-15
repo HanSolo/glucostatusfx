@@ -113,6 +113,7 @@ import javafx.stage.StageStyle;
 import javafx.util.Duration;
 
 import javax.swing.*;
+import java.awt.image.BufferedImage;
 import java.net.http.HttpResponse;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -400,12 +401,10 @@ public class Main extends Application {
         this.trayIconSupported = FXTrayIcon.isSupported();
 
         if (trayIconSupported) {
-            java.awt.Image icon = Helper.createTextTrayIcon("--", Constants.BRIGHT_TEXT, operatingSystem);
-
-            if (OperatingSystem.LINUX == operatingSystem && (Architecture.AARCH64 == architecture || Architecture.ARM64 == architecture)) {
-                trayIcon = new FXTrayIcon(stage, icon);
-            } else {
-                trayIcon = new FXTrayIcon(stage, icon);
+            switch (operatingSystem) {
+                case WINDOWS -> trayIcon = new FXTrayIcon(stage, getClass().getResource("icon48x48.png"));
+                case MACOS   -> trayIcon = new FXTrayIcon(stage, Helper.createTextTrayIcon("--", Constants.BRIGHT_TEXT));
+                case LINUX   -> trayIcon = new FXTrayIcon(stage, getClass().getResource("icon48x48.png"));
             }
 
             trayIcon.setTrayIconTooltip(translator.get(I18nKeys.APP_NAME));
@@ -908,13 +907,9 @@ public class Main extends Application {
             avg = entries.stream().map(entry -> Helper.mgPerDeciliterToMmolPerLiter(entry.sgv())).collect(Collectors.summingDouble(Double::doubleValue)) / entries.size();
         }
 
-        if (null != trayIcon) {
-            String text;
-            switch (operatingSystem) {
-                case WINDOWS -> text = currentEntry.trend().getSymbol();
-                default      -> text = currentValueText + (outdated ? "\u26A0" : "");
-            }
-            SwingUtilities.invokeLater(() -> Platform.runLater(() -> trayIcon.setGraphic(Helper.createTextTrayIcon(text, darkMode ? Color.WHITE : Color.BLACK, operatingSystem))));
+        // Set value specific tray icon
+        if (null != trayIcon && OperatingSystem.MACOS == operatingSystem) {
+            SwingUtilities.invokeLater(() -> Platform.runLater(() -> trayIcon.setGraphic(Helper.createTextTrayIcon(currentValueText + (outdated ? "\u26A0" : ""), darkMode ? Color.WHITE : Color.BLACK))));
         }
         Platform.runLater(() -> {
             unit.setText(currentUnit.UNIT.getUnitShort() + " (");

@@ -250,28 +250,12 @@ public class Helper {
         return avgPoints;
     }
 
-    public static final BufferedImage createTextTrayIcon(final String text, final Color color, final OperatingSystem operatingSystem) {
-        int    width;
-        int    height;
-        double fontSize;
-        double x;
-        double y;
-        switch(operatingSystem) {
-            case WINDOWS -> {
-                width    = 16;
-                height   = 16;
-                fontSize = 12;
-                x        = 8;
-                y        = 8;
-            }
-            default      -> {
-                width    = 64;
-                height   = 18;
-                fontSize = 14;
-                x        = 32;
-                y        = 14;
-            }
-        }
+    public static final BufferedImage createTextTrayIcon(final String text, final Color color) {
+        int    width    = 64;
+        int    height   = 18;
+        double fontSize = 14;
+        double x        = 32;
+        double y        = 14;
 
         Canvas          canvas = new Canvas(width, height);
         GraphicsContext ctx    = canvas.getGraphicsContext2D();
