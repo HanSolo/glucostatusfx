@@ -44,7 +44,7 @@ dependencies {
     implementation "org.openjfx:javafx-swing:${javafxVersion}:${platform}"
     implementation 'eu.hansolo:toolbox:17.0.9'
     implementation 'eu.hansolo:toolboxfx:17.0.19'
-    implementation 'eu.hansolo:applefx:17.0.7'
+    implementation 'eu.hansolo:applefx:17.0.10'
     implementation 'com.google.code.gson:gson:2.8.8'
     implementation 'com.dustinredmond.fxtrayicon:FXTrayIcon:3.1.2'
 }
