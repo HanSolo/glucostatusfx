@@ -26,7 +26,6 @@ import eu.hansolo.fx.glucostatus.Records.DataPoint;
 import eu.hansolo.fx.glucostatus.Records.GlucoEntry;
 import eu.hansolo.fx.glucostatus.Statistics.StatisticCalculation;
 import eu.hansolo.fx.glucostatus.Statistics.StatisticRange;
-import eu.hansolo.toolbox.OperatingSystem;
 import eu.hansolo.toolbox.tuples.Pair;
 import eu.hansolo.toolbox.unit.Converter;
 import eu.hansolo.toolbox.unit.UnitDefinition;

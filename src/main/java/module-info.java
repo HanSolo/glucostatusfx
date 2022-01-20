@@ -11,6 +11,7 @@ module eu.hansolo.fx.glucostatus {
     requires transitive javafx.swing;
 
     // 3rd Party
+    requires transitive eu.hansolo.jdktools;
     requires transitive eu.hansolo.toolbox;
     requires transitive eu.hansolo.toolboxfx;
     requires transitive eu.hansolo.applefx;

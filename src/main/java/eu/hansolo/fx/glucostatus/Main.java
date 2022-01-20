@@ -26,7 +26,7 @@ import eu.hansolo.applefx.MacosSlider;
 import eu.hansolo.applefx.MacosSwitch;
 import eu.hansolo.applefx.MacosSwitchBuilder;
 import eu.hansolo.applefx.MacosTextField;
-import eu.hansolo.applefx.tools.MacOSSystemColor;
+import eu.hansolo.applefx.tools.MacosSystemColor;
 import eu.hansolo.fx.glucostatus.Records.DataPoint;
 import eu.hansolo.fx.glucostatus.Records.GlucoEntry;
 import eu.hansolo.fx.glucostatus.Statistics.StatisticCalculation;
@@ -36,8 +36,8 @@ import eu.hansolo.fx.glucostatus.i18n.Translator;
 import eu.hansolo.fx.glucostatus.notification.Notification;
 import eu.hansolo.fx.glucostatus.notification.NotificationBuilder;
 import eu.hansolo.fx.glucostatus.notification.NotifierBuilder;
-import eu.hansolo.toolbox.Architecture;
-import eu.hansolo.toolbox.OperatingSystem;
+import eu.hansolo.jdktools.Architecture;
+import eu.hansolo.jdktools.OperatingSystem;
 import eu.hansolo.toolbox.tuples.Pair;
 import eu.hansolo.toolbox.unit.UnitDefinition;
 import eu.hansolo.toolboxfx.HelperFX;
@@ -239,7 +239,7 @@ public class Main extends Application {
         operatingSystem   = getOperatingSystem();
         architecture      = getArchitecture();
         darkMode          = eu.hansolo.applefx.tools.Helper.isDarkMode();
-        accentColor       =  eu.hansolo.applefx.tools.Helper.getMacOSAccentColorAsColor();
+        accentColor       =  eu.hansolo.applefx.tools.Helper.getMacosAccentColorAsColor();
         currentUnit       = MILLIGRAM_PER_DECILITER;
         outdated          = false;
         currentInterval   = TimeInterval.LAST_24_HOURS;
@@ -1211,7 +1211,7 @@ public class Main extends Application {
         aboutBox.setMinSize(260, 232);
         aboutBox.setMaxSize(260, 232);
         aboutBox.setPrefSize(260, 232);
-        aboutBox.setBackground(new Background(new BackgroundFill(MacOSSystemColor.BACKGROUND.getColorDark(), new CornerRadii(10), Insets.EMPTY)));
+        aboutBox.setBackground(new Background(new BackgroundFill(MacosSystemColor.BACKGROUND.getColorDark(), new CornerRadii(10), Insets.EMPTY)));
 
 
         if (OperatingSystem.LINUX == operatingSystem && (Architecture.AARCH64 == architecture || Architecture.ARM64 == architecture)) {
@@ -1522,21 +1522,21 @@ public class Main extends Application {
                                      notificationsLabel, tooLowBox, lowBox, acceptableLowBox, acceptableHighBox, highBox, tooHighBox, s4,
                                      tooLowIntervalLabel, tooLowIntervalSlider, tooHighIntervalLabel, tooHighIntervalSlider, s5,
                                      rangesLabel, minAcceptableLabel, minAcceptableSlider, minNormalLabel, minNormalSlider, maxNormalLabel, maxNormalSlider, maxAcceptableLabel, maxAcceptableSlider);
-        settingsVBox.setBackground(new Background(new BackgroundFill(MacOSSystemColor.BACKGROUND.getColorDark(), CornerRadii.EMPTY, Insets.EMPTY)));
+        settingsVBox.setBackground(new Background(new BackgroundFill(MacosSystemColor.BACKGROUND.getColorDark(), CornerRadii.EMPTY, Insets.EMPTY)));
         settingsVBox.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
         settingsVBox.setFillWidth(true);
 
         MacosScrollPane scrollPane = new MacosScrollPane(settingsVBox);
         scrollPane.setFitToWidth(true);
         scrollPane.setFitToHeight(true);
-        scrollPane.setBackground(new Background(new BackgroundFill(MacOSSystemColor.BACKGROUND.getColorDark(), CornerRadii.EMPTY, Insets.EMPTY)));
+        scrollPane.setBackground(new Background(new BackgroundFill(MacosSystemColor.BACKGROUND.getColorDark(), CornerRadii.EMPTY, Insets.EMPTY)));
         AnchorPane.setTopAnchor(scrollPane, 80d);
         AnchorPane.setRightAnchor(scrollPane, 30d);
         AnchorPane.setBottomAnchor(scrollPane, 20d);
         AnchorPane.setLeftAnchor(scrollPane, 30d);
 
         AnchorPane pane = new AnchorPane(backButton, settingsLabel, scrollPane);
-        pane.setBackground(new Background(new BackgroundFill(MacOSSystemColor.BACKGROUND.getColorDark(), CornerRadii.EMPTY, Insets.EMPTY)));
+        pane.setBackground(new Background(new BackgroundFill(MacosSystemColor.BACKGROUND.getColorDark(), CornerRadii.EMPTY, Insets.EMPTY)));
 
         StackPane prefPane = new StackPane(pane);
         return prefPane;

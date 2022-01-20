@@ -19,7 +19,7 @@
 package eu.hansolo.fx.glucostatus.notification;
 
 import eu.hansolo.fx.glucostatus.Fonts;
-import eu.hansolo.toolbox.OperatingSystem;
+import eu.hansolo.jdktools.OperatingSystem;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
