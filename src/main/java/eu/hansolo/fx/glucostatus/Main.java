@@ -1594,6 +1594,7 @@ public class Main extends Application {
         content.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, new CornerRadii(10), Insets.EMPTY)));
 
         Dialog dialog = new Dialog();
+        dialog.initOwner(stage);
         dialog.setTitle("");
         dialog.setHeaderText("");
 
@@ -1631,7 +1632,9 @@ public class Main extends Application {
             dialog.setX(stage.getX() + (stage.getWidth() - dialog.getDialogPane().getLayoutBounds().getWidth()) * 0.425);
             dialog.setY(stage.getY() + (stage.getHeight() - dialog.getDialogPane().getLayoutBounds().getHeight()) * 0.425);
         });
-
+        Stage dialogStage = (Stage) dialogPane.getScene().getWindow();
+        dialogStage.setAlwaysOnTop(true);
+        dialogStage.toFront();
         dialog.showAndWait();
     }
 
@@ -1806,7 +1809,9 @@ public class Main extends Application {
             dialog.setX(stage.getX() + (stage.getWidth() - dialog.getDialogPane().getLayoutBounds().getWidth()) * 0.5);
             dialog.setY(stage.getY() + (stage.getHeight() - dialog.getDialogPane().getLayoutBounds().getHeight()) * 0.1);
         });
-
+        Stage dialogStage = (Stage) dialogPane.getScene().getWindow();
+        dialogStage.setAlwaysOnTop(true);
+        dialogStage.toFront();
         dialog.showAndWait();
     }
 
