@@ -61,6 +61,8 @@ public interface I18nKeys {
     String PATTERN_GENERALLY_TOO_HIGH                        = "pattern_generally_too_high";
     String PATTERN_GENERALLY_TOO_LOW                         = "pattern_generally_too_low";
     String HBAC1_RANGE                                       = "hbac1_range";
+    String MATRIX_TITLE                                      = "matrix_title";
+    String MATRIX_SUBTITLE                                   = "matrix_subtitle";
     String STATISTICS_TITLE                                  = "statistic_title";
     String STATISTICS_TOO_HIGH                               = "statistic_too_high";
     String STATISTICS_HIGH                                   = "statistic_high";

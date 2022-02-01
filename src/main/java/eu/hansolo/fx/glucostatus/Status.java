@@ -23,23 +23,25 @@ import javafx.scene.paint.Color;
 
 
 public enum Status {
-    NONE(0, Constants.GRAY),
-    TOO_LOW(1, Constants.RED),
-    LOW(2, Constants.ORANGE),
-    ACCEPTABLE_LOW(3, Constants.YELLOW),
-    NORMAL(4, Constants.GREEN),
-    ACCEPTABLE_HIGH(5, Constants.YELLOW),
-    HIGH(6, Constants.ORANGE),
-    TOO_HIGH(7, Constants.RED);
+    NONE(0, Constants.GRAY, Constants.GRAY),
+    TOO_LOW(1, Constants.RED, Constants.BLUE),
+    LOW(2, Constants.ORANGE, Constants.LIGHT_BLUE),
+    ACCEPTABLE_LOW(3, Constants.YELLOW, Constants.DARK_GREEN),
+    NORMAL(4, Constants.GREEN, Constants.GREEN),
+    ACCEPTABLE_HIGH(5, Constants.YELLOW, Constants.YELLOW),
+    HIGH(6, Constants.ORANGE, Constants.ORANGE),
+    TOO_HIGH(7, Constants.RED, Constants.RED);
 
     private final int   id;
     private final Color color;
+    private final Color color2;
 
 
     // ******************** Constructors **************************************
-    Status(final int id, final Color color) {
-        this.id    = id;
-        this.color = color;
+    Status(final int id, final Color color, final Color color2) {
+        this.id     = id;
+        this.color  = color;
+        this.color2 = color2;
     }
 
 
@@ -47,6 +49,8 @@ public enum Status {
     public int getId() { return id; }
 
     public Color getColor() { return color; }
+
+    public Color getColor2() { return color2; }
 
 
     public static final Status getByValue(final UnitDefinition unit, final double value) {

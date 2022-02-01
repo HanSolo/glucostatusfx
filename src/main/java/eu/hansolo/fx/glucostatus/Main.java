@@ -157,6 +157,7 @@ public class Main extends Application {
     private              SVGPath                    reloadButton;
     private              SVGPath                    timeInRangeChartButton;
     private              SVGPath                    patternChartButton;
+    private              SVGPath                    matrixButton;
     private              SVGPath                    exclamationMark;
     private              Label                      valueLabel;
     private              TextFlow                   last5DeltasLabel;
@@ -344,6 +345,14 @@ public class Main extends Application {
         AnchorPane.setBottomAnchor(patternChartButton, 30d);
         AnchorPane.setLeftAnchor(patternChartButton, 10d);
 
+        matrixButton = new SVGPath();
+        matrixButton.setContent("M1.302,4.205l1.502,0c0.406,0 0.725,-0.118 0.955,-0.355c0.231,-0.236 0.346,-0.564 0.346,-0.983l0,-1.429c0,-0.418 -0.115,-0.746 -0.346,-0.983c-0.23,-0.237 -0.549,-0.355 -0.955,-0.355l-1.502,0c-0.413,0 -0.733,0.118 -0.961,0.355c-0.227,0.237 -0.341,0.565 -0.341,0.983l0,1.429c0,0.419 0.114,0.747 0.341,0.983c0.228,0.237 0.548,0.355 0.961,0.355Zm0.154,-1.101c-0.23,0 -0.345,-0.127 -0.345,-0.382l-0,-1.147c-0,-0.243 0.115,-0.364 0.345,-0.364l1.184,-0c0.236,-0 0.355,0.121 0.355,0.364l-0,1.147c-0,0.255 -0.119,0.382 -0.355,0.382l-1.184,0Zm4.788,1.101l1.512,0c0.406,0 0.723,-0.118 0.951,-0.355c0.227,-0.236 0.341,-0.564 0.341,-0.983l0,-1.429c0,-0.418 -0.114,-0.746 -0.341,-0.983c-0.228,-0.237 -0.545,-0.355 -0.951,-0.355l-1.512,0c-0.412,0 -0.731,0.118 -0.955,0.355c-0.225,0.237 -0.337,0.565 -0.337,0.983l-0,1.429c-0,0.419 0.112,0.747 0.337,0.983c0.224,0.237 0.543,0.355 0.955,0.355Zm0.155,-1.101c-0.23,0 -0.346,-0.127 -0.346,-0.382l0,-1.147c0,-0.243 0.116,-0.364 0.346,-0.364l1.193,-0c0.23,-0 0.346,0.121 0.346,0.364l-0,1.147c-0,0.255 -0.116,0.382 -0.346,0.382l-1.193,0Zm4.797,1.101l1.511,0c0.407,0 0.724,-0.118 0.952,-0.355c0.227,-0.236 0.341,-0.564 0.341,-0.983l0,-1.429c0,-0.418 -0.114,-0.746 -0.341,-0.983c-0.228,-0.237 -0.545,-0.355 -0.952,-0.355l-1.511,0c-0.406,0 -0.725,0.118 -0.955,0.355c-0.231,0.237 -0.346,0.565 -0.346,0.983l-0,1.429c-0,0.419 0.115,0.747 0.346,0.983c0.23,0.237 0.549,0.355 0.955,0.355Zm0.155,-1.101c-0.231,0 -0.346,-0.127 -0.346,-0.382l0,-1.147c0,-0.243 0.115,-0.364 0.346,-0.364l1.193,-0c0.23,-0 0.345,0.121 0.345,0.364l0,1.147c0,0.255 -0.115,0.382 -0.345,0.382l-1.193,0Zm-10.049,5.944l1.502,0c0.406,0 0.725,-0.115 0.955,-0.346c0.231,-0.23 0.346,-0.555 0.346,-0.974l0,-1.447c0,-0.419 -0.115,-0.745 -0.346,-0.979c-0.23,-0.233 -0.549,-0.35 -0.955,-0.35l-1.502,-0c-0.413,-0 -0.733,0.117 -0.961,0.35c-0.227,0.234 -0.341,0.56 -0.341,0.979l-0,1.447c-0,0.419 0.114,0.744 0.341,0.974c0.228,0.231 0.548,0.346 0.961,0.346Zm0.154,-1.101c-0.23,-0 -0.345,-0.125 -0.345,-0.374l-0,-1.156c-0,-0.236 0.115,-0.355 0.345,-0.355l1.184,0c0.236,0 0.355,0.119 0.355,0.355l-0,1.156c-0,0.249 -0.119,0.374 -0.355,0.374l-1.184,-0Zm4.788,1.101l1.512,0c0.406,0 0.723,-0.115 0.951,-0.346c0.227,-0.23 0.341,-0.555 0.341,-0.974l0,-1.447c0,-0.419 -0.114,-0.745 -0.341,-0.979c-0.228,-0.233 -0.545,-0.35 -0.951,-0.35l-1.512,-0c-0.412,-0 -0.731,0.117 -0.955,0.35c-0.225,0.234 -0.337,0.56 -0.337,0.979l-0,1.447c-0,0.419 0.112,0.744 0.337,0.974c0.224,0.231 0.543,0.346 0.955,0.346Zm0.155,-1.101c-0.23,-0 -0.346,-0.125 -0.346,-0.374l0,-1.156c0,-0.236 0.116,-0.355 0.346,-0.355l1.193,0c0.23,0 0.346,0.119 0.346,0.355l-0,1.156c-0,0.249 -0.116,0.374 -0.346,0.374l-1.193,-0Zm4.797,1.101l1.511,0c0.407,0 0.724,-0.115 0.952,-0.346c0.227,-0.23 0.341,-0.555 0.341,-0.974l0,-1.447c0,-0.419 -0.114,-0.745 -0.341,-0.979c-0.228,-0.233 -0.545,-0.35 -0.952,-0.35l-1.511,-0c-0.406,-0 -0.725,0.117 -0.955,0.35c-0.231,0.234 -0.346,0.56 -0.346,0.979l-0,1.447c-0,0.419 0.115,0.744 0.346,0.974c0.23,0.231 0.549,0.346 0.955,0.346Zm0.155,-1.101c-0.231,-0 -0.346,-0.125 -0.346,-0.374l0,-1.156c0,-0.236 0.115,-0.355 0.346,-0.355l1.193,0c0.23,0 0.345,0.119 0.345,0.355l0,1.156c0,0.249 -0.115,0.374 -0.345,0.374l-1.193,-0Zm-10.049,5.953l1.502,-0c0.406,-0 0.725,-0.117 0.955,-0.351c0.231,-0.233 0.346,-0.559 0.346,-0.978l0,-1.438c0,-0.419 -0.115,-0.745 -0.346,-0.979c-0.23,-0.234 -0.549,-0.35 -0.955,-0.35l-1.502,-0c-0.413,-0 -0.733,0.116 -0.961,0.35c-0.227,0.234 -0.341,0.56 -0.341,0.979l-0,1.438c-0,0.419 0.114,0.745 0.341,0.978c0.228,0.234 0.548,0.351 0.961,0.351Zm0.154,-1.111c-0.23,0 -0.345,-0.121 -0.345,-0.364l-0,-1.156c-0,-0.243 0.115,-0.364 0.345,-0.364l1.184,0c0.236,0 0.355,0.121 0.355,0.364l-0,1.156c-0,0.243 -0.119,0.364 -0.355,0.364l-1.184,0Zm4.788,1.111l1.512,-0c0.406,-0 0.723,-0.117 0.951,-0.351c0.227,-0.233 0.341,-0.559 0.341,-0.978l0,-1.438c0,-0.419 -0.114,-0.745 -0.341,-0.979c-0.228,-0.234 -0.545,-0.35 -0.951,-0.35l-1.512,-0c-0.412,-0 -0.731,0.116 -0.955,0.35c-0.225,0.234 -0.337,0.56 -0.337,0.979l-0,1.438c-0,0.419 0.112,0.745 0.337,0.978c0.224,0.234 0.543,0.351 0.955,0.351Zm0.155,-1.111c-0.23,0 -0.346,-0.121 -0.346,-0.364l0,-1.156c0,-0.243 0.116,-0.364 0.346,-0.364l1.193,0c0.23,0 0.346,0.121 0.346,0.364l-0,1.156c-0,0.243 -0.116,0.364 -0.346,0.364l-1.193,0Zm4.797,1.111l1.511,-0c0.407,-0 0.724,-0.117 0.952,-0.351c0.227,-0.233 0.341,-0.559 0.341,-0.978l0,-1.438c0,-0.419 -0.114,-0.745 -0.341,-0.979c-0.228,-0.234 -0.545,-0.35 -0.952,-0.35l-1.511,-0c-0.406,-0 -0.725,0.116 -0.955,0.35c-0.231,0.234 -0.346,0.56 -0.346,0.979l-0,1.438c-0,0.419 0.115,0.745 0.346,0.978c0.23,0.234 0.549,0.351 0.955,0.351Zm0.155,-1.111c-0.231,0 -0.346,-0.121 -0.346,-0.364l0,-1.156c0,-0.243 0.115,-0.364 0.346,-0.364l1.193,0c0.23,0 0.345,0.121 0.345,0.364l0,1.156c0,0.243 -0.115,0.364 -0.345,0.364l-1.193,0Z");
+        matrixButton.setFill(Constants.BRIGHT_TEXT);
+        matrixButton.setScaleX(1.2);
+        matrixButton.setScaleY(1.2);
+        AnchorPane.setTopAnchor(matrixButton, 10d);
+        AnchorPane.setLeftAnchor(matrixButton, 10d);
+
         timeInRangeChartButton = new SVGPath();
         timeInRangeChartButton.setContent("M1.195,12.162l1.63,0c0.399,0 0.698,-0.095 0.9,-0.284c0.201,-0.19 0.302,-0.473 0.302,-0.847l0,-4.843c0,-0.37 -0.101,-0.65 -0.302,-0.84c-0.202,-0.189 -0.501,-0.284 -0.9,-0.284l-1.63,-0c-0.394,-0 -0.691,0.095 -0.893,0.284c-0.201,0.19 -0.302,0.47 -0.302,0.84l0,4.843c0,0.374 0.101,0.657 0.302,0.847c0.202,0.189 0.499,0.284 0.893,0.284Zm4.99,0l1.63,0c0.399,0 0.698,-0.095 0.9,-0.284c0.201,-0.19 0.302,-0.473 0.302,-0.847l0,-6.452c0,-0.375 -0.101,-0.656 -0.302,-0.844c-0.202,-0.187 -0.501,-0.281 -0.9,-0.281l-1.63,0c-0.394,0 -0.693,0.094 -0.896,0.281c-0.204,0.188 -0.306,0.469 -0.306,0.844l-0,6.452c-0,0.374 0.102,0.657 0.306,0.847c0.203,0.189 0.502,0.284 0.896,0.284Zm4.983,0l1.63,0c0.398,0 0.698,-0.095 0.9,-0.284c0.201,-0.19 0.302,-0.473 0.302,-0.847l0,-8.069c0,-0.37 -0.101,-0.65 -0.302,-0.84c-0.202,-0.189 -0.502,-0.284 -0.9,-0.284l-1.63,-0c-0.394,-0 -0.691,0.095 -0.893,0.284c-0.201,0.19 -0.302,0.47 -0.302,0.84l-0,8.069c-0,0.374 0.101,0.657 0.302,0.847c0.202,0.189 0.499,0.284 0.893,0.284Z");
         timeInRangeChartButton.setFill(Constants.BRIGHT_TEXT);
@@ -353,7 +362,7 @@ public class Main extends Application {
         AnchorPane.setBottomAnchor(timeInRangeChartButton, 30d);
 
 
-        mainPane = new AnchorPane(titleLabel, reloadButton, valueLabel, last5DeltasLabel, timestampLabel, rangeAverageLabel, patternChartButton, timeInRangeChartButton);
+        mainPane = new AnchorPane(titleLabel, matrixButton, reloadButton, valueLabel, last5DeltasLabel, timestampLabel, rangeAverageLabel, patternChartButton, timeInRangeChartButton);
         mainPane.setPrefSize(820, 285);
         mainPane.setMinHeight(285);
         mainPane.setBackground(new Background(new BackgroundFill(Constants.GRAY, CornerRadii.EMPTY, Insets.EMPTY)));
@@ -574,6 +583,8 @@ public class Main extends Application {
             prefPane.setVisible(true);
         });
 
+        matrixButton.setOnMousePressed(e -> showMatrixChart());
+
         reloadButton.setOnMousePressed(e -> updateEntries());
 
         timeInRangeChartButton.setOnMousePressed(e -> showTimeInRangeChart());
@@ -581,6 +592,7 @@ public class Main extends Application {
         patternChartButton.setOnMousePressed(e -> showPatternChart());
 
         intervalToggleGroup.selectedToggleProperty().addListener((o, ov, nv) -> {
+            if (null == ov || null == nv) { return; }
             if (ov.equals(nv)) { nv.setSelected(true); }
             if (nv.equals(sevenDays)) {
                 currentInterval = TimeInterval.LAST_168_HOURS;
@@ -1211,7 +1223,7 @@ public class Main extends Application {
         aboutBox.setMinSize(260, 232);
         aboutBox.setMaxSize(260, 232);
         aboutBox.setPrefSize(260, 232);
-        aboutBox.setBackground(new Background(new BackgroundFill(MacosSystemColor.BACKGROUND.getColorDark(), new CornerRadii(10), Insets.EMPTY)));
+        aboutBox.setBackground(new Background(new BackgroundFill(MacosSystemColor.BACKGROUND.dark(), new CornerRadii(10), Insets.EMPTY)));
 
 
         if (OperatingSystem.LINUX == operatingSystem && (Architecture.AARCH64 == architecture || Architecture.ARM64 == architecture)) {
@@ -1522,21 +1534,21 @@ public class Main extends Application {
                                      notificationsLabel, tooLowBox, lowBox, acceptableLowBox, acceptableHighBox, highBox, tooHighBox, s4,
                                      tooLowIntervalLabel, tooLowIntervalSlider, tooHighIntervalLabel, tooHighIntervalSlider, s5,
                                      rangesLabel, minAcceptableLabel, minAcceptableSlider, minNormalLabel, minNormalSlider, maxNormalLabel, maxNormalSlider, maxAcceptableLabel, maxAcceptableSlider);
-        settingsVBox.setBackground(new Background(new BackgroundFill(MacosSystemColor.BACKGROUND.getColorDark(), CornerRadii.EMPTY, Insets.EMPTY)));
+        settingsVBox.setBackground(new Background(new BackgroundFill(MacosSystemColor.BACKGROUND.dark(), CornerRadii.EMPTY, Insets.EMPTY)));
         settingsVBox.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
         settingsVBox.setFillWidth(true);
 
         MacosScrollPane scrollPane = new MacosScrollPane(settingsVBox);
         scrollPane.setFitToWidth(true);
         scrollPane.setFitToHeight(true);
-        scrollPane.setBackground(new Background(new BackgroundFill(MacosSystemColor.BACKGROUND.getColorDark(), CornerRadii.EMPTY, Insets.EMPTY)));
+        scrollPane.setBackground(new Background(new BackgroundFill(MacosSystemColor.BACKGROUND.dark(), CornerRadii.EMPTY, Insets.EMPTY)));
         AnchorPane.setTopAnchor(scrollPane, 80d);
         AnchorPane.setRightAnchor(scrollPane, 30d);
         AnchorPane.setBottomAnchor(scrollPane, 20d);
         AnchorPane.setLeftAnchor(scrollPane, 30d);
 
         AnchorPane pane = new AnchorPane(backButton, settingsLabel, scrollPane);
-        pane.setBackground(new Background(new BackgroundFill(MacosSystemColor.BACKGROUND.getColorDark(), CornerRadii.EMPTY, Insets.EMPTY)));
+        pane.setBackground(new Background(new BackgroundFill(MacosSystemColor.BACKGROUND.dark(), CornerRadii.EMPTY, Insets.EMPTY)));
 
         StackPane prefPane = new StackPane(pane);
         return prefPane;
@@ -1663,13 +1675,13 @@ public class Main extends Application {
         Label titleLabel = createLabel(translator.get(I18nKeys.PATTERN_TITLE), 24, true, false, Pos.CENTER);
         Label hbac1Label = createLabel(String.format(Locale.US, "HbAc1 %.1f%% " + translator.get(I18nKeys.HBAC1_RANGE), Helper.getHbA1c(allEntries, currentUnit)), 20, false, false, Pos.CENTER);
 
-        long limit = Instant.now().getEpochSecond() - TimeInterval.LAST_168_HOURS.getSeconds();
+        long             limit           = Instant.now().getEpochSecond() - TimeInterval.LAST_168_HOURS.getSeconds();
         List<GlucoEntry> entriesLastWeek = allEntries.stream().filter(entry -> entry.datelong() > limit).collect(Collectors.toList());
 
-        Map<LocalTime, DataPoint> dataMap = Statistics.analyze(entriesLastWeek);
+        Map<LocalTime, DataPoint>        dataMap         = Statistics.analyze(entriesLastWeek);
         Pair<List<String>, List<String>> highAndLowZones = Statistics.findTimesWithLowAndHighValues(dataMap, 70, 180);
-        List<String> lowZones  = highAndLowZones.getA();
-        List<String> highZones = highAndLowZones.getB();
+        List<String>                     lowZones        = highAndLowZones.getA();
+        List<String>                     highZones       = highAndLowZones.getB();
 
         ListView<String> zones = new ListView<>();
         zones.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, CornerRadii.EMPTY, Insets.EMPTY)));
@@ -1766,8 +1778,67 @@ public class Main extends Application {
         });
         ctx.stroke();
 
-
         VBox content = new VBox(20, titleLabel, hbac1Label, zones, canvas);
+        content.setAlignment(Pos.CENTER);
+        content.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, new CornerRadii(10), Insets.EMPTY)));
+
+        Dialog dialog = new Dialog();
+        dialog.setTitle("");
+        dialog.setHeaderText("");
+
+        DialogPane dialogPane = new DialogPane() {
+            @Override protected Node createButtonBar() {
+                ButtonBar buttonBar = (ButtonBar) super.createButtonBar();
+                buttonBar.getStyleClass().add("dialog-button-bar");
+                buttonBar.setButtonOrder(ButtonBar.BUTTON_ORDER_NONE);
+                return buttonBar;
+            }
+        };
+        dialogPane.getStylesheets().add(Main.class.getResource("glucostatus.css").toExternalForm());
+
+        dialogPane.setBackground(new Background(new BackgroundFill(Constants.DARK_BACKGROUND, new CornerRadii(10), Insets.EMPTY)));
+        dialogPane.setBorder(new Border(new BorderStroke(Color.rgb(78, 77, 76), BorderStrokeStyle.SOLID, new CornerRadii(10),new BorderWidths(1))));
+        dialogPane.setContent(content);
+        dialog.setDialogPane(dialogPane);
+
+        dialog.getDialogPane().getScene().setFill(Color.TRANSPARENT);
+        dialog.getDialogPane().setEffect(new DropShadow(BlurType.TWO_PASS_BOX, Color.rgb(0, 0, 0, 0.35), 10.0, 0.0, 0.0, 5));
+
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CLOSE);
+        ((Button) dialog.getDialogPane().lookupButton(ButtonType.CLOSE)).setText(translator.get(I18nKeys.PATTERN_CLOSE_BUTTON));
+        dialog.setOnCloseRequest(e -> dialogVisible.set(false));
+        dialog.initStyle(StageStyle.TRANSPARENT);
+
+        Region spacer = new Region();
+        ButtonBar.setButtonData(spacer, ButtonBar.ButtonData.BIG_GAP);
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        dialogPane.applyCss();
+        HBox hbox = (HBox) dialogPane.lookup(".container");
+        hbox.getChildren().add(spacer);
+
+        dialog.setOnShowing(e -> {
+            dialog.setX(stage.getX() + (stage.getWidth() - dialog.getDialogPane().getLayoutBounds().getWidth()) * 0.5);
+            dialog.setY(stage.getY() + (stage.getHeight() - dialog.getDialogPane().getLayoutBounds().getHeight()) * 0.1);
+        });
+        Stage dialogStage = (Stage) dialogPane.getScene().getWindow();
+        dialogStage.setAlwaysOnTop(true);
+        dialogStage.toFront();
+        dialog.showAndWait();
+    }
+
+
+    // ******************** Matrix Chart **************************************
+    private void showMatrixChart() {
+        if (dialogVisible.get()) { return; }
+        dialogVisible.set(true);
+
+        Label titleLabel    = createLabel(translator.get(I18nKeys.MATRIX_TITLE), 24, true, false, Pos.CENTER);
+        Label subTitleLabel = createLabel(translator.get(I18nKeys.MATRIX_SUBTITLE), 16, false, false, Pos.CENTER);
+        Label hbac1Label    = createLabel(String.format(Locale.US, "HbAc1 %.1f%% " + translator.get(I18nKeys.HBAC1_RANGE), Helper.getHbA1c(allEntries, currentUnit)), 20, false, false, Pos.CENTER);
+
+        ThirtyDayView thirtyDayView = new ThirtyDayView(allEntries, currentUnit);
+
+        VBox content = new VBox(20, titleLabel, subTitleLabel, hbac1Label, thirtyDayView);
         content.setAlignment(Pos.CENTER);
         content.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, new CornerRadii(10), Insets.EMPTY)));
 

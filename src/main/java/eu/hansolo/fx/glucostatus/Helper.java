@@ -120,6 +120,8 @@ public class Helper {
         return Status.getByValue(unit, value).getColor();
     }
 
+    public static final Color getColorForValue2(final UnitDefinition unit, final double value) { return Status.getByValue(unit, value).getColor2(); }
+
     public static final CompletableFuture<List<GlucoEntry>> getEntriesFromLast30Days(final String nightscoutUrl) {
         final long   from = (Instant.now().getEpochSecond() - TimeInterval.LAST_720_HOURS.getSeconds()) * 1000;
         final long   to   = (Instant.now().getEpochSecond()) * 1000;

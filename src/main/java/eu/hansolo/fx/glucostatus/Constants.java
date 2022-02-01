@@ -88,6 +88,9 @@ public class Constants {
     public static final Color  ORANGE                                                 = Color.color(0.93, 0.43, 0.00);
     public static final Color  YELLOW                                                 = Color.color(1.00, 0.74, 0.01);
     public static final Color  GREEN                                                  = Color.color(0.57, 0.79, 0.23);
+    public static final Color  DARK_GREEN                                             = Color.color(0.0, 0.5, 0.13);
+    public static final Color  LIGHT_BLUE                                             = Color.color(0.01, 0.6, 0.93);
+    public static final Color  BLUE                                                   = Color.color(0.00, 0.43, 1.00);
 
     public static final Color  DARK_BACKGROUND                                        = Color.rgb(30, 28, 26);
     public static final Color  BRIGHT_TEXT                                            = Color.rgb(255, 246, 245);
