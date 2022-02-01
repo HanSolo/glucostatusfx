@@ -27,6 +27,7 @@
  import javafx.collections.ObservableList;
  import javafx.css.PseudoClass;
  import javafx.geometry.Insets;
+ import javafx.geometry.Rectangle2D;
  import javafx.geometry.VPos;
  import javafx.scene.Node;
  import javafx.scene.canvas.Canvas;
@@ -43,6 +44,7 @@
  import java.time.ZonedDateTime;
  import java.time.format.TextStyle;
  import java.time.temporal.WeekFields;
+ import java.util.ArrayList;
  import java.util.HashMap;
  import java.util.List;
  import java.util.Locale;
@@ -88,7 +90,7 @@
          this(List.of(), UnitDefinition.MILLIGRAM_PER_DECILITER);
      }
      public ThirtyDayView(final List<GlucoEntry> glucoEntries, final UnitDefinition unit) {
-         this._dark   = eu.hansolo.applefx.tools.Helper.isDarkMode();
+         this._dark   = true; //eu.hansolo.applefx.tools.Helper.isDarkMode();
          this.entries = new ConcurrentHashMap<>(30);
          this.unit    = unit;
          initGraphics();
