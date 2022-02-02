@@ -38,7 +38,7 @@ public class Test extends Application {
         pane.setPadding(new Insets(10));
 
         Scene scene = new Scene(pane);
-
+        
         stage.setTitle("Last 30 days");
         stage.setScene(scene);
         stage.show();

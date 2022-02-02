@@ -91,8 +91,7 @@ public interface I18nKeys {
     String NOTIFICATION_GLUCOSE_TOO_LOW                      = "notification_glucose_too_low";
     String SETTINGS_TITLE                                    = "settings_title";
     String SETTINGS_NIGHTSCOUT_URL                           = "settings_nightscouturl";
-    String SETTINGS_UNIT_MG                                  = "settings_unitmg";
-    String SETTINGS_UNIT_MMOL                                = "settings_unitmmol";
+    String SETTINGS_UNIT                                     = "settings_unit";
     String SETTINGS_SHOW_DELTA_CHART                         = "settings_show_deltachart";
     String SETTINGS_NOTIFICATION_TITLE                       = "settings_notifications_title";
     String SETTINGS_TOO_LOW_VALUE_NOTIFICATION               = "settings_too_low_value_notification";

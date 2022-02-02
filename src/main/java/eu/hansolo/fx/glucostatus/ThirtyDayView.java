@@ -21,17 +21,19 @@
  import eu.hansolo.fx.glucostatus.Records.GlucoEntry;
  import eu.hansolo.toolbox.tuples.Pair;
  import eu.hansolo.toolbox.unit.UnitDefinition;
+ import eu.hansolo.toolboxfx.geom.Rectangle;
  import javafx.beans.DefaultProperty;
  import javafx.beans.property.BooleanProperty;
  import javafx.beans.property.BooleanPropertyBase;
  import javafx.collections.ObservableList;
+ import javafx.concurrent.Task;
  import javafx.css.PseudoClass;
  import javafx.geometry.Insets;
- import javafx.geometry.Rectangle2D;
  import javafx.geometry.VPos;
  import javafx.scene.Node;
  import javafx.scene.canvas.Canvas;
  import javafx.scene.canvas.GraphicsContext;
+ import javafx.scene.input.MouseEvent;
  import javafx.scene.layout.Region;
  import javafx.scene.paint.Color;
  import javafx.scene.text.TextAlignment;
@@ -44,7 +46,6 @@
  import java.time.ZonedDateTime;
  import java.time.format.TextStyle;
  import java.time.temporal.WeekFields;
- import java.util.ArrayList;
  import java.util.HashMap;
  import java.util.List;
  import java.util.Locale;
@@ -53,6 +54,7 @@
  import java.util.Optional;
  import java.util.Random;
  import java.util.concurrent.ConcurrentHashMap;
+ import java.util.concurrent.TimeUnit;
  import java.util.stream.Collectors;
 
 
@@ -65,6 +67,7 @@
      private static final double                                  MINIMUM_HEIGHT    = 50;
      private static final double                                  MAXIMUM_WIDTH     = 4096;
      private static final double                                  MAXIMUM_HEIGHT    = 4096;
+     private static final int                                     SLEEP_DURATION    = 3000;
      private static final PseudoClass                             DARK_PSEUDO_CLASS = PseudoClass.getPseudoClass("dark");
      private              boolean                                 _dark;
      private              BooleanProperty                         dark;
@@ -83,6 +86,8 @@
      private              GraphicsContext                         ctx;
      private              UnitDefinition                          unit;
      private              Map<LocalDate, Double>                  entries;
+     private              Map<LocalDate,Rectangle>                boxes;
+     private              LocalDate                               selectedDate;
 
 
      // ******************** Constructors **************************************
@@ -90,9 +95,11 @@
          this(List.of(), UnitDefinition.MILLIGRAM_PER_DECILITER);
      }
      public ThirtyDayView(final List<GlucoEntry> glucoEntries, final UnitDefinition unit) {
-         this._dark   = true; //eu.hansolo.applefx.tools.Helper.isDarkMode();
-         this.entries = new ConcurrentHashMap<>(30);
-         this.unit    = unit;
+         this._dark        = true; //eu.hansolo.applefx.tools.Helper.isDarkMode();
+         this.entries      = new ConcurrentHashMap<>(30);
+         this.unit         = unit;
+         this.boxes        = new ConcurrentHashMap<>();
+         this.selectedDate = null;
          initGraphics();
          registerListeners();
 
@@ -124,6 +131,23 @@
      private void registerListeners() {
          widthProperty().addListener(o -> resize());
          heightProperty().addListener(o -> resize());
+         canvas.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
+             Optional<Entry<LocalDate, Rectangle>> optEntry = boxes.entrySet().stream().filter(entry -> entry.getValue().contains(e.getX(), e.getY())).findFirst();
+             selectedDate = optEntry.isPresent() ? optEntry.get().getKey() : null;
+             redraw();
+
+             Task<Void> sleeper = new Task<>() {
+                 @Override protected Void call() {
+                     try { TimeUnit.MILLISECONDS.sleep(SLEEP_DURATION); } catch (InterruptedException e) { }
+                     return null;
+                 }
+             };
+             sleeper.setOnSucceeded(evt -> {
+                 selectedDate = null;
+                 redraw();
+             });
+             new Thread(sleeper).start();
+         });
      }
 
 
@@ -221,6 +245,8 @@
      }
 
      private void redraw() {
+         boxes.clear();
+
          LocalDate currentDate     = LocalDate.now();
          LocalDate startDate       = currentDate.minusDays(30);
          int       startWeek       = startDate.get(WeekFields.ISO.weekOfYear());
@@ -250,14 +276,33 @@
          ctx.setFont(Fonts.sfProRoundedRegular(size * 0.065));
          for (int i = 0 ; i < 30 ; i++) {
              LocalDate date = currentDate.minusDays(i);
-             double posX = boxWidth + indexX * boxWidth;
-             double posY = boxHeight + indexY * boxHeight;
+             double  posX       = boxWidth + indexX * boxWidth;
+             double  posY       = boxHeight + indexY * boxHeight;
+             boolean showValue  = null != selectedDate && date.isEqual(selectedDate) && entries.containsKey(selectedDate);
+             Color   valueColor = Helper.getColorForValue2(unit, UnitDefinition.MILLIGRAM_PER_DECILITER == unit ? entries.get(date) : Helper.mgPerDeciliterToMmolPerLiter(entries.get(date)));
              if (entries.containsKey(date)) {
-                 ctx.setFill(Helper.getColorForValue2(unit, entries.get(date)));
-                 ctx.fillRoundRect(posX + boxOffset, posY + boxOffset, boxWidth - doubleBoxOffset, boxHeight - doubleBoxOffset, boxRadius, boxRadius);
+                 if (showValue) {
+                     ctx.setStroke(foregroundColor);
+                     ctx.strokeRoundRect(posX + boxOffset, posY + boxOffset, boxWidth - doubleBoxOffset, boxHeight - doubleBoxOffset, boxRadius, boxRadius);
+                 } else {
+                     ctx.setFill(valueColor);
+                     ctx.fillRoundRect(posX + boxOffset, posY + boxOffset, boxWidth - doubleBoxOffset, boxHeight - doubleBoxOffset, boxRadius, boxRadius);
+                 }
              }
-             ctx.setFill(foregroundColor);
-             ctx.fillText(Integer.toString(date.getDayOfMonth()), posX + boxCenterX, posY + boxCenterY);
+             boxes.put(date, new Rectangle(posX + boxOffset, posY + boxOffset, boxWidth - doubleBoxOffset, boxHeight - doubleBoxOffset));
+
+             if (showValue) {
+                 ctx.setFill(valueColor);
+                 if (UnitDefinition.MILLIGRAM_PER_DECILITER == unit) {
+                     ctx.fillText(String.format(Locale.US, "%.0f", this.entries.get(selectedDate)), posX + boxCenterX, posY + boxCenterY, boxWidth);
+                 } else {
+                     ctx.fillText(String.format(Locale.US, "%.1f", Helper.mgPerDeciliterToMmolPerLiter(this.entries.get(selectedDate))), posX + boxCenterX, posY + boxCenterY, boxWidth);
+                 }
+             } else {
+                 ctx.setFill(foregroundColor);
+                 ctx.fillText(Integer.toString(date.getDayOfMonth()), posX + boxCenterX, posY + boxCenterY);
+             }
+
              indexX = indexX - 1;
              if (indexX == -1) {
                  indexX = 6;

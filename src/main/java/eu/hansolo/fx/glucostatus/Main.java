@@ -135,12 +135,13 @@ import static eu.hansolo.toolbox.unit.UnitDefinition.MILLIMOL_PER_LITER;
 
 
 public class Main extends Application {
-    private static final Insets                     GRAPH_INSETS  = new Insets(20, 10, 20, 10);
-    private final        Image                      icon          = new Image(Main.class.getResourceAsStream("icon48x48.png"));
-    private final        Image                      stageIcon     = new Image(Main.class.getResourceAsStream("icon128x128.png"));
-    private              ZonedDateTime              lastUpdate    = ZonedDateTime.now().minusMinutes(6);
-    private final        Translator                 translator    = new Translator(I18nKeys.RESOURCE_NAME);
-    private              String                     nightscoutUrl = "";
+    private static final Insets                     GRAPH_INSETS   = new Insets(20, 10, 20, 10);
+    private static       boolean                    switchingUnits = false;
+    private final        Image                      icon           = new Image(Main.class.getResourceAsStream("icon48x48.png"));
+    private final        Image                      stageIcon      = new Image(Main.class.getResourceAsStream("icon128x128.png"));
+    private              ZonedDateTime              lastUpdate     = ZonedDateTime.now().minusMinutes(6);
+    private final        Translator                 translator     = new Translator(I18nKeys.RESOURCE_NAME);
+    private              String                     nightscoutUrl  = "";
     private              boolean                    trayIconSupported;
     private              OperatingSystem            operatingSystem;
     private              Architecture               architecture;
@@ -296,7 +297,7 @@ public class Main extends Application {
         buttonHbox.setAlignment(Pos.CENTER);
         buttonHbox.setPadding(new Insets(10, 10, 15, 10));
 
-        currentColor = null == currentEntry ? Constants.GRAY : Helper.getColorForValue(currentUnit, currentEntry.sgv());
+        currentColor = null == currentEntry ? Constants.GRAY : Helper.getColorForValue(currentUnit, UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? currentEntry.sgv() : Helper.mgPerDeciliterToMmolPerLiter(currentEntry.sgv()));
 
         Label titleLabel = createLabel(translator.get(I18nKeys.APP_NAME), 20, false, false, Pos.CENTER);
         AnchorPane.setTopAnchor(titleLabel, 5d);
@@ -562,7 +563,7 @@ public class Main extends Application {
     }
 
 
-    // ******************** Private methods ***********************************
+    // ******************** Methods *******************************************
     private void registerListeners() {
         pane.widthProperty().addListener(o -> canvas.setWidth(pane.getWidth()));
         pane.layoutBoundsProperty().addListener(o -> canvas.setHeight(pane.getHeight() - mainPane.getHeight() - buttonHbox.getHeight()));
@@ -893,7 +894,7 @@ public class Main extends Application {
         long limit = Instant.now().getEpochSecond() - currentInterval.getSeconds();
         entries      = allEntries.stream().filter(entry -> entry.datelong() > limit).collect(Collectors.toList());
         currentEntry = entries.get(0);
-        currentColor = null == currentEntry ? Constants.GRAY : Helper.getColorForValue(currentUnit, currentEntry.sgv());
+        currentColor = null == currentEntry ? Constants.GRAY : Helper.getColorForValue(currentUnit, UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? currentEntry.sgv() : Helper.mgPerDeciliterToMmolPerLiter(currentEntry.sgv()));
 
         deltas.clear();
         if (allEntries.size() > 13) {
@@ -909,6 +910,10 @@ public class Main extends Application {
             }
             deltaMin = deltas.stream().min(Comparator.naturalOrder()).get();
             deltaMax = deltas.stream().max(Comparator.naturalOrder()).get();
+            if (MILLIMOL_PER_LITER == currentUnit) {
+                deltaMin = Helper.mgPerDeciliterToMmolPerLiter(deltaMin);
+                deltaMax = Helper.mgPerDeciliterToMmolPerLiter(deltaMax);
+            }
         }
         if (MILLIGRAM_PER_DECILITER == currentUnit) {
             slowlyRising  = deltas.stream().limit(4).filter(delta -> delta > 0).filter(delta -> delta < 3).count() == 4;
@@ -1085,7 +1090,7 @@ public class Main extends Application {
             double zeroY    = GRAPH_INSETS.getTop() + 50;
             if (deltas.size() > 0) {
                 for (int i = 0; i < 12; i++) {
-                    double delta = MILLIGRAM_PER_DECILITER == currentUnit ? deltas.get(i) : Helper.mmolPerLiterToMgPerDeciliter(deltas.get(i));
+                    double delta = MILLIGRAM_PER_DECILITER == currentUnit ? deltas.get(i) : Helper.mgPerDeciliterToMmolPerLiter(deltas.get(i));
                     ctx.strokeRect(offsetX + i * (boxWidth + spacer), delta > 0 ? zeroY - Math.abs(delta * factorY) : zeroY, boxWidth, Math.abs(delta) * factorY);
                 }
             }
@@ -1288,14 +1293,16 @@ public class Main extends Application {
 
 
         unitSwitch = MacosSwitchBuilder.create().dark(true).selectedColor(accentColor).build();
-        Label unitLabel = new Label((UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? translator.get(I18nKeys.SETTINGS_UNIT_MG) : translator.get(I18nKeys.SETTINGS_UNIT_MMOL)) + currentUnit.UNIT.getUnitShort());
+        Label unitLabel = new Label(translator.get(I18nKeys.SETTINGS_UNIT) + currentUnit.UNIT.getUnitShort());
         unitLabel.setFont(Fonts.sfProTextRegular(14));
         unitLabel.setTextFill(Constants.BRIGHT_TEXT);
         HBox.setHgrow(unitLabel, Priority.ALWAYS);
         HBox unitBox = new HBox(10, unitSwitch, unitLabel);
         unitBox.setAlignment(Pos.CENTER_LEFT);
         unitSwitch.selectedProperty().addListener((o, ov, nv) -> {
+            switchingUnits = true;
             currentUnit = nv ? MILLIGRAM_PER_DECILITER : MILLIMOL_PER_LITER;
+            unitLabel.setText(translator.get(I18nKeys.SETTINGS_UNIT) + currentUnit.UNIT.getUnitShort());
             if (MILLIGRAM_PER_DECILITER == currentUnit) {
                 minAcceptableSlider.setMin(Constants.SETTINGS_MIN_ACCEPTABLE_MIN);
                 minAcceptableSlider.setMax(Constants.SETTINGS_MIN_ACCEPTABLE_MAX);
@@ -1345,6 +1352,7 @@ public class Main extends Application {
                 maxAcceptableSlider.setBlockIncrement(Helper.mgPerDeciliterToMmolPerLiter(5));
                 maxAcceptableSlider.setValue(Helper.mgPerDeciliterToMmolPerLiter(PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MAX_ACCEPTABLE)));
             }
+            switchingUnits = false;
         });
 
 
@@ -1509,6 +1517,7 @@ public class Main extends Application {
         maxNormalSlider.setValue(UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? Constants.DEFAULT_MAX_NORMAL : Helper.mgPerDeciliterToMmolPerLiter(Constants.DEFAULT_MAX_NORMAL));
         maxNormalSlider.valueProperty().addListener((o, ov, nv) -> {
             maxNormalLabel.setText(new StringBuilder().append("Max normal: ").append(String.format(Locale.US, format, maxNormalSlider.getValue())).append(" ").append(currentUnit.UNIT.getUnitShort()).toString());
+            if (switchingUnits) { return; }
             if (nv.doubleValue() > maxAcceptableSlider.getValue()) { maxAcceptableSlider.setValue(nv.doubleValue()); }
         });
 
@@ -1526,6 +1535,7 @@ public class Main extends Application {
         maxAcceptableSlider.setValue(UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? Constants.DEFAULT_MAX_ACCEPTABLE : Helper.mgPerDeciliterToMmolPerLiter(Constants.DEFAULT_MAX_ACCEPTABLE));
         maxAcceptableSlider.valueProperty().addListener((o, ov, nv) -> {
             maxAcceptableLabel.setText(new StringBuilder().append(translator.get(I18nKeys.SETTINGS_MAX_ACCEPTABLE)).append(String.format(Locale.US, format, maxAcceptableSlider.getValue())).append(" ").append(currentUnit.UNIT.getUnitShort()).toString());
+            if (switchingUnits) { return; }
             if (nv.doubleValue() < maxNormalSlider.getValue()) { maxNormalSlider.setValue(nv.doubleValue()); }
         });
 
