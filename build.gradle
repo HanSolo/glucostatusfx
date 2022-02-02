@@ -4,21 +4,28 @@ buildscript {
         maven {
             url "https://plugins.gradle.org/m2/"
         }
+        jcenter()
+        maven {
+            url "https://sandec.jfrog.io/artifactory/repo"
+        }
     }
     dependencies {
         classpath 'com.google.gradle:osdetector-gradle-plugin:1.7.0'
-        classpath 'org.javamodularity:moduleplugin:1.8.8'
+        classpath 'org.javamodularity:moduleplugin:1.8.10'
         classpath 'org.beryx:badass-jlink-plugin:2.24.4'
+        classpath 'com.sandec.jpro:jpro-plugin-gradle:2021.2.2'
     }
 }
 
 plugins {
-    id 'java-library'
+    id 'java'
     id 'application'
     id 'com.google.osdetector' version '1.7.0'
     id 'org.javamodularity.moduleplugin' version '1.8.8'
     id 'org.beryx.jlink' version '2.24.4'
 }
+
+apply plugin: 'com.sandec.jpro'
 
 ext.platform = osdetector.os == 'osx' ? osdetector.arch == 'aarch_64' ? 'mac-aarch64' : 'mac' : osdetector.os == 'windows' ? 'win' : osdetector.os == 'linux' ? osdetector.arch == 'aarch_64' ? 'linux-aarch64' : 'linux' : osdetector.os
 
@@ -48,6 +55,7 @@ dependencies {
     implementation 'eu.hansolo:applefx:17.0.21'
     implementation 'com.google.code.gson:gson:2.8.8'
     implementation 'com.dustinredmond.fxtrayicon:FXTrayIcon:3.1.2'
+    implementation "com.sandec.jpro:jpro-webapi:2021.2.2"
 }
 
 ext.moduleName = 'eu.hansolo.fx.glucostatus'
@@ -119,6 +127,8 @@ processResources {
     }
 }
 
+
+
 run {
     inputs.property("moduleName", moduleName)
     doFirst {
@@ -128,4 +138,16 @@ run {
         ]
         classpath = files()
     }
+}
+
+
+jpro {
+    // for debugging
+    // JVMArgs << '-agentlib:jdwp=transport=dt_socket,server=n,address=5006,suspend=y'
+
+    JVMArgs << '-Xmx1000m'
+
+    //jpro server port
+    port = 8080
+
 }

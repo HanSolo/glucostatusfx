@@ -18,7 +18,6 @@
 
 package eu.hansolo.fx.glucostatus;
 
-import com.dustinredmond.fxtrayicon.FXTrayIcon;
 import eu.hansolo.applefx.MacosButton;
 import eu.hansolo.applefx.MacosScrollPane;
 import eu.hansolo.applefx.MacosSeparator;
@@ -36,8 +35,8 @@ import eu.hansolo.fx.glucostatus.i18n.Translator;
 import eu.hansolo.fx.glucostatus.notification.Notification;
 import eu.hansolo.fx.glucostatus.notification.NotificationBuilder;
 import eu.hansolo.fx.glucostatus.notification.NotifierBuilder;
-import eu.hansolo.jdktools.Architecture;
-import eu.hansolo.jdktools.OperatingSystem;
+//import eu.hansolo.jdktools.Architecture;
+//import eu.hansolo.jdktools.OperatingSystem;
 import eu.hansolo.toolbox.tuples.Pair;
 import eu.hansolo.toolbox.unit.UnitDefinition;
 import eu.hansolo.toolboxfx.HelperFX;
@@ -63,17 +62,11 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
-import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.ContentDisplay;
-import javafx.scene.control.CustomMenuItem;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuBar;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
@@ -112,8 +105,6 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
 
-import javax.swing.*;
-import java.awt.image.BufferedImage;
 import java.net.http.HttpResponse;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -128,8 +119,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static eu.hansolo.toolbox.Helper.getArchitecture;
-import static eu.hansolo.toolbox.Helper.getOperatingSystem;
+//import static eu.hansolo.toolbox.Helper.getArchitecture;
+//import static eu.hansolo.toolbox.Helper.getOperatingSystem;
 import static eu.hansolo.toolbox.unit.UnitDefinition.MILLIGRAM_PER_DECILITER;
 import static eu.hansolo.toolbox.unit.UnitDefinition.MILLIMOL_PER_LITER;
 
@@ -142,9 +133,8 @@ public class Main extends Application {
     private              ZonedDateTime              lastUpdate     = ZonedDateTime.now().minusMinutes(6);
     private final        Translator                 translator     = new Translator(I18nKeys.RESOURCE_NAME);
     private              String                     nightscoutUrl  = "";
-    private              boolean                    trayIconSupported;
-    private              OperatingSystem            operatingSystem;
-    private              Architecture               architecture;
+    //private              OperatingSystem            operatingSystem;
+    //private              Architecture               architecture;
     private              boolean                    darkMode;
     private              Color                      accentColor;
     private              ZonedDateTime              lastNotification;
@@ -231,16 +221,15 @@ public class Main extends Application {
     private              boolean                    slowlyRising;
     private              boolean                    slowlyFalling;
     private              boolean                    hideMenu;
-    private              FXTrayIcon                 trayIcon;
     private              EventHandler<MouseEvent>   eventConsumer;
 
 
     // ******************** Initialization ************************************
     @Override public void init() {
         nightscoutUrl     = PropertyManager.INSTANCE.getString(Constants.PROPERTIES_NIGHTSCOUT_URL);
-        operatingSystem   = getOperatingSystem();
-        architecture      = getArchitecture();
-        darkMode          = eu.hansolo.applefx.tools.Helper.isDarkMode();
+        //operatingSystem   = getOperatingSystem();
+        //architecture      = getArchitecture();
+        //darkMode          = eu.hansolo.applefx.tools.Helper.isDarkMode();
         accentColor       =  eu.hansolo.applefx.tools.Helper.getMacosAccentColorAsColor();
         currentUnit       = MILLIGRAM_PER_DECILITER;
         outdated          = false;
@@ -406,114 +395,9 @@ public class Main extends Application {
         this.stage = stage;
         notifier = NotifierBuilder.create()
                                   .owner(stage)
-                                  .popupLocation(OperatingSystem.MACOS == operatingSystem ? Pos.TOP_RIGHT : Pos.BOTTOM_RIGHT)
+                                  .popupLocation(Pos.TOP_RIGHT)
                                   .popupLifeTime(Duration.millis(5000))
                                   .build();
-        this.trayIconSupported = FXTrayIcon.isSupported();
-
-        if (trayIconSupported) {
-            switch (operatingSystem) {
-                case WINDOWS -> trayIcon = new FXTrayIcon(stage, getClass().getResource("icon48x48.png"));
-                case MACOS   -> trayIcon = new FXTrayIcon(stage, Helper.createTextTrayIcon("--", Constants.BRIGHT_TEXT));
-                case LINUX   -> trayIcon = new FXTrayIcon(stage, getClass().getResource("icon48x48.png"));
-            }
-
-            trayIcon.setTrayIconTooltip(translator.get(I18nKeys.APP_NAME));
-            trayIcon.addExitItem(false);
-            trayIcon.setApplicationTitle(translator.get(I18nKeys.APP_NAME));
-
-            MenuItem aboutItem = new MenuItem(translator.get(I18nKeys.ABOUT_MENU_ITEM));
-            aboutItem.setOnAction(e -> { if (!aboutDialog.isShowing()) { aboutDialog.showAndWait(); }});
-            trayIcon.addMenuItem(aboutItem);
-
-            MenuItem chartItem = new MenuItem(translator.get(I18nKeys.CHART_MENU_ITEM));
-            chartItem.setOnAction(e -> {
-                prefPane.setVisible(false);
-                prefPane.setManaged(false);
-                stage.show();
-            });
-            trayIcon.addMenuItem(chartItem);
-
-            MenuItem preferencesItem = new MenuItem(translator.get(I18nKeys.PREFERENCES_MENU_ITEM));
-            preferencesItem.setOnAction(e -> {
-                applySettingsToPreferences();
-                prefPane.setPrefSize(stage.getWidth(), stage.getHeight());
-                prefPane.setManaged(true);
-                prefPane.setVisible(true);
-                stage.show();
-            });
-            trayIcon.addMenuItem(preferencesItem);
-
-            trayIcon.addSeparator();
-
-            MenuItem quitItem = new MenuItem(translator.get(I18nKeys.QUIT_MENU_ITEM));
-            quitItem.setOnAction(e -> stop());
-            trayIcon.addMenuItem(quitItem);
-
-            trayIcon.show();
-        } else {
-            MenuBar menuBar = new MenuBar();
-            menuBar.setUseSystemMenuBar(true);
-            menuBar.setTranslateX(16);
-
-            Menu menu = new Menu(translator.get(I18nKeys.APP_NAME));
-            menu.setText(translator.get(I18nKeys.MENU));
-            menu.setOnShowing(e -> hideMenu = false);
-            menu.setOnHidden(e -> {
-                if (!hideMenu) {
-                    menu.show();
-                }
-            });
-
-            CustomMenuItem aboutItem = new CustomMenuItem();
-            Label          mainLabel = new Label(translator.get(I18nKeys.ABOUT_MENU_ITEM));
-            mainLabel.addEventHandler(MouseEvent.MOUSE_ENTERED, e -> hideMenu = false);
-            mainLabel.addEventHandler(MouseEvent.MOUSE_EXITED, e -> hideMenu = true);
-            aboutItem.setContent(mainLabel);
-            aboutItem.setHideOnClick(false);
-            aboutItem.setOnAction(e -> { if (!aboutDialog.isShowing()) { aboutDialog.showAndWait(); } });
-            menu.getItems().add(aboutItem);
-
-            CustomMenuItem chartItem = new CustomMenuItem();
-            Label chartLabel = new Label(translator.get(I18nKeys.CHART_MENU_ITEM));
-            chartLabel.addEventHandler(MouseEvent.MOUSE_ENTERED, e -> hideMenu = false);
-            chartLabel.addEventHandler(MouseEvent.MOUSE_EXITED, e -> hideMenu = true);
-            chartItem.setContent(chartLabel);
-            chartItem.setHideOnClick(false);
-            chartItem.setOnAction(e -> {
-                prefPane.setVisible(false);
-                prefPane.setManaged(false);
-                stage.show();
-            });
-            menu.getItems().add(chartItem);
-
-            CheckMenuItem preferencesItem = new CheckMenuItem();
-            preferencesItem.setVisible(true);
-            preferencesItem.setText(translator.get(I18nKeys.PREFERENCES_MENU_ITEM));
-            preferencesItem.selectedProperty().addListener(o -> {
-                applySettingsToPreferences();
-                prefPane.setPrefSize(stage.getWidth(), stage.getHeight());
-                prefPane.setManaged(true);
-                prefPane.setVisible(true);
-                stage.show();
-            });
-            menu.getItems().add(preferencesItem);
-
-            menu.getItems().add(new SeparatorMenuItem());
-
-            CustomMenuItem quitItem = new CustomMenuItem();
-            Label quitLabel = new Label(translator.get(I18nKeys.QUIT_MENU_ITEM));
-            quitLabel.addEventHandler(MouseEvent.MOUSE_ENTERED, e -> hideMenu = false);
-            quitLabel.addEventHandler(MouseEvent.MOUSE_EXITED, e -> hideMenu = true);
-            quitItem.setContent(quitLabel);
-            quitItem.setHideOnClick(false);
-            quitItem.setOnAction(e -> stop());
-            menu.getItems().add(quitItem);
-
-            menuBar.getMenus().add(menu);
-
-            mainPane.getChildren().add(menuBar);
-        }
 
         Scene scene = new Scene(pane);
         scene.getStylesheets().add(Main.class.getResource("glucostatus.css").toExternalForm());
@@ -937,13 +821,6 @@ public class Main extends Application {
         }
 
         // Set value specific tray icon
-        if (null != trayIcon && OperatingSystem.MACOS == operatingSystem) {
-            SwingUtilities.invokeLater(() -> Platform.runLater(() -> {
-                String text = currentValueText + (outdated ? "\u26A0" : "");
-                trayIcon.setGraphic(Helper.createTextTrayIcon(text, darkMode ? Color.WHITE : Color.BLACK));
-                trayIcon.setTrayIconTooltip(text);
-            }));
-        }
         Platform.runLater(() -> {
             unit.setText(currentUnit.UNIT.getUnitShort() + " (");
             if (deltas.isEmpty()) {
@@ -1230,19 +1107,7 @@ public class Main extends Application {
         aboutBox.setPrefSize(260, 232);
         aboutBox.setBackground(new Background(new BackgroundFill(MacosSystemColor.BACKGROUND.dark(), new CornerRadii(10), Insets.EMPTY)));
 
-
-        if (OperatingSystem.LINUX == operatingSystem && (Architecture.AARCH64 == architecture || Architecture.ARM64 == architecture)) {
-            aboutDialog.getDialogPane().setContent(new StackPane(aboutBox));
-        } else {
-            StackPane glassPane = new StackPane(aboutBox);
-            glassPane.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, CornerRadii.EMPTY, Insets.EMPTY)));
-            glassPane.setMinSize(260, 232);
-            glassPane.setMaxSize(260, 232);
-            glassPane.setPrefSize(260, 232);
-            glassPane.setEffect(new DropShadow(BlurType.TWO_PASS_BOX, Color.rgb(0, 0, 0, 0.35), 10.0, 0.0, 0.0, 5));
-            aboutDialog.getDialogPane().setContent(glassPane);
-        }
-
+        aboutDialog.getDialogPane().setContent(new StackPane(aboutBox));
         aboutDialog.getDialogPane().setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, new CornerRadii(10), Insets.EMPTY)));
 
         aboutDialog.setOnShowing(e -> aboutDialogStage.centerOnScreen());
