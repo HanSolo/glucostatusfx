@@ -997,11 +997,11 @@ public class Main extends Application {
         GlucoEntry    maxEntry        = entries.get(entries.size() - 1);
         double        deltaTime       = (maxEntry.datelong() - minEntry.datelong());
         double        stepX           = availableWidth / deltaTime;
-        double        stepY           =  availableHeight / (Constants.DEFAULT_GLUCO_RANGE);
+        double        stepY           = availableHeight / (Constants.DEFAULT_GLUCO_RANGE);
         ZonedDateTime minDate         = Helper.getZonedDateTimeFromEpochSeconds(minEntry.datelong());
         int           hour            = minDate.getHour();
-        ZonedDateTime adjMinDate      = hour == 23 ? minDate.plusSeconds(TimeInterval.LAST_24_HOURS.getSeconds()) : minDate;
-        ZonedDateTime firstFullHour   = hour == 23 ? ZonedDateTime.of(adjMinDate.plusDays(1).toLocalDate(), LocalTime.MIDNIGHT, ZoneId.systemDefault()) : adjMinDate;
+        ZonedDateTime adjMinDate      = (hour == 23 && currentInterval != TimeInterval.LAST_12_HOURS) ? minDate.plusSeconds(TimeInterval.LAST_24_HOURS.getSeconds()) : minDate;
+        ZonedDateTime firstFullHour   = (hour == 23 && currentInterval != TimeInterval.LAST_12_HOURS) ? ZonedDateTime.of(adjMinDate.plusDays(1).toLocalDate(), LocalTime.MIDNIGHT, ZoneId.systemDefault()) : adjMinDate;
         long          startX          = firstFullHour.toEpochSecond() - minEntry.datelong();
         int           lh              = -1;
         double        nightLeftBounds = -1;
