@@ -7,7 +7,7 @@ buildscript {
     }
     dependencies {
         classpath 'com.google.gradle:osdetector-gradle-plugin:1.7.0'
-        classpath 'org.javamodularity:moduleplugin:1.8.8'
+        classpath 'org.javamodularity:moduleplugin:1.8.10'
         classpath 'org.beryx:badass-jlink-plugin:2.24.4'
     }
 }
@@ -45,7 +45,7 @@ dependencies {
     implementation 'eu.hansolo:jdktools:17.0.3'
     implementation 'eu.hansolo:toolbox:17.0.12'
     implementation 'eu.hansolo:toolboxfx:17.0.22'
-    implementation 'eu.hansolo:applefx:17.0.21'
+    implementation 'eu.hansolo:applefx:17.0.26'
     implementation 'com.google.code.gson:gson:2.8.8'
     implementation 'com.dustinredmond.fxtrayicon:FXTrayIcon:3.1.2'
 }
