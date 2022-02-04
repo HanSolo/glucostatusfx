@@ -71,30 +71,28 @@
 }
 
 .button {
-    -fx-pref-height      : 15;
-    -fx-background-color : #5e5e5f;
-    -fx-background-insets: 0 0 -1 0, 0, 1, 2;
-    -fx-background-radius: 5px;
-    -fx-padding          : 2 5 2 5;
-    -fx-text-fill        : #dddddd;
+    -fx-pref-height      : 20;
+    -fx-background-insets: 0, 0.5 0 0 0;
+    -fx-background-color : linear-gradient(to bottom, rgb(136, 132, 132) 0%, rgb(26, 20, 21) 100%), rgb(89, 85, 85);
+    -fx-background-radius: 5, 4;
+    -fx-padding          : 2 10 2 10;
+    -fx-text-fill        : white;
     -fx-alignment        : CENTER;
     -fx-content-display  : LEFT;
-    -fx-font-family      : 'SF Pro';
-    -fx-font-size        : 12px;
+    -fx-font-family      : 'SF Pro Regular';
+    -fx-font-size        : 13px;
 }
 .button:armed {
-    -fx-pref-height      : 16;
-    -fx-background-color : rgb(10, 132, 255);
-    -fx-background-insets: 0 0 -1 0, 0, 1, 2;
-    -fx-background-radius: 5px;
-    -fx-padding          : 2 5 2 5;
-    -fx-text-fill        : #dddddd;
     -fx-alignment        : CENTER;
     -fx-content-display  : LEFT;
+    -fx-pref-height      : 20;
+    -fx-background-color : derive(rgb(89, 85, 85), +10%), derive(rgb(89, 85, 85), +20%);
+    -fx-background-insets: 0, 0.5 0 0 0;
+    -fx-text-fill        : white;
 }
 .button:disabled {
-    -fx-background-color: #5e5c58;
-    -fx-text-fill       : #a6a6a7;
+    -fx-background-color: rgb(89, 85, 85);
+    -fx-text-fill       : rgb(180, 180, 180);
 }
 
 
