@@ -45,7 +45,7 @@ dependencies {
     implementation 'eu.hansolo:jdktools:17.0.3'
     implementation 'eu.hansolo:toolbox:17.0.12'
     implementation 'eu.hansolo:toolboxfx:17.0.22'
-    implementation 'eu.hansolo:applefx:17.0.28'
+    implementation 'eu.hansolo:applefx:17.0.34'
     implementation 'com.google.code.gson:gson:2.8.8'
     implementation 'com.dustinredmond.fxtrayicon:FXTrayIcon:3.1.2'
 }
@@ -95,12 +95,6 @@ task Main(type: JavaExec) {
     main = "eu.hansolo.fx.glucostatus.Launcher"
     classpath = sourceSets.main.runtimeClasspath
 }
-
-task Test(type: JavaExec) {
-    main = "eu.hansolo.fx.glucostatus.TestLauncher"
-    classpath = sourceSets.main.runtimeClasspath
-}
-
 
 
 

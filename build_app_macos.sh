@@ -19,8 +19,8 @@
 #
 
 JAVA_VERSION=17
-MAIN_JAR="GlucoStatusFX-17.0.2.jar"
-APP_VERSION=17.0.2
+MAIN_JAR="GlucoStatusFX-17.0.3.jar"
+APP_VERSION=17.0.3
 
 echo "java home: $JAVA_HOME"
 echo "project version: $PROJECT_VERSION"
@@ -106,7 +106,7 @@ do
   --icon src/main/resources/eu/hansolo/fx/glucostatus/icon.icns \
   --app-version ${APP_VERSION} \
   --vendor "Gerrit Grunwald" \
-  --copyright "Copyright © 2021 Gerrit Grunwald" \
+  --copyright "Copyright © 2022 Gerrit Grunwald" \
   --description "Glucose status monitor" \
   --mac-package-name "GlucoStatusFX"
 

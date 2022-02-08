@@ -25,6 +25,7 @@
 
 }
 
+/*
 .button {
     -fx-background-color : rgb(105, 103, 103);
     -fx-background-insets: 0 0 -1 0, 0, 1, 2;
@@ -62,6 +63,7 @@
     -fx-fill-height      : true;
     -fx-spacing          : 0;
 }
+*/
 
 .dialog-button-bar {
     -fx-background-color : transparent;
@@ -70,6 +72,7 @@
     -fx-padding          : 0;
 }
 
+/*
 .button {
     -fx-pref-height      : 20;
     -fx-background-insets: 0, 0.5 0 0 0;
@@ -94,7 +97,7 @@
     -fx-background-color: rgb(89, 85, 85);
     -fx-text-fill       : rgb(180, 180, 180);
 }
-
+*/
 
 .list-view > .virtual-flow > .scroll-bar:horizontal {
     visibility           : hidden;

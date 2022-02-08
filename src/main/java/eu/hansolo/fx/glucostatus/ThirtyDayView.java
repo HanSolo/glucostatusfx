@@ -175,9 +175,7 @@
      public final BooleanProperty darkProperty() {
          if (null == dark) {
              dark = new BooleanPropertyBase() {
-                 @Override protected void invalidated() {
-                     pseudoClassStateChanged(DARK_PSEUDO_CLASS, get());
-                 }
+                 @Override protected void invalidated() { pseudoClassStateChanged(DARK_PSEUDO_CLASS, get()); }
                  @Override public Object getBean() { return ThirtyDayView.this; }
                  @Override public String getName() { return "dark"; }
              };
@@ -250,7 +248,7 @@
          LocalDate currentDate     = LocalDate.now();
          LocalDate startDate       = currentDate.minusDays(30);
          int       startWeek       = startDate.get(WeekFields.ISO.weekOfYear());
-         Color     foregroundColor = isDark() ? Color.WHITE : Color.BLACK;
+         Color     foregroundColor = isDark() ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT;
 
          ctx.clearRect(0, 0, width, height);
          ctx.setStroke(foregroundColor);
@@ -292,7 +290,7 @@
              boxes.put(date, new Rectangle(posX + boxOffset, posY + boxOffset, boxWidth - doubleBoxOffset, boxHeight - doubleBoxOffset));
 
              if (showValue) {
-                 ctx.setFill(valueColor);
+                 ctx.setFill(isDark() ? valueColor : valueColor.darker());
                  if (UnitDefinition.MILLIGRAM_PER_DECILITER == unit) {
                      ctx.fillText(String.format(Locale.US, "%.0f", this.entries.get(selectedDate)), posX + boxCenterX, posY + boxCenterY, boxWidth);
                  } else {
