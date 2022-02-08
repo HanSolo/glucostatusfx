@@ -67,7 +67,6 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.ContentDisplay;
@@ -1280,19 +1279,16 @@ public class Main extends Application {
         descriptionLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
 
         MacosButton closeButton = new MacosButton(translator.get(I18nKeys.ABOUT_ALERT_CLOSE_BUTTON));
-        closeButton.setPrefWidth(Button.USE_COMPUTED_SIZE);
-        closeButton.setMaxWidth(Double.MAX_VALUE);
+        closeButton.setDark(darkMode);
         closeButton.setOnAction(e -> {
             aboutDialog.setResult(Boolean.TRUE);
             aboutDialog.close();
         });
-        closeButton.setMinHeight(28);
-        closeButton.setMaxHeight(28);
-        closeButton.setPrefHeight(28);
         VBox.setMargin(closeButton, new Insets(20, 0, 0, 0));
 
         VBox aboutTextBox = new VBox(10, nameLabel, descriptionLabel, closeButton);
         aboutTextBox.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, CornerRadii.EMPTY, Insets.EMPTY)));
+        aboutTextBox.setAlignment(Pos.CENTER);
 
         VBox aboutBox = new VBox(20, aboutImage, aboutTextBox);
         aboutBox.setAlignment(Pos.CENTER);
