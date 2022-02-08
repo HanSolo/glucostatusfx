@@ -231,7 +231,7 @@
              canvas.relocate((getWidth() - width) * 0.5, (getHeight() - height) * 0.5);
 
              boxWidth        = width / 8;
-             boxHeight       = height / 6;
+             boxHeight       = height / 7;
              boxCenterX      = boxWidth * 0.5;
              boxCenterY      = boxHeight * 0.5;
              boxRadius       = size * 0.05;
@@ -256,7 +256,7 @@
          ctx.setFont(Fonts.sfProRoundedBold(size * 0.065));
          ctx.setTextAlign(TextAlignment.CENTER);
          ctx.setTextBaseline(VPos.CENTER);
-         for (int y = 0 ; y < 7 ; y++) {
+         for (int y = 0 ; y < 8 ; y++) {
              for (int x = 0 ; x < 9 ; x++) {
                  double posX = x * boxWidth;
                  double posY = y * boxHeight;
