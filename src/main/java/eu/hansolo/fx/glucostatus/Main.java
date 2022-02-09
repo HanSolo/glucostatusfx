@@ -568,6 +568,8 @@ public class Main extends Application {
                 Helper.getEntriesFromLast30Days(nightscoutUrl + Constants.URL_API).thenAccept(l -> allEntries.addAll(l));
             }
         });
+        stage.setWidth(800);
+        stage.setHeight(750);
         stage.setMinWidth(650);
         stage.setMinHeight(500);
 
@@ -734,7 +736,7 @@ public class Main extends Application {
         boolean soonTooHigh = last3Entries.stream().filter(entry -> Trend.DOUBLE_UP == entry.trend() || Trend.SINGLE_UP == entry.trend()).count() == 3;
 
         if (soonTooLow) {
-            if (currentEntry.sgv() <= Constants.DEFAULT_SOON_TOO_LOW) {
+            if (currentEntry.sgv() < PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MIN_ACCEPTABLE) && currentEntry.sgv() > Constants.DEFAULT_MIN_CRITICAL) {
                 String title = translator.get(I18nKeys.PREDICTION_TITLE_TOO_LOW);
                 String msg   = translator.get(I18nKeys.PREDICTION_TOO_LOW);
                 Notification notification = NotificationBuilder.create().title(title).message(msg).image(icon).build();
@@ -743,7 +745,7 @@ public class Main extends Application {
                 return true;
             }
         } else if (soonTooHigh) {
-            if (currentEntry.sgv() > Constants.DEFAULT_SOON_TOO_HIGH) {
+            if (currentEntry.sgv() < Constants.DEFAULT_MAX_CRITICAL && currentEntry.sgv() > Constants.DEFAULT_SOON_TOO_HIGH) {
                 String title = translator.get(I18nKeys.PREDICTION_TITLE_TOO_HIGH);
                 String msg   = translator.get(I18nKeys.PREDICTION_TOO_HIGH);
                 Notification notification = NotificationBuilder.create().title(title).message(msg).image(icon).build();
@@ -780,6 +782,7 @@ public class Main extends Application {
 
         boolean playSound = false;
         String  msg       = "";
+
 
         if (value > maxCritical) {
             // TOO HIGH
@@ -1238,7 +1241,6 @@ public class Main extends Application {
     // ******************** About *********************************************
     private Dialog createAboutDialog() {
         Dialog aboutDialog = new Dialog();
-        aboutDialog.initOwner(stage);
         aboutDialog.setTitle(translator.get(I18nKeys.APP_NAME));
         aboutDialog.initStyle(StageStyle.TRANSPARENT);
         aboutDialog.initModality(Modality.WINDOW_MODAL);
@@ -1316,7 +1318,6 @@ public class Main extends Application {
         aboutDialog.getDialogPane().setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, new CornerRadii(10), Insets.EMPTY)));
 
         aboutDialog.setOnShowing(e -> aboutDialogStage.centerOnScreen());
-
 
         return aboutDialog;
     }

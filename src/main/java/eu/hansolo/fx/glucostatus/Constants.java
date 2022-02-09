@@ -101,7 +101,7 @@ public class Constants {
     public static final double DELTA_CHART_HEIGHT                                     = 50;
 
     public static final double DEFAULT_SOON_TOO_LOW                                   = 80.0;
-    public static final double DEFAULT_SOON_TOO_HIGH                                  = 350.0;
+    public static final double DEFAULT_SOON_TOO_HIGH                                  = 300.0;
 
     public static final double DEFAULT_MIN_VALUE                                      = 0.0;
     public static final double DEFAULT_MAX_VALUE                                      = 400.0;
