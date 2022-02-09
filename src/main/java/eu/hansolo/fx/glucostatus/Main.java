@@ -624,7 +624,6 @@ public class Main extends Application {
             chartPane.setMaxHeight(stage.getHeight() - 285);
             chartPane.setPrefHeight(stage.getHeight() - 285);
         });
-
     }
 
     @Override public void stop() {
@@ -740,7 +739,7 @@ public class Main extends Application {
                 String msg   = translator.get(I18nKeys.PREDICTION_TOO_LOW);
                 Notification notification = NotificationBuilder.create().title(title).message(msg).image(icon).build();
                 if (PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_PLAY_SOUND_FOR_TOO_LOW_NOTIFICATION)) { notificationSound.play(); }
-                Platform.runLater(() -> notifier.notify(notification));
+                Platform.runLater(() -> { if (notifier.getNoOfPopups() == 0) { notifier.notify(notification); }});
                 return true;
             }
         } else if (soonTooHigh) {
@@ -749,7 +748,7 @@ public class Main extends Application {
                 String msg   = translator.get(I18nKeys.PREDICTION_TOO_HIGH);
                 Notification notification = NotificationBuilder.create().title(title).message(msg).image(icon).build();
                 if (PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_PLAY_SOUND_FOR_TOO_HIGH_NOTIFICATION)) { notificationSound.play(); }
-                Platform.runLater(() -> notifier.notify(notification));
+                Platform.runLater(() -> { if (notifier.getNoOfPopups() == 0) { notifier.notify(notification); }});
                 return true;
             }
         }
@@ -861,7 +860,6 @@ public class Main extends Application {
             }
         }
 
-
         if (msg.isEmpty()) { return; }
 
         String format = MILLIGRAM_PER_DECILITER == currentUnit ? "%.0f" : "%.1f";
@@ -869,7 +867,7 @@ public class Main extends Application {
         Notification notification = NotificationBuilder.create().title(translator.get(I18nKeys.NOTIFICATION_TITLE)).message(body).image(icon).build();
 
         if (playSound) { notificationSound.play(); }
-        Platform.runLater(() -> notifier.notify(notification));
+        Platform.runLater(() -> { if (notifier.getNoOfPopups() == 0) { notifier.notify(notification); }});
 
         lastNotification = now;
     }
