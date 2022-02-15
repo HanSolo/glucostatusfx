@@ -1,8 +1,8 @@
 @ECHO OFF
 
 set JAVA_VERSION=17
-set MAIN_JAR=GlucoStatusFX-17.0.5.jar
-set APP_VERSION=17.0.5
+set MAIN_JAR=GlucoStatusFX-17.0.6.jar
+set APP_VERSION=17.0.6
 
 rem ------ SETUP DIRECTORIES AND FILES ----------------------------------------
 rem Remove previously generated java runtime and installers. Copy all required
