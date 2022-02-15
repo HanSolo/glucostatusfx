@@ -568,8 +568,8 @@ public class Main extends Application {
                 Helper.getEntriesFromLast30Days(nightscoutUrl + Constants.URL_API).thenAccept(l -> allEntries.addAll(l));
             }
         });
-        stage.setWidth(800);
-        stage.setHeight(750);
+        stage.setWidth(820);
+        stage.setHeight(735);
         stage.setMinWidth(650);
         stage.setMinHeight(500);
 
