@@ -21,7 +21,7 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: GlucoStatusFX Windows
-          path: '.\build\installer\GlucoStatusFX-17.0.8.msi'
+          path: '.\build\installer\GlucoStatusFX-17.0.9.msi'
 
 
 
@@ -48,9 +48,9 @@ jobs:
         with:
           name: GlucoStatusFX Mac
           path: |
-            ./build/installer/GlucoStatusFX-17.0.8.pkg
-            ./build/installer/GlucoStatusFX-17.0.8.pkg.sha256
-            ./build/libs/GlucoStatusFX-17.0.8.jar
+            ./build/installer/GlucoStatusFX-17.0.9.pkg
+            ./build/installer/GlucoStatusFX-17.0.9.pkg.sha256
+            ./build/libs/GlucoStatusFX-17.0.9.jar
 
   build-linux:
 
@@ -75,8 +75,8 @@ jobs:
         with:
           name: GlucoStatusFX Linux
           path: |
-            ./build/installer/glucostatusfx_17.0.8-1_amd64.deb
-            ./build/installer/glucostatusfx_17.0.8-1_amd64.deb.sha256
-            ./build/installer/glucostatusfx-17.0.8-1_x86_64.rpm
-            ./build/installer/glucostatusfx-17.0.8-1_x86_64.rpm.sha256
-            ./build/libs/GlucoStatusFX-17.0.8.jar
+            ./build/installer/glucostatusfx_17.0.9-1_amd64.deb
+            ./build/installer/glucostatusfx_17.0.9-1_amd64.deb.sha256
+            ./build/installer/glucostatusfx-17.0.9-1_x86_64.rpm
+            ./build/installer/glucostatusfx-17.0.9-1_x86_64.rpm.sha256
+            ./build/libs/GlucoStatusFX-17.0.9.jar
