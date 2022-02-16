@@ -65,7 +65,7 @@ jar {
     manifest {
         attributes(
                 'Implementation-Title': 'GlucoStatusFX',
-                'Class-Path': 'glucostatusfx-17.0.0.jar',
+                'Class-Path': 'glucostatusfx-17.0.9.jar',
                 'Main-Class': 'eu.hansolo.fx.glucostatus.Launcher'
         )
     }
