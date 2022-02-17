@@ -1151,7 +1151,12 @@ public class Main extends Application {
         ctx.strokeLine(3 * GRAPH_INSETS.getLeft(), maxNormal, width - GRAPH_INSETS.getRight(), maxNormal);
 
         // Draw average
-        double average = (height - GRAPH_INSETS.getBottom()) - avg * stepY;
+        double average;
+        if (UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit) {
+            average = (height - GRAPH_INSETS.getBottom()) - avg * stepY;
+        } else {
+            average = (height - GRAPH_INSETS.getBottom()) - (Helper.mmolPerLiterToMgPerDeciliter(avg)) * stepY;
+        }
         ctx.setLineDashes(2,6);
         ctx.setStroke(Helper.getColorForValue(currentUnit, avg));
         ctx.strokeLine(GRAPH_INSETS.getLeft() * 3, average, width - GRAPH_INSETS.getRight(), average);
