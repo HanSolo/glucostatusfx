@@ -652,7 +652,7 @@ public class Main extends Application {
 
         matrixButton.setOnMousePressed(e -> showMatrixChart());
 
-        reloadButton.setOnMousePressed(e -> updateEntries());
+        reloadButton.setOnMousePressed(e -> reloadAllEntries());
 
         timeInRangeChartButton.setOnMousePressed(e -> showTimeInRangeChart());
 
@@ -716,6 +716,14 @@ public class Main extends Application {
         allEntries.remove(allEntries.size() - 1);
         allEntries.add(0, entryFound);
         lastUpdate = ZonedDateTime.now();
+    }
+
+    private void reloadAllEntries() {
+        if (null != nightscoutUrl && !nightscoutUrl.isEmpty()) {
+            allEntries.clear();
+            Helper.getEntriesFromLast30Days(nightscoutUrl + Constants.URL_API).thenAccept(l -> allEntries.addAll(l));
+            drawChart();
+        }
     }
 
     private boolean predict() {
