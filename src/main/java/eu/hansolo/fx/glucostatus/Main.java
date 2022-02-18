@@ -124,6 +124,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -242,6 +243,7 @@ public class Main extends Application {
     private              boolean                    hideMenu;
     private              FXTrayIcon                 trayIcon;
     private              EventHandler<MouseEvent>   eventConsumer;
+    private              DateTimeFormatter          dtf;
 
 
     // ******************** Initialization ************************************
@@ -264,6 +266,7 @@ public class Main extends Application {
         slowlyRising      = false;
         slowlyFalling     = false;
         currentEntry      = new GlucoEntry("-1", 0, Instant.now().getEpochSecond(), Instant.now(), "", Trend.NONE, "", "", "", 2, 0, 0, 0, 0, 0, "");
+        dtf               = DateTimeFormatter.ofPattern(translator.get("date_time_format"));
         updateSettings();
 
         ticklabelFont      = Fonts.sfProTextRegular(10);
@@ -1036,7 +1039,8 @@ public class Main extends Application {
 
             mainPane.setBackground(new Background(new BackgroundFill(currentColor, CornerRadii.EMPTY, Insets.EMPTY)));
             valueLabel.setText(currentValueText);
-            timestampLabel.setText(Constants.DTF.format(dateTime) + (outdated ? " \u26A0" : ""));
+            //timestampLabel.setText(Constants.DTF.format(dateTime) + (outdated ? " \u26A0" : ""));
+            timestampLabel.setText(dtf.format(dateTime) + (outdated ? " \u26A0" : ""));
             exclamationMark.setVisible(outdated);
             rangeAverageLabel.setText(currentInterval.getUiString() + " (\u2300" + String.format(Locale.US, format, avg) + ")");
 
