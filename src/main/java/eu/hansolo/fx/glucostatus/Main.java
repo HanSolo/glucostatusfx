@@ -266,7 +266,7 @@ public class Main extends Application {
         slowlyRising      = false;
         slowlyFalling     = false;
         currentEntry      = new GlucoEntry("-1", 0, Instant.now().getEpochSecond(), Instant.now(), "", Trend.NONE, "", "", "", 2, 0, 0, 0, 0, 0, "");
-        dtf               = DateTimeFormatter.ofPattern(translator.get("date_time_format"));
+        dtf               = DateTimeFormatter.ofPattern(translator.get(I18nKeys.DATE_TIME_FORMAT));
         updateSettings();
 
         ticklabelFont      = Fonts.sfProTextRegular(10);
