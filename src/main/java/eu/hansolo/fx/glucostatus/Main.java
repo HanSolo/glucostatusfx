@@ -111,7 +111,6 @@ import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
-import javafx.scene.text.TextFlow;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -168,7 +167,7 @@ public class Main extends Application {
     private              SVGPath                    exclamationMark;
     private              MacosLabel                 titleLabel;
     private              MacosLabel                 valueLabel;
-    private              TextFlow                   last5DeltasLabel;
+    private              HBox                       last5DeltasLabel;
     private              MacosLabel                 timestampLabel;
     private              MacosLabel                 rangeAverageLabel;
     private              Text                       unit;
@@ -340,8 +339,8 @@ public class Main extends Application {
         delta1 = createDeltaText("0.0, ", false, 14);
         delta0 = createDeltaText("0.0)", true, 16);
 
-        last5DeltasLabel = new TextFlow(unit, delta4, delta3, delta2, delta1, delta0);
-        last5DeltasLabel.setTextAlignment(TextAlignment.CENTER);
+        last5DeltasLabel = new HBox(unit, delta4, delta3, delta2, delta1, delta0);
+        last5DeltasLabel.setAlignment(Pos.CENTER);
         AnchorPane.setTopAnchor(last5DeltasLabel, 155d);
         AnchorPane.setRightAnchor(last5DeltasLabel, 0d);
         AnchorPane.setLeftAnchor(last5DeltasLabel, 0d);
