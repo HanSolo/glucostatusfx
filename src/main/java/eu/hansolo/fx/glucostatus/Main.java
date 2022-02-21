@@ -25,6 +25,7 @@ import eu.hansolo.applefx.MacosSlider;
 import eu.hansolo.applefx.MacosSwitch;
 import eu.hansolo.applefx.MacosSwitchBuilder;
 import eu.hansolo.applefx.MacosTextField;
+import eu.hansolo.applefx.tools.MacosAccentColor;
 import eu.hansolo.applefx.tools.MacosSystemColor;
 import eu.hansolo.fx.glucostatus.Records.DataPoint;
 import eu.hansolo.fx.glucostatus.Records.GlucoEntry;
@@ -133,14 +134,11 @@ public class Main extends Application {
     private              ZonedDateTime              lastUpdate     = ZonedDateTime.now().minusMinutes(6);
     private final        Translator                 translator     = new Translator(I18nKeys.RESOURCE_NAME);
     private              String                     nightscoutUrl  = "";
-    //private              OperatingSystem            operatingSystem;
-    //private              Architecture               architecture;
     private              boolean                    darkMode;
     private              Color                      accentColor;
     private              ZonedDateTime              lastNotification;
     private              Notification.Notifier      notifier;
     private              AudioClip                  notificationSound;
-    private              Dialog                     aboutDialog;
     private              Stage                      stage;
     private              Region                     glassOverlay;
     private              HBox                       buttonHbox;
@@ -227,10 +225,8 @@ public class Main extends Application {
     // ******************** Initialization ************************************
     @Override public void init() {
         nightscoutUrl     = PropertyManager.INSTANCE.getString(Constants.PROPERTIES_NIGHTSCOUT_URL);
-        //operatingSystem   = getOperatingSystem();
-        //architecture      = getArchitecture();
-        //darkMode          = eu.hansolo.applefx.tools.Helper.isDarkMode();
-        accentColor       =  eu.hansolo.applefx.tools.Helper.getMacosAccentColorAsColor();
+        darkMode          = true;
+        accentColor       = MacosAccentColor.BLUE.getColorDark();
         currentUnit       = MILLIGRAM_PER_DECILITER;
         outdated          = false;
         currentInterval   = TimeInterval.LAST_24_HOURS;
@@ -437,7 +433,6 @@ public class Main extends Application {
             service.start();
         }
         canvas.setHeight(337);
-        aboutDialog = createAboutDialog();
     }
 
     @Override public void stop() {

@@ -11,8 +11,6 @@ buildscript {
     }
     dependencies {
         classpath 'com.google.gradle:osdetector-gradle-plugin:1.7.0'
-        classpath 'org.javamodularity:moduleplugin:1.8.10'
-        classpath 'org.beryx:badass-jlink-plugin:2.24.4'
         classpath 'com.sandec.jpro:jpro-plugin-gradle:2021.2.2'
     }
 }
@@ -21,8 +19,7 @@ plugins {
     id 'java'
     id 'application'
     id 'com.google.osdetector' version '1.7.0'
-    id 'org.javamodularity.moduleplugin' version '1.8.8'
-    id 'org.beryx.jlink' version '2.24.4'
+    id 'org.openjfx.javafxplugin' version '0.0.12'
 }
 
 apply plugin: 'com.sandec.jpro'
@@ -44,11 +41,6 @@ repositories {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: '*.jar')
-    implementation "org.openjfx:javafx-base:${javafxVersion}:${platform}"
-    implementation "org.openjfx:javafx-graphics:${javafxVersion}:${platform}"
-    implementation "org.openjfx:javafx-controls:${javafxVersion}:${platform}"
-    implementation "org.openjfx:javafx-media:${javafxVersion}:${platform}"
-    implementation "org.openjfx:javafx-swing:${javafxVersion}:${platform}"
     implementation 'eu.hansolo:jdktools:17.0.3'
     implementation 'eu.hansolo:toolbox:17.0.12'
     implementation 'eu.hansolo:toolboxfx:17.0.22'
@@ -58,8 +50,14 @@ dependencies {
     implementation "com.sandec.jpro:jpro-webapi:2021.2.2"
 }
 
+javafx {
+    version       = '17.0.2'
+    modules       = [ 'javafx.base', 'javafx.graphics', 'javafx.controls', 'javafx.media', 'javafx.swing']
+    configuration = 'compileOnly'
+}
+
 ext.moduleName = 'eu.hansolo.fx.glucostatus'
-mainClassName = '$moduleName/eu.hansolo.fx.glucostatus.Launcher'
+mainClassName = 'eu.hansolo.fx.glucostatus.Main'
 
 jar {
     from {
@@ -73,44 +71,11 @@ jar {
     manifest {
         attributes(
                 'Implementation-Title': 'GlucoStatusFX',
-                'Class-Path': 'glucostatusfx-17.0.0.jar',
-                'Main-Class': 'eu.hansolo.fx.glucostatus.Launcher'
+                'Class-Path': 'glucostatusfx-17.0.1.jar',
+                'Main-Class': 'eu.hansolo.fx.glucostatus.Main'
         )
     }
 }
-
-jlink {
-    options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
-    launcher {
-        name = 'eu.hansolo.fx.glucostatus'
-    }
-}
-
-/*
-tasks.withType(JavaCompile) {
-    options.compilerArgs += "--enable-preview"
-}
-tasks.withType(Test) {
-    jvmArgs += "--enable-preview"
-}
-tasks.withType(JavaExec) {
-    jvmArgs += "--enable-preview"
-}
-*/
-
-// start app from gradle
-task Main(type: JavaExec) {
-    main = "eu.hansolo.fx.glucostatus.Launcher"
-    classpath = sourceSets.main.runtimeClasspath
-}
-
-task Test(type: JavaExec) {
-    main = "eu.hansolo.fx.glucostatus.TestLauncher"
-    classpath = sourceSets.main.runtimeClasspath
-}
-
-
-
 
 // Fix problems with loading resources
 sourceSets {
@@ -126,7 +91,6 @@ processResources {
         include '**/*.properties'
     }
 }
-
 
 
 run {
