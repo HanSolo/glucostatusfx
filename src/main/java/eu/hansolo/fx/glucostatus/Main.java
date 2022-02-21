@@ -141,7 +141,6 @@ public class Main extends Application {
     private              SVGPath                    exclamationMark;
     private              MacosLabel                 titleLabel;
     private              MacosLabel                 valueLabel;
-    //private              TextFlow                   last5DeltasLabel;
     private              HBox                       last5DeltasLabel;
     private              MacosLabel                 timestampLabel;
     private              MacosLabel                 rangeAverageLabel;
@@ -513,8 +512,14 @@ public class Main extends Application {
 
     // ******************** Methods *******************************************
     private void registerListeners() {
-        chartPane.widthProperty().addListener((o, ov, nv) -> chartCanvas.setWidth(nv.doubleValue() - 10));
-        chartPane.heightProperty().addListener((o, ov, nv) -> chartCanvas.setHeight(nv.doubleValue() - 15));
+        chartPane.widthProperty().addListener((o, ov, nv) -> {
+            chartCanvas.setWidth(nv.doubleValue() - 10);
+            patternChartCanvas.setWidth(nv.doubleValue() - 10);
+        });
+        chartPane.heightProperty().addListener((o, ov, nv) -> {
+            chartCanvas.setHeight(nv.doubleValue() - 15);
+            patternChartCanvas.setHeight(nv.doubleValue() - 15);
+        });
 
         allEntries.addListener((ListChangeListener<GlucoEntry>) c -> {
             while (c.next()) {
@@ -1482,7 +1487,7 @@ public class Main extends Application {
         timeInRangeTimeIntervalLabel = createLabel(currentInterval.getUiString(), 20, false, false, Pos.CENTER);
         timeInRangeTimeIntervalLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
 
-        double columnSize  = 140;
+        double columnSize  = chartPane.getHeight();
         timeInRangeTooHighRect = createTimeInRangeRectangle(pTooHigh, columnSize, Constants.RED);
         timeInRangeHighRect    = createTimeInRangeRectangle(pHigh, columnSize, Constants.YELLOW);
         timeInRangeNormalRect  = createTimeInRangeRectangle(pNormal, columnSize, Constants.GREEN);
@@ -1513,9 +1518,12 @@ public class Main extends Application {
         HBox       tooLowText       = new HBox(10, timeInRangeTooLowValue, timeInRangeTooLowValueText);
 
         VBox       textBox          = new VBox(5, tooHighText, highText, normalText, lowText, tooLowText);
+        textBox.setAlignment(Pos.CENTER);
 
         HBox       inRangeBox       = new HBox(10, rectBox, textBox);
-        HBox.setMargin(rectBox, new Insets(0, 0, 0, 20));
+        inRangeBox.setAlignment(Pos.CENTER);
+        inRangeBox.setFillHeight(true);
+        inRangeBox.setPadding(new Insets(0, 20, 0, 20));
 
         MacosButton closeButton = new MacosButton("Close");
         closeButton.setDark(darkMode);
@@ -1561,12 +1569,18 @@ public class Main extends Application {
         timeInRangeTimeIntervalLabel.setText(currentInterval.getUiString());
         timeInRangeTimeIntervalLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
 
-        double columnSize = 140;
-        timeInRangeTooHighRect.setHeight(pTooHigh * columnSize);
-        timeInRangeHighRect.setHeight(pHigh * columnSize);
-        timeInRangeNormalRect.setHeight(pNormal * columnSize);
-        timeInRangeLowRect.setHeight(pLow * columnSize);
-        timeInRangeTooLowRect.setHeight(pTooLow * columnSize);
+        double columnWidth  = chartPane.getWidth() * 0.25;
+        double columnHeight = chartPane.getHeight();
+        timeInRangeTooHighRect.setWidth(columnWidth);
+        timeInRangeTooHighRect.setHeight(pTooHigh * columnHeight);
+        timeInRangeHighRect.setWidth(columnWidth);
+        timeInRangeHighRect.setHeight(pHigh * columnHeight);
+        timeInRangeNormalRect.setWidth(columnWidth);
+        timeInRangeNormalRect.setHeight(pNormal * columnHeight);
+        timeInRangeLowRect.setWidth(columnWidth);
+        timeInRangeLowRect.setHeight(pLow * columnHeight);
+        timeInRangeTooLowRect.setWidth(columnWidth);
+        timeInRangeTooLowRect.setHeight(pTooLow * columnHeight);
 
         //Color textFill = darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT;
         timeInRangeTooHighValue.setText(String.format(Locale.US, "%.0f%% ", pTooHigh * 100));
@@ -1614,6 +1628,7 @@ public class Main extends Application {
         VBox content = new VBox(20, patternChartTitleLabel, patternChartHbac1Label, patternChartZones, patternChartCanvas, closeButton);
         content.setAlignment(Pos.CENTER);
         content.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, new CornerRadii(10), Insets.EMPTY)));
+        content.setPadding(new Insets(0, 0, 20, 0));
 
         patternChartPane = new StackPane(content);
         patternChartPane.getStylesheets().add(Main.class.getResource("glucostatus.css").toExternalForm());
