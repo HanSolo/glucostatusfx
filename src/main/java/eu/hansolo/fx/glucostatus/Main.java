@@ -60,20 +60,14 @@ import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ContentDisplay;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.DialogPane;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
-import javafx.scene.effect.BlurType;
-import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
@@ -101,7 +95,6 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 import javafx.util.Duration;
 
 import java.net.http.HttpResponse;
@@ -181,7 +174,7 @@ public class Main extends Application {
     private              MacosSlider                minNormalSlider;
     private              MacosSlider                maxNormalSlider;
     private              MacosSlider                maxAcceptableSlider;
-    private              Canvas                     canvas;
+    private              Canvas                     chartCanvas;
     private              GraphicsContext            ctx;
     private              AnchorPane                 chartPane;
     private              boolean                    deltaChartVisible;
@@ -388,12 +381,12 @@ public class Main extends Application {
         mainPane.setMinHeight(295);
         mainPane.setBackground(new Background(new BackgroundFill(Constants.GRAY, CornerRadii.EMPTY, Insets.EMPTY)));
 
-        canvas = new Canvas(820, 365);
-        ctx    = canvas.getGraphicsContext2D();
-        AnchorPane.setTopAnchor(canvas, 10d);
-        AnchorPane.setRightAnchor(canvas, 5d);
-        AnchorPane.setBottomAnchor(canvas, 5d);
-        AnchorPane.setLeftAnchor(canvas, 5d);
+        chartCanvas = new Canvas(820, 365);
+        ctx         = chartCanvas.getGraphicsContext2D();
+        AnchorPane.setTopAnchor(chartCanvas, 10d);
+        AnchorPane.setRightAnchor(chartCanvas, 5d);
+        AnchorPane.setBottomAnchor(chartCanvas, 5d);
+        AnchorPane.setLeftAnchor(chartCanvas, 5d);
 
         exclamationMark = new SVGPath();
         exclamationMark.setContent("M7.743,54.287l41.48,-0c1.613,-0 2.995,-0.346 4.147,-1.037c1.153,-0.692 2.046,-1.619 2.679,-2.783c0.634,-1.164 0.951,-2.483 0.951,-3.958c-0,-0.622 -0.092,-1.262 -0.277,-1.918c-0.184,-0.657 -0.449,-1.285 -0.795,-1.884l-20.774,-36.053c-0.737,-1.29 -1.705,-2.27 -2.904,-2.938c-1.198,-0.668 -2.454,-1.003 -3.767,-1.003c-1.314,0 -2.57,0.335 -3.768,1.003c-1.198,0.668 -2.155,1.648 -2.869,2.938l-20.774,36.053c-0.715,1.221 -1.072,2.489 -1.072,3.802c0,1.475 0.311,2.794 0.933,3.958c0.622,1.164 1.515,2.091 2.679,2.783c1.164,0.691 2.541,1.037 4.131,1.037Zm0.034,-4.874c-0.829,-0 -1.503,-0.294 -2.022,-0.882c-0.518,-0.587 -0.777,-1.261 -0.777,-2.022c-0,-0.207 0.023,-0.438 0.069,-0.691c0.046,-0.254 0.138,-0.496 0.276,-0.726l20.74,-36.087c0.254,-0.461 0.605,-0.807 1.054,-1.037c0.45,-0.231 0.905,-0.346 1.366,-0.346c0.484,-0 0.939,0.115 1.365,0.346c0.426,0.23 0.778,0.576 1.054,1.037l20.74,36.121c0.231,0.438 0.346,0.899 0.346,1.383c-0,0.761 -0.259,1.435 -0.778,2.022c-0.518,0.588 -1.204,0.882 -2.057,0.882l-41.376,-0Zm20.74,-4.494c0.83,0 1.562,-0.294 2.195,-0.881c0.634,-0.588 0.951,-1.308 0.951,-2.161c-0,-0.875 -0.311,-1.601 -0.933,-2.177c-0.623,-0.577 -1.36,-0.865 -2.213,-0.865c-0.875,0 -1.624,0.294 -2.247,0.882c-0.622,0.587 -0.933,1.308 -0.933,2.16c0,0.83 0.317,1.544 0.951,2.143c0.633,0.599 1.377,0.899 2.229,0.899Zm0,-9.056c1.521,-0 2.293,-0.795 2.316,-2.385l0.45,-14.173c0.023,-0.76 -0.237,-1.4 -0.778,-1.918c-0.542,-0.519 -1.216,-0.778 -2.022,-0.778c-0.83,0 -1.504,0.254 -2.022,0.761c-0.519,0.507 -0.767,1.14 -0.744,1.901l0.381,14.207c0.046,1.59 0.852,2.385 2.419,2.385Z");
@@ -405,7 +398,7 @@ public class Main extends Application {
         AnchorPane.setBottomAnchor(problemPane, 0d);
         AnchorPane.setLeftAnchor(problemPane, 0d);
 
-        chartPane = new AnchorPane(canvas, problemPane);
+        chartPane = new AnchorPane(chartCanvas, problemPane);
         chartPane.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, new CornerRadii(10), Insets.EMPTY)));
         chartPane.setMinWidth(650);
         chartPane.setMinHeight(100);
@@ -520,8 +513,8 @@ public class Main extends Application {
 
     // ******************** Methods *******************************************
     private void registerListeners() {
-        chartPane.widthProperty().addListener((o, ov, nv) -> canvas.setWidth(nv.doubleValue() - 10));
-        chartPane.heightProperty().addListener((o, ov, nv) -> canvas.setHeight(nv.doubleValue() - 15));
+        chartPane.widthProperty().addListener((o, ov, nv) -> chartCanvas.setWidth(nv.doubleValue() - 10));
+        chartPane.heightProperty().addListener((o, ov, nv) -> chartCanvas.setHeight(nv.doubleValue() - 15));
 
         allEntries.addListener((ListChangeListener<GlucoEntry>) c -> {
             while (c.next()) {
@@ -588,8 +581,8 @@ public class Main extends Application {
             }
         });
 
-        canvas.widthProperty().addListener(o -> drawChart());
-        canvas.heightProperty().addListener(o -> drawChart());
+        chartCanvas.widthProperty().addListener(o -> drawChart());
+        chartCanvas.heightProperty().addListener(o -> drawChart());
     }
 
     private void updateEntries() {
@@ -933,8 +926,8 @@ public class Main extends Application {
     private void drawChart() {
         if (entries.isEmpty()) { return; }
         Collections.sort(entries, Comparator.comparingLong(GlucoEntry::datelong));
-        double width           = canvas.getWidth();
-        double height          = canvas.getHeight();
+        double width           = chartCanvas.getWidth();
+        double height          = chartCanvas.getHeight();
         double availableWidth  = (width - GRAPH_INSETS.getLeft() - GRAPH_INSETS.getRight());
         double availableHeight = (height - GRAPH_INSETS.getTop() - GRAPH_INSETS.getBottom());
 
@@ -1551,6 +1544,11 @@ public class Main extends Application {
     private void showTimeInRangeChart() {
         if (dialogVisible.get()) { return; }
         dialogVisible.set(true);
+        vpane.setVisible(false);
+        vpane.setManaged(false);
+        timeInRangePane.setManaged(true);
+        timeInRangePane.setVisible(true);
+
         double noOfValues = entries.size();
         double pTooHigh = (entries.stream().filter(entry -> entry.sgv() > Constants.DEFAULT_MAX_CRITICAL).count() / noOfValues);
         double pHigh    = (entries.stream().filter(entry -> entry.sgv() > PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MAX_NORMAL)).filter(entry -> entry.sgv() <= PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MAX_CRITICAL)).count() / noOfValues);
@@ -1558,99 +1556,24 @@ public class Main extends Application {
         double pLow     = (entries.stream().filter(entry -> entry.sgv() > Constants.DEFAULT_MIN_CRITICAL).filter(entry -> entry.sgv() <= PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MIN_NORMAL)).count() / noOfValues);
         double pTooLow  = (entries.stream().filter(entry -> entry.sgv() < Constants.DEFAULT_MIN_CRITICAL).count() / noOfValues);
 
-        MacosLabel titleLabel = createLabel(translator.get(I18nKeys.STATISTICS_TITLE), 24, true, false, Pos.CENTER);
         titleLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
 
-        MacosLabel timeIntervalLabel = createLabel(currentInterval.getUiString(), 20, false, false, Pos.CENTER);
-        timeIntervalLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
+        timeInRangeTimeIntervalLabel.setText(currentInterval.getUiString());
+        timeInRangeTimeIntervalLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
 
         double columnSize = 140;
-        Rectangle tooHighRect = createTimeInRangeRectangle(pTooHigh, columnSize, Constants.RED);
-        Rectangle highRect    = createTimeInRangeRectangle(pHigh, columnSize, Constants.YELLOW);
-        Rectangle normalRect  = createTimeInRangeRectangle(pNormal, columnSize, Constants.GREEN);
-        Rectangle lowRect     = createTimeInRangeRectangle(pLow, columnSize, Constants.ORANGE);
-        Rectangle tooLowRect  = createTimeInRangeRectangle(pTooLow, columnSize, Constants.RED);
-        VBox rectBox = new VBox(tooHighRect, highRect, normalRect, lowRect, tooLowRect);
+        timeInRangeTooHighRect.setHeight(pTooHigh * columnSize);
+        timeInRangeHighRect.setHeight(pHigh * columnSize);
+        timeInRangeNormalRect.setHeight(pNormal * columnSize);
+        timeInRangeLowRect.setHeight(pLow * columnSize);
+        timeInRangeTooLowRect.setHeight(pTooLow * columnSize);
 
-        Color textFill = darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT;
-
-        MacosLabel tooHighValue     = createTimeInRangeLabel(String.format(Locale.US, "%.0f%% ", pTooHigh * 100), 20, textFill, false, Pos.CENTER_RIGHT);
-        MacosLabel tooHighValueText = createTimeInRangeLabel(translator.get(I18nKeys.STATISTICS_TOO_HIGH), 20, textFill, false, Pos.CENTER_LEFT);
-        HBox  tooHighText      = new HBox(10, tooHighValue, tooHighValueText);
-
-        MacosLabel highValue        = createTimeInRangeLabel(String.format(Locale.US, "%.0f%% ", pHigh * 100), 20, textFill, false, Pos.CENTER_RIGHT);
-        MacosLabel highValueText    = createTimeInRangeLabel(translator.get(I18nKeys.STATISTICS_HIGH), 20, textFill, false, Pos.CENTER_LEFT);
-        HBox  highText         = new HBox(10, highValue, highValueText);
-
-        MacosLabel normalValue      = createTimeInRangeLabel(String.format(Locale.US, "%.0f%% ", pNormal * 100), 22, textFill, true, Pos.CENTER_RIGHT);
-        MacosLabel normalValueText  = createTimeInRangeLabel(translator.get(I18nKeys.STATISTICS_NORMAL), 22, textFill, true, Pos.CENTER_LEFT);
-        HBox  normalText       = new HBox(10, normalValue, normalValueText);
-
-        MacosLabel lowValue         = createTimeInRangeLabel(String.format(Locale.US, "%.0f%% ", pLow * 100), 20, textFill, false, Pos.CENTER_RIGHT);
-        MacosLabel lowValueText     = createTimeInRangeLabel(translator.get(I18nKeys.STATISTICS_LOW), 20, textFill, false, Pos.CENTER_LEFT);
-        HBox  lowText          = new HBox(10, lowValue, lowValueText);
-
-        MacosLabel tooLowValue      = createTimeInRangeLabel(String.format(Locale.US, "%.0f%% ", pTooLow * 100), 20, textFill, false, Pos.CENTER_RIGHT);
-        MacosLabel tooLowValueText  = createTimeInRangeLabel(translator.get(I18nKeys.STATISTICS_TOO_LOW), 20, textFill, false, Pos.CENTER_LEFT);
-        HBox  tooLowText       = new HBox(10, tooLowValue, tooLowValueText);
-
-        VBox  textBox = new VBox(5, tooHighText, highText, normalText, lowText, tooLowText);
-
-        HBox inRangeBox = new HBox(10, rectBox, textBox);
-
-        VBox content = new VBox(20, titleLabel, timeIntervalLabel, inRangeBox);
-        content.setAlignment(Pos.CENTER);
-        content.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, new CornerRadii(10), Insets.EMPTY)));
-
-        Dialog dialog = new Dialog();
-        dialog.initOwner(stage);
-        dialog.setTitle("");
-        dialog.setHeaderText("");
-
-        DialogPane dialogPane = new DialogPane() {
-            @Override protected Node createButtonBar() {
-                ButtonBar buttonBar = (ButtonBar) super.createButtonBar();
-                buttonBar.getStyleClass().add("dialog-button-bar");
-                buttonBar.setButtonOrder(ButtonBar.BUTTON_ORDER_NONE);
-                return buttonBar;
-            }
-        };
-        dialogPane.getStylesheets().add(Main.class.getResource("glucostatus.css").toExternalForm());
-
-        dialogPane.setBackground(new Background(new BackgroundFill(darkMode ? Constants.DARK_BACKGROUND : Color.WHITE, new CornerRadii(10), Insets.EMPTY)));
-        dialogPane.setBorder(new Border(new BorderStroke(Color.rgb(78, 77, 76), BorderStrokeStyle.SOLID, new CornerRadii(10), new BorderWidths(1))));
-        dialogPane.setContent(content);
-        dialog.setDialogPane(dialogPane);
-
-        dialog.getDialogPane().getScene().setFill(Color.TRANSPARENT);
-        dialog.getDialogPane().setEffect(new DropShadow(BlurType.TWO_PASS_BOX, Color.rgb(0, 0, 0, 0.35), 10.0, 0.0, 0.0, 5));
-
-        dialog.setOnCloseRequest(e -> dialogVisible.set(false));
-        dialog.initStyle(StageStyle.TRANSPARENT);
-
-        MacosButton closeButton = new MacosButton(translator.get(I18nKeys.PATTERN_CLOSE_BUTTON));
-        closeButton.setDark(darkMode);
-        closeButton.setOnAction(e -> {
-            dialog.setResult(Boolean.TRUE);
-            dialog.close();
-        });
-        content.getChildren().add(closeButton);
-
-        Region spacer = new Region();
-        ButtonBar.setButtonData(spacer, ButtonBar.ButtonData.BIG_GAP);
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-        dialogPane.applyCss();
-        HBox hbox = (HBox) dialogPane.lookup(".container");
-        hbox.getChildren().add(spacer);
-
-        dialog.setOnShowing(e -> {
-            dialog.setX(stage.getX() + (stage.getWidth() - dialog.getDialogPane().getLayoutBounds().getWidth()) * 0.425);
-            dialog.setY(stage.getY() + (stage.getHeight() - dialog.getDialogPane().getLayoutBounds().getHeight()) * 0.425);
-        });
-        Stage dialogStage = (Stage) dialogPane.getScene().getWindow();
-        dialogStage.setAlwaysOnTop(true);
-        dialogStage.toFront();
-        dialog.showAndWait();
+        //Color textFill = darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT;
+        timeInRangeTooHighValue.setText(String.format(Locale.US, "%.0f%% ", pTooHigh * 100));
+        timeInRangeHighValue.setText(String.format(Locale.US, "%.0f%% ", pHigh * 100));
+        timeInRangeNormalValue.setText(String.format(Locale.US, "%.0f%% ", pNormal * 100));
+        timeInRangeLowValue.setText(String.format(Locale.US, "%.0f%% ", pLow * 100));
+        timeInRangeTooLowValue.setText(String.format(Locale.US, "%.0f%% ", pTooLow * 100));
     }
 
     private Rectangle createTimeInRangeRectangle(final double heightFactor, final double columnSize, final Color color) {
@@ -1712,8 +1635,11 @@ public class Main extends Application {
     private void showPatternChart() {
         if (dialogVisible.get()) { return; }
         dialogVisible.set(true);
+        vpane.setVisible(false);
+        vpane.setManaged(false);
+        patternChartPane.setManaged(true);
+        patternChartPane.setVisible(true);
 
-        //patternChartTitleLabel.setText(translator.get(I18nKeys.PATTERN_TITLE));
         patternChartTitleLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
 
         patternChartHbac1Label.setText(String.format(Locale.US, "HbAc1 %.1f%% " + translator.get(I18nKeys.HBAC1_RANGE), Helper.getHbA1c(allEntries, currentUnit)));
@@ -1727,19 +1653,14 @@ public class Main extends Application {
         List<String>                     lowZones        = highAndLowZones.getA();
         List<String>                     highZones       = highAndLowZones.getB();
 
-        ListView<String> zones = new ListView<>();
-        zones.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, CornerRadii.EMPTY, Insets.EMPTY)));
-        zones.setCellFactory(zoneListView -> new ZoneCell(darkMode));
-        zones.setPrefHeight(200);
-        zones.getItems().addAll(lowZones);
-        zones.getItems().addAll(highZones);
+        patternChartZones.getItems().clear();
+        patternChartZones.getItems().addAll(lowZones);
+        patternChartZones.getItems().addAll(highZones);
 
+        GraphicsContext ctx    = patternChartCanvas.getGraphicsContext2D();
 
-        Canvas          canvas = new Canvas(640, 300);
-        GraphicsContext ctx    = canvas.getGraphicsContext2D();
-
-        double width           = canvas.getWidth();
-        double height          = canvas.getHeight();
+        double width           = patternChartCanvas.getWidth();
+        double height          = patternChartCanvas.getHeight();
         double availableWidth  = (width - GRAPH_INSETS.getLeft() - GRAPH_INSETS.getRight());
         double availableHeight = (height - GRAPH_INSETS.getTop() - GRAPH_INSETS.getBottom());
 
@@ -1821,59 +1742,6 @@ public class Main extends Application {
             ctx.lineTo(x, y);
         });
         ctx.stroke();
-
-        VBox content = new VBox(20, patternChartTitleLabel, patternChartHbac1Label, zones, canvas);
-        content.setAlignment(Pos.CENTER);
-        content.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, new CornerRadii(10), Insets.EMPTY)));
-
-        Dialog dialog = new Dialog();
-        dialog.setTitle("");
-        dialog.setHeaderText("");
-
-        DialogPane dialogPane = new DialogPane() {
-            @Override protected Node createButtonBar() {
-                ButtonBar buttonBar = (ButtonBar) super.createButtonBar();
-                buttonBar.getStyleClass().add("dialog-button-bar");
-                buttonBar.setButtonOrder(ButtonBar.BUTTON_ORDER_NONE);
-                return buttonBar;
-            }
-        };
-        dialogPane.getStylesheets().add(Main.class.getResource("glucostatus.css").toExternalForm());
-
-        dialogPane.setBackground(new Background(new BackgroundFill(darkMode ? Constants.DARK_BACKGROUND : Color.WHITE, new CornerRadii(10), Insets.EMPTY)));
-        dialogPane.setBorder(new Border(new BorderStroke(Color.rgb(78, 77, 76), BorderStrokeStyle.SOLID, new CornerRadii(10),new BorderWidths(1))));
-        dialogPane.setContent(content);
-        dialog.setDialogPane(dialogPane);
-
-        dialog.getDialogPane().getScene().setFill(Color.TRANSPARENT);
-        dialog.getDialogPane().setEffect(new DropShadow(BlurType.TWO_PASS_BOX, Color.rgb(0, 0, 0, 0.35), 10.0, 0.0, 0.0, 5));
-
-        MacosButton closeButton = new MacosButton(translator.get(I18nKeys.PATTERN_CLOSE_BUTTON));
-        closeButton.setDark(darkMode);
-        closeButton.setOnAction(e -> {
-            dialog.setResult(Boolean.TRUE);
-            dialog.close();
-        });
-        content.getChildren().add(closeButton);
-
-        dialog.setOnCloseRequest(e -> dialogVisible.set(false));
-        dialog.initStyle(StageStyle.TRANSPARENT);
-
-        Region spacer = new Region();
-        ButtonBar.setButtonData(spacer, ButtonBar.ButtonData.BIG_GAP);
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-        dialogPane.applyCss();
-        HBox hbox = (HBox) dialogPane.lookup(".container");
-        hbox.getChildren().add(spacer);
-
-        dialog.setOnShowing(e -> {
-            dialog.setX(stage.getX() + (stage.getWidth() - dialog.getDialogPane().getLayoutBounds().getWidth()) * 0.5);
-            dialog.setY(stage.getY() + (stage.getHeight() - dialog.getDialogPane().getLayoutBounds().getHeight()) * 0.1);
-        });
-        Stage dialogStage = (Stage) dialogPane.getScene().getWindow();
-        dialogStage.setAlwaysOnTop(true);
-        dialogStage.toFront();
-        dialog.showAndWait();
     }
 
 
@@ -1918,71 +1786,19 @@ public class Main extends Application {
     private void showMatrixChart() {
         if (dialogVisible.get()) { return; }
         dialogVisible.set(true);
+        vpane.setVisible(false);
+        vpane.setManaged(false);
+        matrixChartPane.setManaged(true);
+        matrixChartPane.setVisible(true);
 
-        MacosLabel titleLabel = createLabel(translator.get(I18nKeys.MATRIX_TITLE), 24, true, false, Pos.CENTER);
-        titleLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
+        matrixChartTitleLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
+        matrixChartSubTitleLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
 
-        MacosLabel subTitleLabel = createLabel(translator.get(I18nKeys.MATRIX_SUBTITLE), 16, false, false, Pos.CENTER);
-        subTitleLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
+        matrixChartHbac1Label.setText(String.format(Locale.US, "HbAc1 %.1f%% " + translator.get(I18nKeys.HBAC1_RANGE), Helper.getHbA1c(allEntries, currentUnit)));
+        matrixChartHbac1Label.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
 
-        MacosLabel hbac1Label = createLabel(String.format(Locale.US, "HbAc1 %.1f%% " + translator.get(I18nKeys.HBAC1_RANGE), Helper.getHbA1c(allEntries, currentUnit)), 20, false, false, Pos.CENTER);
-        hbac1Label.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
-
-        ThirtyDayView thirtyDayView = new ThirtyDayView(allEntries, currentUnit);
-        thirtyDayView.setDark(darkMode);
-
-        VBox content = new VBox(20, titleLabel, subTitleLabel, hbac1Label, thirtyDayView);
-        content.setAlignment(Pos.CENTER);
-        content.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, new CornerRadii(10), Insets.EMPTY)));
-
-        Dialog dialog = new Dialog();
-        dialog.setTitle("");
-        dialog.setHeaderText("");
-
-        DialogPane dialogPane = new DialogPane() {
-            @Override protected Node createButtonBar() {
-                ButtonBar buttonBar = (ButtonBar) super.createButtonBar();
-                buttonBar.getStyleClass().add("dialog-button-bar");
-                buttonBar.setButtonOrder(ButtonBar.BUTTON_ORDER_NONE);
-                return buttonBar;
-            }
-        };
-        dialogPane.getStylesheets().add(Main.class.getResource("glucostatus.css").toExternalForm());
-
-        dialogPane.setBackground(new Background(new BackgroundFill(darkMode ? Constants.DARK_BACKGROUND : Color.WHITE , new CornerRadii(10), Insets.EMPTY)));
-        dialogPane.setBorder(new Border(new BorderStroke(Color.rgb(78, 77, 76), BorderStrokeStyle.SOLID, new CornerRadii(10),new BorderWidths(1))));
-        dialogPane.setContent(content);
-        dialog.setDialogPane(dialogPane);
-
-        dialog.getDialogPane().getScene().setFill(Color.TRANSPARENT);
-        dialog.getDialogPane().setEffect(new DropShadow(BlurType.TWO_PASS_BOX, Color.rgb(0, 0, 0, 0.35), 10.0, 0.0, 0.0, 5));
-
-        dialog.setOnCloseRequest(e -> dialogVisible.set(false));
-        dialog.initStyle(StageStyle.TRANSPARENT);
-
-        MacosButton closeButton = new MacosButton(translator.get(I18nKeys.MATRIX_CLOSE_BUTTON));
-        closeButton.setDark(darkMode);
-        closeButton.setOnAction(e -> {
-            dialog.setResult(Boolean.TRUE);
-            dialog.close();
-        });
-        content.getChildren().add(closeButton);
-
-        Region spacer = new Region();
-        ButtonBar.setButtonData(spacer, ButtonBar.ButtonData.BIG_GAP);
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-        dialogPane.applyCss();
-        HBox hbox = (HBox) dialogPane.lookup(".container");
-        hbox.getChildren().add(spacer);
-
-        dialog.setOnShowing(e -> {
-            dialog.setX(stage.getX() + (stage.getWidth() - dialog.getDialogPane().getLayoutBounds().getWidth()) * 0.5);
-            dialog.setY(stage.getY() + (stage.getHeight() - dialog.getDialogPane().getLayoutBounds().getHeight()) * 0.1);
-        });
-        Stage dialogStage = (Stage) dialogPane.getScene().getWindow();
-        dialogStage.setAlwaysOnTop(true);
-        dialogStage.toFront();
-        dialog.showAndWait();
+        matrixChartThirtyDayView.setEntries(allEntries, currentUnit);
+        matrixChartThirtyDayView.setDark(darkMode);
     }
 
 
