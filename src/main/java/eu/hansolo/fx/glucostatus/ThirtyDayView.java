@@ -22,11 +22,11 @@
  import eu.hansolo.toolbox.tuples.Pair;
  import eu.hansolo.toolbox.unit.UnitDefinition;
  import eu.hansolo.toolboxfx.geom.Rectangle;
+ import javafx.animation.PauseTransition;
  import javafx.beans.DefaultProperty;
  import javafx.beans.property.BooleanProperty;
  import javafx.beans.property.BooleanPropertyBase;
  import javafx.collections.ObservableList;
- import javafx.concurrent.Task;
  import javafx.css.PseudoClass;
  import javafx.geometry.Insets;
  import javafx.geometry.VPos;
@@ -37,6 +37,7 @@
  import javafx.scene.layout.Region;
  import javafx.scene.paint.Color;
  import javafx.scene.text.TextAlignment;
+ import javafx.util.Duration;
 
  import java.time.DayOfWeek;
  import java.time.Instant;
@@ -54,7 +55,6 @@
  import java.util.Optional;
  import java.util.Random;
  import java.util.concurrent.ConcurrentHashMap;
- import java.util.concurrent.TimeUnit;
  import java.util.stream.Collectors;
 
 
@@ -135,18 +135,12 @@
              Optional<Entry<LocalDate, Rectangle>> optEntry = boxes.entrySet().stream().filter(entry -> entry.getValue().contains(e.getX(), e.getY())).findFirst();
              selectedDate = optEntry.isPresent() ? optEntry.get().getKey() : null;
              redraw();
-
-             Task<Void> sleeper = new Task<>() {
-                 @Override protected Void call() {
-                     try { TimeUnit.MILLISECONDS.sleep(SLEEP_DURATION); } catch (InterruptedException e) { }
-                     return null;
-                 }
-             };
-             sleeper.setOnSucceeded(evt -> {
+             PauseTransition pause = new PauseTransition(Duration.millis(SLEEP_DURATION));
+             pause.setOnFinished(ev -> {
                  selectedDate = null;
                  redraw();
              });
-             new Thread(sleeper).start();
+             pause.play();
          });
      }
 
@@ -175,9 +169,7 @@
      public final BooleanProperty darkProperty() {
          if (null == dark) {
              dark = new BooleanPropertyBase() {
-                 @Override protected void invalidated() {
-                     pseudoClassStateChanged(DARK_PSEUDO_CLASS, get());
-                 }
+                 @Override protected void invalidated() { pseudoClassStateChanged(DARK_PSEUDO_CLASS, get()); }
                  @Override public Object getBean() { return ThirtyDayView.this; }
                  @Override public String getName() { return "dark"; }
              };
@@ -233,7 +225,7 @@
              canvas.relocate((getWidth() - width) * 0.5, (getHeight() - height) * 0.5);
 
              boxWidth        = width / 8;
-             boxHeight       = height / 6;
+             boxHeight       = height / 7;
              boxCenterX      = boxWidth * 0.5;
              boxCenterY      = boxHeight * 0.5;
              boxRadius       = size * 0.05;
@@ -250,7 +242,7 @@
          LocalDate currentDate     = LocalDate.now();
          LocalDate startDate       = currentDate.minusDays(30);
          int       startWeek       = startDate.get(WeekFields.ISO.weekOfYear());
-         Color     foregroundColor = isDark() ? Color.WHITE : Color.BLACK;
+         Color     foregroundColor = isDark() ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT;
 
          ctx.clearRect(0, 0, width, height);
          ctx.setStroke(foregroundColor);
@@ -258,21 +250,20 @@
          ctx.setFont(Fonts.sfProRoundedBold(size * 0.065));
          ctx.setTextAlign(TextAlignment.CENTER);
          ctx.setTextBaseline(VPos.CENTER);
-         for (int y = 0 ; y < 7 ; y++) {
+         for (int y = 0 ; y < 8 ; y++) {
              for (int x = 0 ; x < 9 ; x++) {
                  double posX = x * boxWidth;
                  double posY = y * boxHeight;
-                 if (y == 0 && x > 0 && x < 8) {
-                     ctx.fillText(DayOfWeek.values()[x - 1].getDisplayName(TextStyle.NARROW_STANDALONE, Locale.getDefault()), posX + boxCenterX, posY + boxCenterY);
-                 }
                  if (x == 0 && y > 0) {
                      ctx.fillText(Integer.toString(startWeek + y), posX + boxCenterX, posY + boxCenterY);
+                 } else if (y == 0 && x > 0 && x < 8) {
+                     ctx.fillText(DayOfWeek.values()[x - 1].getDisplayName(TextStyle.NARROW_STANDALONE, Locale.getDefault()), posX + boxCenterX, posY + boxCenterY);
                  }
              }
          }
 
          int indexX = currentDate.getDayOfWeek().getValue() - 1;
-         int indexY = 4;
+         int indexY = 5;
          ctx.setFont(Fonts.sfProRoundedRegular(size * 0.065));
          for (int i = 0 ; i < 30 ; i++) {
              LocalDate date = currentDate.minusDays(i);
@@ -292,7 +283,7 @@
              boxes.put(date, new Rectangle(posX + boxOffset, posY + boxOffset, boxWidth - doubleBoxOffset, boxHeight - doubleBoxOffset));
 
              if (showValue) {
-                 ctx.setFill(valueColor);
+                 ctx.setFill(isDark() ? valueColor : valueColor.darker());
                  if (UnitDefinition.MILLIGRAM_PER_DECILITER == unit) {
                      ctx.fillText(String.format(Locale.US, "%.0f", this.entries.get(selectedDate)), posX + boxCenterX, posY + boxCenterY, boxWidth);
                  } else {

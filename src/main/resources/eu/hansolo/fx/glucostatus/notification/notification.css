@@ -36,11 +36,11 @@
     -fx-background-color : rgb(34, 29, 30);
     -fx-border-color     : rgb(34, 29, 30);
     -fx-border-width     : 1px;
-    -fx-background-radius: 12px;
-    -fx-border-radius    : 12px;
+    -fx-background-radius: 16.25px;
+    -fx-border-radius    : 16.25px;
     -fx-effect           : none;
     -foreground-color    : rgb(242, 241, 241);
-    -background-color    : rgb(0, 0, 0, 0.75); /*rgb(119, 118, 118, 0.95);*/
+    -background-color    : rgb(119, 118, 118, 0.95);
     -icon-color          : white;
 }
 
@@ -49,7 +49,7 @@
     -fx-font-weight     : bold;
     -fx-text-fill       : -foreground-color;
     -fx-content-display : left;
-    -fx-graphic-text-gap: 5px;
+    -fx-graphic-text-gap: 10px;
     -fx-font-family     : "SF Pro";
 }
 

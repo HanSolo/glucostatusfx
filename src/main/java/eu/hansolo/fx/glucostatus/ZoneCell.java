@@ -30,9 +30,9 @@ public class ZoneCell extends ListCell<String> {
 
 
     // ******************** Constructors **************************************
-    public ZoneCell() {
+    public ZoneCell(final boolean darkMode) {
         zoneLabel = new Label();
-        zoneLabel.setTextFill(Constants.BRIGHT_TEXT);
+        zoneLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
         zoneLabel.setFont(Fonts.sfProTextRegular(12));
         zoneLabel.setAlignment(Pos.CENTER);
         zoneLabel.setTextAlignment(TextAlignment.CENTER);

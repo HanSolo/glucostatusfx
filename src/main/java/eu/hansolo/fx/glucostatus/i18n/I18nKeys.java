@@ -63,6 +63,7 @@ public interface I18nKeys {
     String HBAC1_RANGE                                       = "hbac1_range";
     String MATRIX_TITLE                                      = "matrix_title";
     String MATRIX_SUBTITLE                                   = "matrix_subtitle";
+    String MATRIX_CLOSE_BUTTON                               = "matrix_close_button";
     String STATISTICS_TITLE                                  = "statistic_title";
     String STATISTICS_TOO_HIGH                               = "statistic_too_high";
     String STATISTICS_HIGH                                   = "statistic_high";

@@ -252,24 +252,23 @@ public class Helper {
     }
 
     public static final BufferedImage createTextTrayIcon(final String text, final Color color) {
-        int    width    = 64;
-        int    height   = 18;
-        double fontSize = 14;
-        double x        = 32;
-        double y        = 14;
+        final int    width    = 64;
+        final int    height   = 18;
+        final double fontSize = 14;
+        final double x        = 32;
+        final double y        = 14;
 
-        Canvas          canvas = new Canvas(width, height);
-        GraphicsContext ctx    = canvas.getGraphicsContext2D();
+        final Canvas          canvas = new Canvas(width, height);
+        final GraphicsContext ctx    = canvas.getGraphicsContext2D();
         ctx.setFont(Fonts.sfProRoundedRegular(fontSize));
         ctx.setTextAlign(TextAlignment.CENTER);
         ctx.setFill(color);
         ctx.fillText(text, x, y);
 
-        WritableImage img = new WritableImage(width, height);
-        SnapshotParameters parameters = new SnapshotParameters();
+        final WritableImage img = new WritableImage(width, height);
+        final SnapshotParameters parameters = new SnapshotParameters();
         parameters.setFill(Color.TRANSPARENT);
         canvas.snapshot(parameters, img);
-        canvas = null;
 
         return SwingFXUtils.fromFXImage(img, null);
     }

@@ -92,7 +92,8 @@ public class Constants {
     public static final Color  LIGHT_BLUE                                             = Color.color(0.01, 0.6, 0.93);
     public static final Color  BLUE                                                   = Color.color(0.00, 0.43, 1.00);
 
-    public static final Color  DARK_BACKGROUND                                        = Color.rgb(30, 28, 26);
+    public static final Color  DARK_BACKGROUND                                        = Color.rgb(33, 28, 29);
+    public static final Color  BRIGHT_BACKGROUND                                      = Color.rgb(236, 235, 235);
     public static final Color  BRIGHT_TEXT                                            = Color.rgb(255, 246, 245);
     public static final Color  DARK_TEXT                                              = Color.rgb(20, 20, 20);
 
@@ -100,7 +101,7 @@ public class Constants {
     public static final double DELTA_CHART_HEIGHT                                     = 50;
 
     public static final double DEFAULT_SOON_TOO_LOW                                   = 80.0;
-    public static final double DEFAULT_SOON_TOO_HIGH                                  = 350.0;
+    public static final double DEFAULT_SOON_TOO_HIGH                                  = 300.0;
 
     public static final double DEFAULT_MIN_VALUE                                      = 0.0;
     public static final double DEFAULT_MAX_VALUE                                      = 400.0;

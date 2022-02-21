@@ -24,8 +24,10 @@ import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
+import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ObjectPropertyBase;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
@@ -35,8 +37,6 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextFormatter;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
@@ -44,7 +44,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.TextAlignment;
 import javafx.stage.Modality;
 import javafx.stage.Popup;
 import javafx.stage.Screen;
@@ -61,7 +60,7 @@ public class Notification {
     public static final Image  SUCCESS_ICON                 = new Image(Notifier.class.getResourceAsStream("success.png"));
     public static final Image  ERROR_ICON                   = new Image(Notifier.class.getResourceAsStream("error.png"));
     public static final long   DEFAULT_POPUP_LIFETIME       = 5000;
-    public static final long   DEFAULT_POPUP_ANIMATION_TIME = 500;
+    public static final long   DEFAULT_POPUP_ANIMATION_TIME = 250;
     public static final double DEFAULT_POPUP_PADDING        = 10;
     public static final double DEFAULT_POPUP_SPACING        = 5;
     public final        String title;
@@ -90,18 +89,18 @@ public class Notification {
         private static final double                ICON_WIDTH      = 46;
         private static final double                ICON_HEIGHT     = 46;
         private static       OperatingSystem       operatingSystem = eu.hansolo.toolbox.Helper.getOperatingSystem();
-        private static       double                width           = OperatingSystem.WINDOWS == operatingSystem ? 332 : 346;
+        private static       double                width           = OperatingSystem.WINDOWS == operatingSystem ? 332 : 345;
         private static       double                height          = OperatingSystem.WINDOWS == operatingSystem ? 92 : 65;
-        private static       double                offsetX         = OperatingSystem.WINDOWS == operatingSystem ? 0 : 10;
-        private static       double                offsetY         = OperatingSystem.WINDOWS == operatingSystem ? 72 : 40;
+        private static       double                offsetX         = OperatingSystem.WINDOWS == operatingSystem ? 0 : 16;
+        private static       double                offsetY         = OperatingSystem.WINDOWS == operatingSystem ? 72 : 50;
         private static       double                spacingY        = 5;
         private static       Pos                   popupLocation   = Pos.TOP_RIGHT;
         private static       Stage                 stageRef        = null;
+        private              ObservableList<Popup> popups          = FXCollections.observableArrayList();
         private              Duration              popupLifetime;
         private              Duration              popupAnimationTime;
         private              Stage                 stage;
         private              Scene                 scene;
-        private              ObservableList<Popup> popups;
 
 
         // ******************** Constructors **************************************
@@ -115,7 +114,6 @@ public class Notification {
         private void init() {
             popupLifetime      = Duration.millis(DEFAULT_POPUP_LIFETIME);
             popupAnimationTime = Duration.millis(DEFAULT_POPUP_ANIMATION_TIME);
-            popups             = FXCollections.observableArrayList();
         }
 
         private void initGraphics() {
@@ -316,6 +314,8 @@ public class Notification {
          */
         public void setAlwaysOnTop(final boolean alwaysOnTop) { stage.setAlwaysOnTop(alwaysOnTop); }
 
+        public int getNoOfPopups() { return popups.size(); }
+
         /**
          * Makes sure that the given VALUE is within the range of MIN to MAX
          * @param min
@@ -398,15 +398,34 @@ public class Notification {
             popups.add(popup);
 
             // Add a timeline for popup fade out
+            Timeline timelineOut;
+            if (OperatingSystem.WINDOWS == operatingSystem) {
             KeyValue fadeOutBegin = new KeyValue(popup.opacityProperty(), 1.0);
             KeyValue fadeOutEnd   = new KeyValue(popup.opacityProperty(), 0.0);
 
             KeyFrame kfBegin = new KeyFrame(Duration.ZERO, fadeOutBegin);
             KeyFrame kfEnd   = new KeyFrame(popupAnimationTime, fadeOutEnd);
 
-            Timeline timeline = new Timeline(kfBegin, kfEnd);
-            timeline.setDelay(popupLifetime);
-            timeline.setOnFinished(actionEvent -> Platform.runLater(() -> {
+                timelineOut = new Timeline(kfBegin, kfEnd);
+            } else {
+                DoubleProperty popupXProperty = new SimpleDoubleProperty(popup.getX());
+
+                KeyValue fadeOutBegin = new KeyValue(popup.opacityProperty(), 1.0);
+                KeyValue moveOutBegin = new KeyValue(popupXProperty, popup.getX());
+
+                KeyValue fadeOutEnd   = new KeyValue(popup.opacityProperty(), 0.0);
+                KeyValue moveOutEnd   = new KeyValue(popupXProperty, popup.getX() + 16);
+
+                KeyFrame kfBegin = new KeyFrame(Duration.ZERO, moveOutBegin, fadeOutBegin);
+                KeyFrame kfEnd   = new KeyFrame(popupAnimationTime, fadeOutEnd, moveOutEnd);
+
+                timelineOut = new Timeline(kfBegin, kfEnd);
+
+                popupXProperty.addListener((o, ov, nv) -> popup.setX(nv.doubleValue()));
+            }
+
+            timelineOut.setDelay(popupLifetime);
+            timelineOut.setOnFinished(actionEvent -> Platform.runLater(() -> {
                 popup.hide();
                 popups.remove(popup);
                 fireNotificationEvent(new NotificationEvent(notification, Notifier.this, popup, NotificationEvent.HIDE_NOTIFICATION));
@@ -418,9 +437,35 @@ public class Notification {
                 stage.show();
             }
 
+            if (OperatingSystem.WINDOWS == operatingSystem) {
             popup.show(stage);
             fireNotificationEvent(new NotificationEvent(notification, Notifier.this, popup, NotificationEvent.SHOW_NOTIFICATION));
-            timeline.play();
+                timelineOut.play();
+            } else {
+                popup.setOpacity(0);
+                DoubleProperty popupXProperty = new SimpleDoubleProperty(popup.getX() + 16);
+
+                KeyValue fadeInBegin = new KeyValue(popup.opacityProperty(), 0.0);
+                KeyValue moveInBegin = new KeyValue(popupXProperty, popup.getX() + 16);
+
+                KeyValue fadeInEnd   = new KeyValue(popup.opacityProperty(), 1.0);
+                KeyValue moveInEnd   = new KeyValue(popupXProperty, popup.getX());
+
+                KeyFrame kfBegin = new KeyFrame(Duration.ZERO, moveInBegin, fadeInBegin);
+                KeyFrame kfEnd   = new KeyFrame(popupAnimationTime, fadeInEnd, moveInEnd);
+
+                Timeline timelineIn = new Timeline(kfBegin, kfEnd);
+
+                popupXProperty.addListener((o, ov, nv) -> popup.setX(nv.doubleValue()));
+
+                timelineIn.setOnFinished(actionEvent -> Platform.runLater(() -> {
+                    fireNotificationEvent(new NotificationEvent(notification, Notifier.this, popup, NotificationEvent.SHOW_NOTIFICATION));
+                    timelineOut.play();
+                }));
+                popup.show(stage);
+
+                timelineIn.play();
+            }
         }
 
         private double getX() {
