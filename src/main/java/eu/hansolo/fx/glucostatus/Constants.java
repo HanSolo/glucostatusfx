@@ -51,8 +51,8 @@ public class Constants {
     public static final String PROPERTIES_NIGHTSCOUT_URL                              = "NIGHTSCOUT_URL";
     public static final String PROPERTIES_UNIT_MG                                     = "UNIT_MG";
     public static final String PROPERTIES_SHOW_DELTA_CHART                            = "SHOW_DELTA_CHART";
-    public static final String PROPERTIES_TOO_LOW_INTERVAL                            = "TOO_LOW_INTERVAL";
-    public static final String PROPERTIES_TOO_HIGH_INTERVAL                           = "TOO_HIGH_INTERVAL";
+    public static final String PROPERTIES_VOICE_OUTPUT                                = "VOICE_OUTPUT";
+    public static final String PROPERTIES_VOICE_OUTPUT_INTERVAL                       = "VOICE_OUTPUT_INTERVAL";
     public static final String PROPERTIES_MIN_ACCEPTABLE_MIN                          = "MIN_ACCEPTABLE_MIN";
     public static final String PROPERTIES_MIN_ACCEPTABLE_MAX                          = "MIN_ACCEPTABLE_MAX";
     public static final String PROPERTIES_MIN_NORMAL_MIN                              = "MIN_NORMAL_MIN";
@@ -74,7 +74,9 @@ public class Constants {
     public static final String PROPERTIES_SHOW_LOW_VALUE_NOTIFICATION                 = "SHOW_LOW_VALUE_NOTIFICATION";
     public static final String PROPERTIES_SHOW_ACCEPTABLE_LOW_VALUE_NOTIFICATION      = "SHOW_ACCEPTABLE_LOW_VALUE_NOTIFICATION";
     public static final String PROPERTIES_PLAY_SOUND_FOR_TOO_LOW_NOTIFICATION         = "PLAY_SOUND_FOR_TOO_LOW_NOTIFICATION";
+    public static final String PROPERTIES_SPEAK_TOO_LOW_NOTIFICATION                  = "SPEAK_TOO_LOW_NOTIFICATION";
     public static final String PROPERTIES_PLAY_SOUND_FOR_LOW_NOTIFICATION             = "PLAY_SOUND_FOR_LOW_NOTIFICATION";
+    public static final String PROPERTIES_SPEAK_LOW_NOTIFICATION                      = "SPEAK_LOW_NOTIFICATION";
     public static final String PROPERTIES_PLAY_SOUND_FOR_ACCEPTABLE_LOW_NOTIFICATION  = "PLAY_SOUND_FOR_ACCEPTABLE_LOW_NOTIFICATION";
     public static final String PROPERTIES_PLAY_SOUND_FOR_ACCEPTABLE_HIGH_NOTIFICATION = "PLAY_SOUND_FOR_ACCEPTABLE_HIGH_NOTIFICATION";
     public static final String PROPERTIES_PLAY_SOUND_FOR_HIGH_NOTIFICATION            = "PLAY_SOUND_FOR_HIGH_NOTIFICATION";

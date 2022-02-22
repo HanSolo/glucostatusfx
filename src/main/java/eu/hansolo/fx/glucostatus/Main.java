@@ -117,6 +117,7 @@ import javafx.stage.StageStyle;
 import javafx.util.Duration;
 
 import javax.swing.*;
+import java.io.IOException;
 import java.net.http.HttpResponse;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -153,6 +154,8 @@ public class Main extends Application {
     private              boolean                    darkMode;
     private              Color                      accentColor;
     private              ZonedDateTime              lastNotification;
+    private              ZonedDateTime              lastSpeak;
+    private              String                     voice;
     private              Notification.Notifier      notifier;
     private              AudioClip                  notificationSound;
     private              Dialog                     aboutDialog;
@@ -182,9 +185,13 @@ public class Main extends Application {
     private              MacosTextField             nightscoutUrlTextField;
     private              MacosSwitch                unitSwitch;
     private              MacosSwitch                deltaChartSwitch;
+    private              MacosSwitch                voiceOutputSwitch;
+    private              MacosSlider                voiceOutputIntervalSlider;
     private              MacosSwitch                tooLowSoundSwitch;
+    private              MacosSwitch                tooLowSpeakSwitch;
     private              MacosSwitch                enableLowSoundSwitch;
     private              MacosSwitch                lowSoundSwitch;
+    private              MacosSwitch                lowSpeakSwitch;
     private              MacosSwitch                enableAcceptableLowSoundSwitch;
     private              MacosSwitch                acceptableLowSoundSwitch;
     private              MacosSwitch                enableAcceptableHighSoundSwitch;
@@ -261,11 +268,23 @@ public class Main extends Application {
         dialogVisible     = new SimpleBooleanProperty(false);
         deltaChartVisible = false;
         lastNotification  = ZonedDateTime.now();
+        lastSpeak         = ZonedDateTime.now().minusMinutes(6);
         notificationSound = new AudioClip(getClass().getResource("alarm.wav").toExternalForm());
         slowlyRising      = false;
         slowlyFalling     = false;
         currentEntry      = new GlucoEntry("-1", 0, Instant.now().getEpochSecond(), Instant.now(), "", Trend.NONE, "", "", "", 2, 0, 0, 0, 0, 0, "");
         dtf               = DateTimeFormatter.ofPattern(translator.get(I18nKeys.DATE_TIME_FORMAT));
+
+
+        Locale locale = Locale.getDefault();
+        if (locale.equals(Locale.GERMAN)) {
+            voice = "Anna";
+        } else if (locale.equals(Locale.ITALY)) {
+            voice = "Alice";
+        } else {
+            voice = "Samantha";
+        }
+
         updateSettings();
 
         ticklabelFont      = Fonts.sfProTextRegular(10);
@@ -765,6 +784,8 @@ public class Main extends Application {
         Trend         trend                                  = currentEntry.trend();
         ZonedDateTime now                                    = ZonedDateTime.now();
         double        value                                  = currentEntry.sgv();
+        boolean       voiceOutput                            = PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_VOICE_OUTPUT, false);
+        double        voiceOutputInterval                    = PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_VOICE_OUTPUT_INTERVAL, 5.0) * 60.0;
         double        maxCritical                            = PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MAX_CRITICAL);
         double        maxAcceptable                          = PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MAX_ACCEPTABLE);
         double        maxNormal                              = PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MAX_NORMAL);
@@ -779,14 +800,15 @@ public class Main extends Application {
         boolean       playSoundForHighNotification           = PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_PLAY_SOUND_FOR_HIGH_NOTIFICATION);
         boolean       playSoundForAcceptableHighNotification = PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_PLAY_SOUND_FOR_ACCEPTABLE_HIGH_NOTIFICATION);
         boolean       playSoundForTooLowNotification         = PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_PLAY_SOUND_FOR_TOO_LOW_NOTIFICATION);
+        boolean       speakTooLowNotification                = PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_SPEAK_TOO_LOW_NOTIFICATION, false);
         boolean       playSoundForLowNotification            = PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_PLAY_SOUND_FOR_LOW_NOTIFICATION);
+        boolean       speakLowNotification                   = PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_SPEAK_LOW_NOTIFICATION, false);
         boolean       playSoundForAcceptableLowNotification  = PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_PLAY_SOUND_FOR_ACCEPTABLE_LOW_NOTIFICATION);
-        long          criticalMaxNotificationInterval        = PropertyManager.INSTANCE.getLong(Constants.PROPERTIES_CRITICAL_MAX_NOTIFICATION_INTERVAL);
-        long          criticalMinNotificationInterval        = PropertyManager.INSTANCE.getLong(Constants.PROPERTIES_CRITICAL_MIN_NOTIFICATION_INTERVAL);
+        double        criticalMinNotificationInterval        = PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_CRITICAL_MIN_NOTIFICATION_INTERVAL) * 60.0;
+        double        criticalMaxNotificationInterval        = PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_CRITICAL_MAX_NOTIFICATION_INTERVAL) * 60.0;
 
         boolean playSound = false;
         String  msg       = "";
-
 
         if (value > maxCritical) {
             // TOO HIGH
@@ -849,6 +871,12 @@ public class Main extends Application {
                     msg = translator.get(I18nKeys.NOTIFICATION_GLUCOSE_LOW);
                 }
                 if (playSoundForLowNotification) {  playSound = true;  }
+                if (speakLowNotification) {
+                    // Speak low notification
+                    if (OperatingSystem.MACOS == operatingSystem) {
+                        speak(voice, msg);
+                    }
+                }
             } else {
                 msg = "";
             }
@@ -860,10 +888,22 @@ public class Main extends Application {
                 if (now.toEpochSecond() - lastNotification.toEpochSecond() > criticalMinNotificationInterval) {
                     msg = translator.get(I18nKeys.NOTIFICATION_GLUCOSE_TOO_LOW);
                     if (playSoundForTooLowNotification) {  playSound = true;  }
+                    if (speakTooLowNotification) {
+                        // Speak
+                        if (OperatingSystem.MACOS == operatingSystem) {
+                            speak(voice, msg);
+                        }
+                    }
                 }
             } else {
                 msg = translator.get(I18nKeys.NOTIFICATION_GLUCOSE_TOO_LOW);
                 if (playSoundForTooLowNotification) {  playSound = true;  }
+                if (speakTooLowNotification) {
+                    // Speak
+                    if (OperatingSystem.MACOS == operatingSystem) {
+                        speak(voice, msg);
+                    }
+                }
             }
         }
 
@@ -876,6 +916,17 @@ public class Main extends Application {
         if (playSound) { notificationSound.play(); }
         Platform.runLater(() -> { if (notifier.getNoOfPopups() == 0) { notifier.notify(notification); }});
 
+        if (voiceOutput) {
+            if (now.toEpochSecond() - lastSpeak.toEpochSecond() > voiceOutputInterval) {
+                // Speak
+                if (OperatingSystem.MACOS == operatingSystem) {
+                    String message = new StringBuilder().append(String.format(Locale.US, format, currentEntry.sgv())).append(" ").append(currentUnit.UNIT.getUnitName()).append(" ").append(translator.get(trend.getSpeakText())).toString();
+                    speak(voice, message);
+                }
+                lastSpeak = now;
+            }
+        }
+
         lastNotification = now;
     }
 
@@ -883,8 +934,12 @@ public class Main extends Application {
         nightscoutUrlTextField.setText(PropertyManager.INSTANCE.getString(Constants.PROPERTIES_NIGHTSCOUT_URL));
         unitSwitch.setSelected(PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_UNIT_MG));
         deltaChartSwitch.setSelected(PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_SHOW_DELTA_CHART));
+        voiceOutputSwitch.setSelected(PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_VOICE_OUTPUT, false));
+        voiceOutputIntervalSlider.setValue(PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_VOICE_OUTPUT_INTERVAL, 5));
         tooLowSoundSwitch.setSelected(PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_PLAY_SOUND_FOR_TOO_LOW_NOTIFICATION));
+        tooLowSpeakSwitch.setSelected(PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_SPEAK_TOO_LOW_NOTIFICATION, false));
         enableLowSoundSwitch.setSelected(PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_SHOW_LOW_VALUE_NOTIFICATION));
+        lowSpeakSwitch.setSelected(PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_SPEAK_LOW_NOTIFICATION, false));
         lowSoundSwitch.setSelected(PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_PLAY_SOUND_FOR_LOW_NOTIFICATION));
         enableAcceptableLowSoundSwitch.setSelected(PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_SHOW_ACCEPTABLE_LOW_VALUE_NOTIFICATION));
         acceptableLowSoundSwitch.setSelected(PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_PLAY_SOUND_FOR_ACCEPTABLE_LOW_NOTIFICATION));
@@ -893,8 +948,8 @@ public class Main extends Application {
         enableHighSoundSwitch.setSelected(PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_SHOW_HIGH_VALUE_NOTIFICATION));
         highSoundSwitch.setSelected(PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_PLAY_SOUND_FOR_HIGH_NOTIFICATION));
         tooHighSoundSwitch.setSelected(PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_PLAY_SOUND_FOR_TOO_HIGH_NOTIFICATION));
-        tooLowIntervalSlider.setValue(PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_TOO_LOW_INTERVAL));
-        tooHighIntervalSlider.setValue(PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_TOO_HIGH_INTERVAL));
+        tooLowIntervalSlider.setValue(PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_CRITICAL_MIN_NOTIFICATION_INTERVAL));
+        tooHighIntervalSlider.setValue(PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_CRITICAL_MAX_NOTIFICATION_INTERVAL));
         minAcceptableSlider.setValue(UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MIN_ACCEPTABLE) : Helper.mgPerDeciliterToMmolPerLiter(PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MIN_ACCEPTABLE)));
         minNormalSlider.setValue(UnitDefinition.MILLIGRAM_PER_DECILITER     == currentUnit ? PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MIN_NORMAL)     : Helper.mgPerDeciliterToMmolPerLiter(PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MIN_NORMAL)));
         maxNormalSlider.setValue(UnitDefinition.MILLIGRAM_PER_DECILITER     == currentUnit ? PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MAX_NORMAL)     : Helper.mgPerDeciliterToMmolPerLiter(PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MAX_NORMAL)));
@@ -905,9 +960,13 @@ public class Main extends Application {
         PropertyManager.INSTANCE.setString(Constants.PROPERTIES_NIGHTSCOUT_URL, nightscoutUrlTextField.getText());
         PropertyManager.INSTANCE.setBoolean(Constants.PROPERTIES_UNIT_MG, unitSwitch.isSelected());
         PropertyManager.INSTANCE.setBoolean(Constants.PROPERTIES_SHOW_DELTA_CHART, deltaChartSwitch.isSelected());
+        PropertyManager.INSTANCE.setBoolean(Constants.PROPERTIES_VOICE_OUTPUT, voiceOutputSwitch.isSelected());
+        PropertyManager.INSTANCE.setDouble(Constants.PROPERTIES_VOICE_OUTPUT_INTERVAL, voiceOutputIntervalSlider.getValue());
         PropertyManager.INSTANCE.setBoolean(Constants.PROPERTIES_PLAY_SOUND_FOR_TOO_LOW_NOTIFICATION, tooLowSoundSwitch.isSelected());
+        PropertyManager.INSTANCE.setBoolean(Constants.PROPERTIES_SPEAK_TOO_LOW_NOTIFICATION, tooLowSpeakSwitch.isSelected());
         PropertyManager.INSTANCE.setBoolean(Constants.PROPERTIES_SHOW_LOW_VALUE_NOTIFICATION, enableLowSoundSwitch.isSelected());
         PropertyManager.INSTANCE.setBoolean(Constants.PROPERTIES_PLAY_SOUND_FOR_LOW_NOTIFICATION, lowSoundSwitch.isSelected());
+        PropertyManager.INSTANCE.setBoolean(Constants.PROPERTIES_SPEAK_LOW_NOTIFICATION, lowSpeakSwitch.isSelected());
         PropertyManager.INSTANCE.setBoolean(Constants.PROPERTIES_SHOW_ACCEPTABLE_LOW_VALUE_NOTIFICATION, enableAcceptableLowSoundSwitch.isSelected());
         PropertyManager.INSTANCE.setBoolean(Constants.PROPERTIES_PLAY_SOUND_FOR_ACCEPTABLE_LOW_NOTIFICATION, acceptableLowSoundSwitch.isSelected());
         PropertyManager.INSTANCE.setBoolean(Constants.PROPERTIES_SHOW_ACCEPTABLE_HIGH_VALUE_NOTIFICATION, enableAcceptableHighSoundSwitch.isSelected());
@@ -915,8 +974,8 @@ public class Main extends Application {
         PropertyManager.INSTANCE.setBoolean(Constants.PROPERTIES_SHOW_HIGH_VALUE_NOTIFICATION, enableHighSoundSwitch.isSelected());
         PropertyManager.INSTANCE.setBoolean(Constants.PROPERTIES_PLAY_SOUND_FOR_HIGH_NOTIFICATION, highSoundSwitch.isSelected());
         PropertyManager.INSTANCE.setBoolean(Constants.PROPERTIES_PLAY_SOUND_FOR_TOO_HIGH_NOTIFICATION, tooHighSoundSwitch.isSelected());
-        PropertyManager.INSTANCE.setDouble(Constants.PROPERTIES_TOO_LOW_INTERVAL, tooLowIntervalSlider.getValue());
-        PropertyManager.INSTANCE.setDouble(Constants.PROPERTIES_TOO_HIGH_INTERVAL, tooHighIntervalSlider.getValue());
+        PropertyManager.INSTANCE.setDouble(Constants.PROPERTIES_CRITICAL_MIN_NOTIFICATION_INTERVAL, tooLowIntervalSlider.getValue());
+        PropertyManager.INSTANCE.setDouble(Constants.PROPERTIES_CRITICAL_MAX_NOTIFICATION_INTERVAL, tooHighIntervalSlider.getValue());
         PropertyManager.INSTANCE.setDouble(Constants.PROPERTIES_MIN_ACCEPTABLE, UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? minAcceptableSlider.getValue() : Helper.mmolPerLiterToMgPerDeciliter(minAcceptableSlider.getValue()));
         PropertyManager.INSTANCE.setDouble(Constants.PROPERTIES_MIN_NORMAL,     UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? minNormalSlider.getValue()     : Helper.mmolPerLiterToMgPerDeciliter(minNormalSlider.getValue()));
         PropertyManager.INSTANCE.setDouble(Constants.PROPERTIES_MAX_NORMAL,     UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? maxNormalSlider.getValue()     : Helper.mmolPerLiterToMgPerDeciliter(maxNormalSlider.getValue()));
@@ -1212,6 +1271,19 @@ public class Main extends Application {
         ctx.stroke();
     }
 
+    private void speak(final String voice, final String msg) {
+        if (OperatingSystem.MACOS != operatingSystem || null == voice || voice.isEmpty() || null == msg || msg.isEmpty()) { return; }
+        final ProcessBuilder processBuilder = new ProcessBuilder();
+        final String         message        = new StringBuilder("say -v ").append(voice).append(" ").append(msg).toString();
+        processBuilder.command("sh", "-c", message);
+        try {
+            Process process = processBuilder.start();
+            process.waitFor();
+        } catch (InterruptedException | IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     // ******************** Factory methods ***********************************
     private Text createDeltaText(final String text, final boolean bold, final double size) {
@@ -1465,7 +1537,39 @@ public class Main extends Application {
 
         MacosSeparator s3 = new MacosSeparator(Orientation.HORIZONTAL);
         s3.setDark(darkMode);
-        VBox.setMargin(s3, new Insets(5, 0, 5, 0));
+        VBox.setMargin(s3, new Insets(5, 0, 10, 0));
+
+
+        voiceOutputSwitch = MacosSwitchBuilder.create().dark(darkMode).ios(true).selectedColor(accentColor).build();
+        MacosLabel voiceOutputLabel = createLabel(translator.get(I18nKeys.SETTINGS_VOICE_OUTPUT), 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.ALWAYS);
+
+        MacosLabel voiceOutputIntervalLabel = createLabel(translator.get(I18nKeys.SETTINGS_VOICE_OUTPUT_INTERVAL) + "5 min", 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.ALWAYS);
+        VBox.setMargin(voiceOutputIntervalLabel, new Insets(10, 0, 5, 0));
+        voiceOutputIntervalSlider = new MacosSlider();
+        voiceOutputIntervalSlider.setDark(darkMode);
+        voiceOutputIntervalSlider.setMin(5);
+        voiceOutputIntervalSlider.setMax(60);
+        voiceOutputIntervalSlider.setSnapToTicks(true);
+        voiceOutputIntervalSlider.setShowTickMarks(true);
+        voiceOutputIntervalSlider.setMinorTickCount(0);
+        voiceOutputIntervalSlider.setMajorTickUnit(5);
+        voiceOutputIntervalSlider.setBlockIncrement(5);
+        voiceOutputIntervalSlider.valueProperty().addListener((o, ov, nv) -> voiceOutputIntervalLabel.setText(translator.get(I18nKeys.SETTINGS_VOICE_OUTPUT_INTERVAL) + String.format(Locale.US, "%.0f", voiceOutputIntervalSlider.getValue()) + " min"));
+        VBox.setMargin(voiceOutputIntervalSlider, new Insets(5, 0, 5, 0));
+
+        if (OperatingSystem.MACOS != operatingSystem) {
+            voiceOutputSwitch.setVisible(false);
+            voiceOutputSwitch.setManaged(false);
+            voiceOutputLabel.setVisible(false);
+            voiceOutputLabel.setManaged(false);
+            voiceOutputIntervalLabel.setVisible(false);
+            voiceOutputIntervalLabel.setManaged(false);
+            voiceOutputIntervalSlider.setVisible(false);
+            voiceOutputIntervalSlider.setManaged(false);
+        }
+
+        HBox voiceOutputBox = new HBox(10, voiceOutputSwitch, voiceOutputLabel);
+        unitBox.setAlignment(Pos.CENTER_LEFT);
 
 
         MacosLabel notificationsLabel = new MacosLabel(translator.get(I18nKeys.SETTINGS_NOTIFICATION_TITLE));
@@ -1477,7 +1581,22 @@ public class Main extends Application {
         MacosLabel tooLowSoundLabel = createLabel(translator.get(I18nKeys.SETTINGS_TOO_LOW_VALUE_NOTIFICATION_SOUND), 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_RIGHT, Priority.ALWAYS);
         tooLowSoundLabel.setMaxWidth(Double.MAX_VALUE);
         tooLowSoundSwitch = MacosSwitchBuilder.create().dark(darkMode).ios(true).selectedColor(accentColor).build();
-        HBox tooLowBox = new HBox(10, tooLowLabel, tooLowSoundLabel, tooLowSoundSwitch);
+
+        Region     tooLowLeftSpacer = new Region();
+        MacosLabel tooLowSpeakLabel = createLabel(translator.get(I18nKeys.SETTINGS_TOO_LOW_VALUE_NOTIFICATION_SPEAK), 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_RIGHT, Priority.NEVER);
+        tooLowSpeakSwitch = MacosSwitchBuilder.create().dark(darkMode).ios(true).selectedColor(accentColor).build();
+        HBox tooLowSpeakBox = new HBox(10, tooLowSpeakLabel, tooLowSpeakSwitch);
+        tooLowSpeakBox.setAlignment(Pos.CENTER);
+        Region tooLowRightSpacer = new Region();
+        if (OperatingSystem.MACOS != operatingSystem) {
+            tooLowSpeakBox.setVisible(false);
+            tooLowSpeakBox.setManaged(false);
+        }
+        HBox.setHgrow(tooLowLeftSpacer, Priority.ALWAYS);
+        HBox.setHgrow(tooLowSpeakBox, Priority.NEVER);
+        HBox.setHgrow(tooLowRightSpacer, Priority.ALWAYS);
+
+        HBox tooLowBox = new HBox(10, tooLowLabel, tooLowLeftSpacer, tooLowSpeakBox, tooLowRightSpacer, tooLowSoundLabel, tooLowSoundSwitch);
         tooLowBox.setAlignment(Pos.CENTER_LEFT);
 
         // Low
@@ -1486,7 +1605,22 @@ public class Main extends Application {
         MacosLabel lowSoundLabel = createLabel(translator.get(I18nKeys.SETTINGS_LOW_VALUE_NOTIFICATION_SOUND), 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_RIGHT, Priority.ALWAYS);
         lowSoundLabel.setMaxWidth(Double.MAX_VALUE);
         lowSoundSwitch = MacosSwitchBuilder.create().dark(darkMode).ios(true).selectedColor(accentColor).build();
-        HBox lowBox = new HBox(10, enableLowSoundSwitch, lowLabel, lowSoundLabel, lowSoundSwitch);
+
+        Region     lowLeftSpacer = new Region();
+        MacosLabel lowSpeakLabel = createLabel(translator.get(I18nKeys.SETTINGS_LOW_VALUE_NOTIFICATION_SPEAK), 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_RIGHT, Priority.NEVER);
+        lowSpeakSwitch = MacosSwitchBuilder.create().dark(darkMode).ios(true).selectedColor(accentColor).build();
+        HBox lowSpeakBox = new HBox(10, lowSpeakLabel, lowSpeakSwitch);
+        lowSpeakBox.setAlignment(Pos.CENTER);
+        Region lowRightSpacer = new Region();
+        if (OperatingSystem.MACOS != operatingSystem) {
+            lowSpeakBox.setVisible(false);
+            lowSpeakBox.setManaged(false);
+        }
+        HBox.setHgrow(lowLeftSpacer, Priority.ALWAYS);
+        HBox.setHgrow(lowSpeakBox, Priority.NEVER);
+        HBox.setHgrow(lowRightSpacer, Priority.ALWAYS);
+
+        HBox lowBox = new HBox(10, enableLowSoundSwitch, lowLabel, lowLeftSpacer, lowSpeakBox, lowRightSpacer, lowSoundLabel, lowSoundSwitch);
         lowBox.setAlignment(Pos.CENTER_LEFT);
 
         // Acceptable low
@@ -1633,7 +1767,8 @@ public class Main extends Application {
         });
 
 
-        VBox settingsVBox = new VBox(10, nightscoutUrlBox, s1, unitBox, s2, deltaChartBox, s3,
+        VBox settingsVBox = new VBox(5, nightscoutUrlBox, s1, unitBox, s2, deltaChartBox, s3,
+                                     voiceOutputBox, voiceOutputIntervalLabel, voiceOutputIntervalSlider,
                                      notificationsLabel, tooLowBox, lowBox, acceptableLowBox, acceptableHighBox, highBox, tooHighBox, s4,
                                      tooLowIntervalLabel, tooLowIntervalSlider, tooHighIntervalLabel, tooHighIntervalSlider, s5,
                                      rangesLabel, minAcceptableLabel, minAcceptableSlider, minNormalLabel, minNormalSlider, maxNormalLabel, maxNormalSlider, maxAcceptableLabel, maxAcceptableSlider);

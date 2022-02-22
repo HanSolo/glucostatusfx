@@ -94,11 +94,15 @@ public interface I18nKeys {
     String SETTINGS_NIGHTSCOUT_URL                           = "settings_nightscouturl";
     String SETTINGS_UNIT                                     = "settings_unit";
     String SETTINGS_SHOW_DELTA_CHART                         = "settings_show_deltachart";
+    String SETTINGS_VOICE_OUTPUT                             = "settings_voice_output";
+    String SETTINGS_VOICE_OUTPUT_INTERVAL                    = "settings_voice_output_interval";
     String SETTINGS_NOTIFICATION_TITLE                       = "settings_notifications_title";
     String SETTINGS_TOO_LOW_VALUE_NOTIFICATION               = "settings_too_low_value_notification";
     String SETTINGS_TOO_LOW_VALUE_NOTIFICATION_SOUND         = "settings_too_low_value_notification_sound";
+    String SETTINGS_TOO_LOW_VALUE_NOTIFICATION_SPEAK         = "settings_too_low_value_notification_speak";
     String SETTINGS_LOW_VALUE_NOTIFICATION                   = "settings_low_value_notification";
     String SETTINGS_LOW_VALUE_NOTIFICATION_SOUND             = "settings_low_value_notification_sound";
+    String SETTINGS_LOW_VALUE_NOTIFICATION_SPEAK             = "settings_low_value_notification_speak";
     String SETTINGS_ACCEPTABLE_LOW_VALUE_NOTIFICATION        = "settings_acceptable_low_value_notification";
     String SETTINGS_ACCEPTABLE_LOW_VALUE_NOTIFICATION_SOUND  = "settings_acceptable_low_value_notification_sound";
     String SETTINGS_ACCEPTABLE_HIGH_VALUE_NOTIFICATION       = "settings_acceptable_high_value_notification";
@@ -120,4 +124,11 @@ public interface I18nKeys {
     String PREDICTION_TITLE_TOO_HIGH                         = "prediction_title_too_high";
     String PREDICTION_TOO_HIGH                               = "prediction_too_high";
     String PATTERN_VIEW_NOT_PATTERNS                         = "pattern_view_no_patterns";
+    String TREND_FLAT                                        = "trend_flat";
+    String TREND_SINGLE_UP                                   = "trend_single_up";
+    String TREND_DOUBLE_UP                                   = "trend_double_up";
+    String TREND_DOUBLE_DOWN                                 = "trend_double_down";
+    String TREND_SINGLE_DOWN                                 = "trend_single_down";
+    String TREND_FORTY_FIVE_DOWN                             = "trend_forty_five_down";
+    String TREND_FORTY_FIVE_UP                               = "trend_forty_five_up";
 }
