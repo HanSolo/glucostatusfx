@@ -807,6 +807,19 @@ public class Main extends Application {
         double        criticalMinNotificationInterval        = PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_CRITICAL_MIN_NOTIFICATION_INTERVAL) * 60.0;
         double        criticalMaxNotificationInterval        = PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_CRITICAL_MAX_NOTIFICATION_INTERVAL) * 60.0;
 
+        String        format                                 = MILLIGRAM_PER_DECILITER == currentUnit ? "%.0f" : "%.1f";
+
+        if (voiceOutput) {
+            if (now.toEpochSecond() - lastSpeak.toEpochSecond() > voiceOutputInterval) {
+                // Speak
+                if (OperatingSystem.MACOS == operatingSystem) {
+                    String message = new StringBuilder().append(String.format(Locale.US, format, currentEntry.sgv())).append(" ").append(currentUnit.UNIT.getUnitName()).append(" ").append(translator.get(trend.getSpeakText())).toString();
+                    speak(voice, message);
+                }
+                lastSpeak = now;
+            }
+        }
+
         boolean playSound = false;
         String  msg       = "";
 
@@ -909,23 +922,11 @@ public class Main extends Application {
 
         if (msg.isEmpty()) { return; }
 
-        String format = MILLIGRAM_PER_DECILITER == currentUnit ? "%.0f" : "%.1f";
         String body = new StringBuilder().append(msg).append(" (").append(String.format(Locale.US, format, currentEntry.sgv())).append(" ").append(currentEntry.trend().getSymbol()).append(")").toString();
         Notification notification = NotificationBuilder.create().title(translator.get(I18nKeys.NOTIFICATION_TITLE)).message(body).image(icon).build();
 
         if (playSound) { notificationSound.play(); }
         Platform.runLater(() -> { if (notifier.getNoOfPopups() == 0) { notifier.notify(notification); }});
-
-        if (voiceOutput) {
-            if (now.toEpochSecond() - lastSpeak.toEpochSecond() > voiceOutputInterval) {
-                // Speak
-                if (OperatingSystem.MACOS == operatingSystem) {
-                    String message = new StringBuilder().append(String.format(Locale.US, format, currentEntry.sgv())).append(" ").append(currentUnit.UNIT.getUnitName()).append(" ").append(translator.get(trend.getSpeakText())).toString();
-                    speak(voice, message);
-                }
-                lastSpeak = now;
-            }
-        }
 
         lastNotification = now;
     }
