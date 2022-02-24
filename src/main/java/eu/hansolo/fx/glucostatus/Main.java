@@ -45,6 +45,7 @@ import eu.hansolo.fx.glucostatus.notification.NotificationBuilder;
 import eu.hansolo.fx.glucostatus.notification.NotifierBuilder;
 import eu.hansolo.jdktools.Architecture;
 import eu.hansolo.jdktools.OperatingSystem;
+import eu.hansolo.jdktools.util.Helper.OsArcMode;
 import eu.hansolo.toolbox.tuples.Pair;
 import eu.hansolo.toolbox.unit.UnitDefinition;
 import eu.hansolo.toolboxfx.HelperFX;
@@ -133,8 +134,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static eu.hansolo.toolbox.Helper.getArchitecture;
-import static eu.hansolo.toolbox.Helper.getOperatingSystem;
 import static eu.hansolo.toolbox.unit.UnitDefinition.MILLIGRAM_PER_DECILITER;
 import static eu.hansolo.toolbox.unit.UnitDefinition.MILLIMOL_PER_LITER;
 
@@ -149,6 +148,7 @@ public class Main extends Application {
     private final        Translator                 translator     = new Translator(I18nKeys.RESOURCE_NAME);
     private              String                     nightscoutUrl  = "";
     private              boolean                    trayIconSupported;
+    private              OsArcMode                  sysinfo;
     private              OperatingSystem            operatingSystem;
     private              Architecture               architecture;
     private              boolean                    darkMode;
@@ -255,8 +255,9 @@ public class Main extends Application {
     // ******************** Initialization ************************************
     @Override public void init() {
         nightscoutUrl     = PropertyManager.INSTANCE.getString(Constants.PROPERTIES_NIGHTSCOUT_URL);
-        operatingSystem   = getOperatingSystem();
-        architecture      = getArchitecture();
+        sysinfo           = eu.hansolo.jdktools.util.Helper.getOperaringSystemArchitectureOperatingMode();
+        operatingSystem   = sysinfo.operatingSystem();
+        architecture      = sysinfo.architecture();
         darkMode          = eu.hansolo.applefx.tools.Helper.isDarkMode();
         accentColor       = eu.hansolo.applefx.tools.Helper.getMacosAccentColorAsColor();
         currentUnit       = MILLIGRAM_PER_DECILITER;

@@ -88,7 +88,7 @@ public class Notification {
 
         private static final double                ICON_WIDTH      = 46;
         private static final double                ICON_HEIGHT     = 46;
-        private static       OperatingSystem       operatingSystem = eu.hansolo.toolbox.Helper.getOperatingSystem();
+        private static       OperatingSystem       operatingSystem = eu.hansolo.jdktools.util.Helper.getOperatingSystem();
         private static       double                width           = OperatingSystem.WINDOWS == operatingSystem ? 332 : 345;
         private static       double                height          = OperatingSystem.WINDOWS == operatingSystem ? 92 : 65;
         private static       double                offsetX         = OperatingSystem.WINDOWS == operatingSystem ? 0 : 16;
