@@ -16,7 +16,7 @@ plugins {
     id 'java-library'
     id 'application'
     id 'com.google.osdetector' version '1.7.0'
-    id 'org.javamodularity.moduleplugin' version '1.8.8'
+    id 'org.javamodularity.moduleplugin' version '1.8.10'
     id 'org.beryx.jlink' version '2.24.4'
 }
 
@@ -46,7 +46,7 @@ dependencies {
     implementation 'eu.hansolo:toolbox:17.0.14'
     implementation 'eu.hansolo:toolboxfx:17.0.23'
     implementation 'eu.hansolo:applefx:17.0.40'
-    implementation 'com.google.code.gson:gson:2.8.8'
+    implementation 'com.google.code.gson:gson:2.9.0'
     implementation 'com.dustinredmond.fxtrayicon:FXTrayIcon:3.1.2'
 }
 
