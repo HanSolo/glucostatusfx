@@ -5,3 +5,5 @@
 /out
 /classes
 *.log
+/logs
+/RUNNING_PID

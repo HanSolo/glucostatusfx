@@ -117,136 +117,145 @@ import static eu.hansolo.toolbox.unit.UnitDefinition.MILLIMOL_PER_LITER;
 
 
 public class Main extends Application {
-    private static final Insets                     GRAPH_INSETS   = new Insets(20, 10, 20, 10);
-    private static       boolean                    switchingUnits = false;
-    private final        Image                      icon           = new Image(Main.class.getResourceAsStream("icon48x48.png"));
-    private final        Image                      stageIcon      = new Image(Main.class.getResourceAsStream("icon128x128.png"));
-    private              ZonedDateTime              lastUpdate     = ZonedDateTime.now().minusMinutes(6);
-    private final        Translator                 translator     = new Translator(I18nKeys.RESOURCE_NAME);
-    private              WebAPI                     webApi         = null;
-    private              String                     nightscoutUrl  = "";
-    private              boolean                    darkMode;
-    private              Color                      accentColor;
-    private              ZonedDateTime              lastNotification;
-    private              Notification.Notifier      notifier;
-    private              AudioClip                  notificationSound;
-    private              Stage                      stage;
-    private              Region                     glassOverlay;
-    private              HBox                       buttonHBox;
-    private              AnchorPane                 mainPane;
-    private              SVGPath                    reloadButton;
-    private              SVGPath                    timeInRangeChartButton;
-    private              SVGPath                    patternChartButton;
-    private              SVGPath                    matrixButton;
-    private              SVGPath                    exclamationMark;
-    private              MacosLabel                 titleLabel;
-    private              MacosLabel                 valueLabel;
-    private              HBox                       last5DeltasLabel;
-    private              MacosLabel                 timestampLabel;
-    private              MacosLabel                 rangeAverageLabel;
-    private              Text                       unit;
-    private              Text                       delta0;
-    private              Text                       delta1;
-    private              Text                       delta2;
-    private              Text                       delta3;
-    private              Text                       delta4;
-    private              AnchorPane                 vpane;
-    private              StackPane                  pane;
-    private              StackPane                  prefPane;
-    private              AnchorPane                 prefContentPane;
-    private              MacosTextField             nightscoutUrlTextField;
-    private              MacosSwitch                unitSwitch;
-    private              MacosSwitch                deltaChartSwitch;
-    private              MacosSwitch                tooLowSoundSwitch;
-    private              MacosSwitch                enableLowSoundSwitch;
-    private              MacosSwitch                lowSoundSwitch;
-    private              MacosSwitch                enableAcceptableLowSoundSwitch;
-    private              MacosSwitch                acceptableLowSoundSwitch;
-    private              MacosSwitch                enableAcceptableHighSoundSwitch;
-    private              MacosSwitch                acceptableHighSoundSwitch;
-    private              MacosSwitch                enableHighSoundSwitch;
-    private              MacosSwitch                highSoundSwitch;
-    private              MacosSwitch                tooHighSoundSwitch;
-    private              MacosSlider                tooLowIntervalSlider;
-    private              MacosSlider                tooHighIntervalSlider;
-    private              MacosSlider                minAcceptableSlider;
-    private              MacosSlider                minNormalSlider;
-    private              MacosSlider                maxNormalSlider;
-    private              MacosSlider                maxAcceptableSlider;
-    private              Canvas                     chartCanvas;
-    private              GraphicsContext            ctx;
-    private              AnchorPane                 chartPane;
-    private              boolean                    deltaChartVisible;
-    private              ToggleGroup                intervalToggleGroup;
-    private              MacosToggleButton          sevenDays;
-    private              MacosToggleButton          seventyTwoHours;
-    private              MacosToggleButton          fourtyEightHours;
-    private              MacosToggleButton          twentyFourHours;
-    private              MacosToggleButton          twelveHours;
-    private              MacosToggleButton          sixHours;
-    private              MacosToggleButton          threeHours;
-    private              MacosToggleButtonBar       toggleButtonBar;
-    private              SVGPath                    settingsIcon;
-    private              MacosButton                prefButton;
-    private              ScheduledService<Void>     service;
-    private              double                     minAcceptable;
-    private              double                     minNormal;
-    private              double                     maxNormal;
-    private              double                     maxAcceptable;
-    private              double                     minAcceptableFactor;
-    private              double                     minNormalFactor;
-    private              double                     maxNormalFactor;
-    private              double                     maxAcceptableFactor;
-    private              UnitDefinition             currentUnit;
-    private              boolean                    outdated;
-    private              ObservableList<GlucoEntry> allEntries;
-    private              List<GlucoEntry>           entries;
-    private              List<Double>               deltas;
-    private              double                     avg;
-    private              BooleanProperty            dialogVisible;
-    private              double                     deltaMin;
-    private              double                     deltaMax;
-    private              GlucoEntry                 currentEntry;
-    private              Color                      currentColor;
-    private              TimeInterval               currentInterval;
-    private              Font                       ticklabelFont;
-    private              Font                       smallTicklabelFont;
-    private              boolean                    slowlyRising;
-    private              boolean                    slowlyFalling;
-    private              boolean                    hideMenu;
-    private              EventHandler<MouseEvent>   eventConsumer;
+    private static final Insets                        GRAPH_INSETS   = new Insets(20, 10, 20, 10);
+    private static       boolean                       switchingUnits = false;
+    private final        Image                         icon           = new Image(Main.class.getResourceAsStream("icon48x48.png"));
+    private final        Image                         stageIcon      = new Image(Main.class.getResourceAsStream("icon128x128.png"));
+    private              ZonedDateTime                 lastUpdate     = ZonedDateTime.now().minusMinutes(6);
+    private final        Translator                    translator     = new Translator(I18nKeys.RESOURCE_NAME);
+    private              WebAPI                        webApi         = null;
+    private              String                        nightscoutUrl  = "";
+    private              boolean                       darkMode;
+    private              Color                         accentColor;
+    private              ZonedDateTime                 lastNotification;
+    private              Notification.Notifier         notifier;
+    private              AudioClip                     notificationSound;
+    private              Stage                         stage;
+    private              Region                        glassOverlay;
+    private              HBox                          buttonHBox;
+    private              AnchorPane                    mainPane;
+    private              SVGPath                       reloadButton;
+    private              SVGPath                       timeInRangeChartButton;
+    private              SVGPath                       patternChartButton;
+    private              SVGPath                       matrixButton;
+    private              SVGPath                       exclamationMark;
+    private              MacosLabel                    titleLabel;
+    private              MacosLabel                    valueLabel;
+    private              HBox                          last5DeltasLabel;
+    private              MacosLabel                    timestampLabel;
+    private              MacosLabel                    rangeAverageLabel;
+    private              Text                          unit;
+    private              Text                          delta0;
+    private              Text                          delta1;
+    private              Text                          delta2;
+    private              Text                          delta3;
+    private              Text                          delta4;
+    private              AnchorPane                    vpane;
+    private              StackPane                     pane;
+    private              StackPane                     prefPane;
+    private              AnchorPane                    prefContentPane;
+    private              MacosTextField                nightscoutUrlTextField;
+    private              MacosSwitch                   unitSwitch;
+    private              MacosSwitch                   deltaChartSwitch;
+    private              MacosSwitch                   tooLowSoundSwitch;
+    private              MacosSwitch                   enableLowSoundSwitch;
+    private              MacosSwitch                   lowSoundSwitch;
+    private              MacosSwitch                   enableAcceptableLowSoundSwitch;
+    private              MacosSwitch                   acceptableLowSoundSwitch;
+    private              MacosSwitch                   enableAcceptableHighSoundSwitch;
+    private              MacosSwitch                   acceptableHighSoundSwitch;
+    private              MacosSwitch                   enableHighSoundSwitch;
+    private              MacosSwitch                   highSoundSwitch;
+    private              MacosSwitch                   tooHighSoundSwitch;
+    private              MacosSlider                   tooLowIntervalSlider;
+    private              MacosSlider                   tooHighIntervalSlider;
+    private              MacosSlider                   minAcceptableSlider;
+    private              MacosSlider                   minNormalSlider;
+    private              MacosSlider                   maxNormalSlider;
+    private              MacosSlider                   maxAcceptableSlider;
+    private              Canvas                        chartCanvas;
+    private              GraphicsContext               ctx;
+    private              AnchorPane                    chartPane;
+    private              boolean                       deltaChartVisible;
+    private              ToggleGroup                   intervalToggleGroup;
+    private              MacosToggleButtonBarSeparator sep1;
+    private              MacosToggleButtonBarSeparator sep2;
+    private              MacosToggleButtonBarSeparator sep3;
+    private              MacosToggleButtonBarSeparator sep4;
+    private              MacosToggleButtonBarSeparator sep5;
+    private              MacosToggleButtonBarSeparator sep6;
+    private              MacosToggleButton             sevenDays;
+    private              MacosToggleButton             seventyTwoHours;
+    private              MacosToggleButton             fourtyEightHours;
+    private              MacosToggleButton             twentyFourHours;
+    private              MacosToggleButton             twelveHours;
+    private              MacosToggleButton             sixHours;
+    private              MacosToggleButton             threeHours;
+    private              MacosToggleButtonBar          toggleButtonBar;
+    private              SVGPath                       settingsIcon;
+    private              MacosButton                   prefButton;
+    private              ScheduledService<Void>        service;
+    private              double                        minAcceptable;
+    private              double                        minNormal;
+    private              double                        maxNormal;
+    private              double                        maxAcceptable;
+    private              double                        minAcceptableFactor;
+    private              double                        minNormalFactor;
+    private              double                        maxNormalFactor;
+    private              double                        maxAcceptableFactor;
+    private              UnitDefinition                currentUnit;
+    private              boolean                       outdated;
+    private              ObservableList<GlucoEntry>    allEntries;
+    private              List<GlucoEntry>              entries;
+    private              List<Double>                  deltas;
+    private              double                        avg;
+    private              BooleanProperty               dialogVisible;
+    private              double                        deltaMin;
+    private              double                        deltaMax;
+    private              GlucoEntry                    currentEntry;
+    private              Color                         currentColor;
+    private              TimeInterval                  currentInterval;
+    private              Font                          ticklabelFont;
+    private              Font                          smallTicklabelFont;
+    private              boolean                       slowlyRising;
+    private              boolean                       slowlyFalling;
+    private              boolean                       hideMenu;
+    private              EventHandler<MouseEvent>      eventConsumer;
     // Time in range chart
-    private              StackPane                  timeInRangePane;
-    private              MacosLabel                 timeInRangeTitleLabel;
-    private              MacosLabel                 timeInRangeTimeIntervalLabel ;
-    private              Rectangle                  timeInRangeTooHighRect;
-    private              Rectangle                  timeInRangeHighRect;
-    private              Rectangle                  timeInRangeNormalRect;
-    private              Rectangle                  timeInRangeLowRect;
-    private              Rectangle                  timeInRangeTooLowRect;
-    private              MacosLabel                 timeInRangeTooHighValue;
-    private              MacosLabel                 timeInRangeTooHighValueText;
-    private              MacosLabel                 timeInRangeHighValue;
-    private              MacosLabel                 timeInRangeHighValueText;
-    private              MacosLabel                 timeInRangeNormalValue;
-    private              MacosLabel                 timeInRangeNormalValueText;
-    private              MacosLabel                 timeInRangeLowValue;
-    private              MacosLabel                 timeInRangeLowValueText;
-    private              MacosLabel                 timeInRangeTooLowValue;
-    private              MacosLabel                 timeInRangeTooLowValueText;
+    private              StackPane                     timeInRangePane;
+    private              MacosLabel                    timeInRangeTitleLabel;
+    private              MacosLabel                    timeInRangeTimeIntervalLabel ;
+    private              Rectangle                     timeInRangeTooHighRect;
+    private              Rectangle                     timeInRangeHighRect;
+    private              Rectangle                     timeInRangeNormalRect;
+    private              Rectangle                     timeInRangeLowRect;
+    private              Rectangle                     timeInRangeTooLowRect;
+    private              MacosLabel                    timeInRangeTooHighValue;
+    private              MacosLabel                    timeInRangeTooHighValueText;
+    private              MacosLabel                    timeInRangeHighValue;
+    private              MacosLabel                    timeInRangeHighValueText;
+    private              MacosLabel                    timeInRangeNormalValue;
+    private              MacosLabel                    timeInRangeNormalValueText;
+    private              MacosLabel                    timeInRangeLowValue;
+    private              MacosLabel                    timeInRangeLowValueText;
+    private              MacosLabel                    timeInRangeTooLowValue;
+    private              MacosLabel                    timeInRangeTooLowValueText;
+    private              MacosButton                   timeInRangeCloseButton;
     // Pattern Chart Pane
-    private              StackPane                  patternChartPane;
-    private              MacosLabel                 patternChartTitleLabel;
-    private              MacosLabel                 patternChartHbac1Label;
-    private              ListView<String>           patternChartZones;
-    private              Canvas                     patternChartCanvas;
+    private              StackPane                     patternChartPane;
+    private              MacosLabel                    patternChartTitleLabel;
+    private              MacosLabel                    patternChartHbac1Label;
+    private              ListView<String>              patternChartZones;
+    private              Canvas                        patternChartCanvas;
+    private              MacosButton                   patternChartCloseButton;
     // Matrix Chart Pane
-    private              StackPane                  matrixChartPane;
-    private              MacosLabel                 matrixChartTitleLabel;
-    private              MacosLabel                 matrixChartSubTitleLabel;
-    private              MacosLabel                 matrixChartHbac1Label;
-    private              ThirtyDayView              matrixChartThirtyDayView;
-    private              DateTimeFormatter          dtf;
+    private              StackPane                     matrixChartPane;
+    private              MacosLabel                    matrixChartTitleLabel;
+    private              MacosLabel                    matrixChartSubTitleLabel;
+    private              MacosLabel                    matrixChartHbac1Label;
+    private              ThirtyDayView                 matrixChartThirtyDayView;
+    private              MacosButton                   matrixChartCloseButton;
+    private              DateTimeFormatter             dtf;
 
 
     // ******************** Initialization ************************************
@@ -293,12 +302,12 @@ public class Main extends Application {
         settingsIcon.setContent("M8.005,14.887c0.084,-0 0.168,-0.005 0.252,-0.014c0.084,-0.009 0.172,-0.013 0.262,-0.013l0.415,0.794c0.042,0.084 0.104,0.146 0.185,0.185c0.081,0.039 0.17,0.052 0.266,0.04c0.205,-0.036 0.322,-0.159 0.352,-0.37l0.127,-0.884c0.162,-0.048 0.324,-0.102 0.487,-0.162c0.162,-0.061 0.325,-0.124 0.487,-0.19l0.65,0.596c0.15,0.144 0.322,0.162 0.514,0.054c0.169,-0.102 0.235,-0.259 0.199,-0.469l-0.19,-0.876c0.139,-0.096 0.276,-0.198 0.411,-0.307c0.135,-0.108 0.263,-0.222 0.383,-0.343l0.822,0.334c0.198,0.079 0.367,0.036 0.505,-0.126c0.054,-0.066 0.086,-0.146 0.095,-0.239c0.009,-0.093 -0.014,-0.179 -0.068,-0.257l-0.469,-0.758c0.096,-0.139 0.185,-0.285 0.266,-0.438c0.081,-0.153 0.161,-0.308 0.239,-0.465l0.894,0.045c0.096,0 0.183,-0.025 0.261,-0.076c0.078,-0.052 0.133,-0.122 0.163,-0.212c0.036,-0.091 0.039,-0.179 0.009,-0.267c-0.03,-0.087 -0.082,-0.161 -0.154,-0.221l-0.704,-0.55c0.043,-0.163 0.08,-0.33 0.113,-0.501c0.033,-0.172 0.059,-0.345 0.077,-0.519l0.839,-0.271c0.205,-0.072 0.307,-0.207 0.307,-0.406c-0,-0.204 -0.102,-0.343 -0.307,-0.415l-0.839,-0.262c-0.018,-0.18 -0.044,-0.355 -0.077,-0.523c-0.033,-0.168 -0.07,-0.337 -0.113,-0.505l0.704,-0.551c0.072,-0.06 0.122,-0.132 0.149,-0.216c0.027,-0.085 0.026,-0.172 -0.004,-0.262c-0.03,-0.09 -0.085,-0.161 -0.163,-0.212c-0.078,-0.051 -0.165,-0.074 -0.261,-0.068l-0.894,0.036c-0.078,-0.162 -0.158,-0.319 -0.239,-0.469c-0.081,-0.15 -0.17,-0.295 -0.266,-0.433l0.469,-0.758c0.054,-0.078 0.077,-0.163 0.068,-0.253c-0.009,-0.09 -0.041,-0.168 -0.095,-0.235c-0.138,-0.168 -0.307,-0.213 -0.505,-0.135l-0.822,0.325c-0.12,-0.114 -0.248,-0.227 -0.383,-0.338c-0.135,-0.112 -0.272,-0.216 -0.411,-0.312l0.19,-0.866c0.036,-0.223 -0.03,-0.379 -0.199,-0.469c-0.192,-0.109 -0.364,-0.088 -0.514,0.063l-0.65,0.577c-0.162,-0.066 -0.325,-0.128 -0.487,-0.185c-0.163,-0.057 -0.325,-0.112 -0.487,-0.167l-0.127,-0.875c-0.03,-0.205 -0.147,-0.328 -0.352,-0.37c-0.096,-0.012 -0.185,0.002 -0.266,0.041c-0.081,0.039 -0.143,0.097 -0.185,0.176l-0.415,0.803c-0.09,-0.006 -0.178,-0.011 -0.262,-0.014c-0.084,-0.003 -0.168,-0.004 -0.252,-0.004c-0.097,-0 -0.185,0.001 -0.267,0.004c-0.081,0.003 -0.167,0.008 -0.257,0.014l-0.424,-0.803c-0.09,-0.175 -0.241,-0.247 -0.451,-0.217c-0.205,0.042 -0.319,0.165 -0.343,0.37l-0.127,0.875c-0.168,0.055 -0.333,0.109 -0.496,0.163c-0.162,0.054 -0.322,0.117 -0.478,0.189l-0.659,-0.577c-0.144,-0.151 -0.316,-0.172 -0.514,-0.063c-0.169,0.09 -0.232,0.246 -0.19,0.469l0.181,0.866c-0.139,0.096 -0.276,0.2 -0.411,0.312c-0.135,0.111 -0.263,0.224 -0.383,0.338l-0.813,-0.325c-0.198,-0.078 -0.367,-0.033 -0.505,0.135c-0.06,0.067 -0.093,0.145 -0.099,0.235c-0.006,0.09 0.015,0.172 0.063,0.244l0.469,0.767c-0.096,0.138 -0.185,0.283 -0.266,0.433c-0.081,0.15 -0.161,0.307 -0.239,0.469l-0.894,-0.036c-0.096,-0.006 -0.183,0.017 -0.261,0.068c-0.078,0.051 -0.133,0.122 -0.163,0.212c-0.03,0.09 -0.031,0.177 -0.004,0.262c0.027,0.084 0.079,0.156 0.158,0.216l0.695,0.551c-0.043,0.168 -0.08,0.337 -0.113,0.505c-0.033,0.168 -0.056,0.343 -0.068,0.523l-0.848,0.262c-0.199,0.072 -0.298,0.211 -0.298,0.415c0,0.205 0.099,0.34 0.298,0.406l0.848,0.271c0.012,0.174 0.035,0.347 0.068,0.519c0.033,0.171 0.07,0.338 0.113,0.501l-0.695,0.55c-0.079,0.06 -0.131,0.134 -0.158,0.221c-0.027,0.088 -0.026,0.176 0.004,0.267c0.03,0.09 0.085,0.16 0.163,0.212c0.078,0.051 0.165,0.076 0.261,0.076l0.894,-0.045c0.078,0.157 0.158,0.312 0.239,0.465c0.081,0.153 0.17,0.299 0.266,0.438l-0.469,0.758c-0.048,0.078 -0.069,0.164 -0.063,0.257c0.006,0.093 0.039,0.173 0.099,0.239c0.138,0.162 0.307,0.205 0.505,0.126l0.813,-0.334c0.12,0.121 0.248,0.235 0.383,0.343c0.135,0.109 0.272,0.211 0.411,0.307l-0.181,0.876c-0.042,0.21 0.021,0.367 0.19,0.469c0.192,0.108 0.364,0.09 0.514,-0.054l0.659,-0.596c0.156,0.066 0.316,0.129 0.478,0.19c0.163,0.06 0.328,0.114 0.496,0.162l0.127,0.884c0.024,0.211 0.138,0.334 0.343,0.37c0.096,0.012 0.185,-0.001 0.266,-0.04c0.081,-0.039 0.143,-0.101 0.185,-0.185l0.424,-0.794c0.09,-0 0.176,0.004 0.257,0.013c0.082,0.009 0.17,0.014 0.267,0.014Zm-0,-1.228c-0.795,0 -1.53,-0.145 -2.207,-0.437c-0.677,-0.292 -1.269,-0.697 -1.778,-1.214c-0.508,-0.517 -0.904,-1.118 -1.186,-1.8c-0.283,-0.683 -0.425,-1.416 -0.425,-2.198c0,-0.788 0.142,-1.525 0.425,-2.211c0.282,-0.686 0.678,-1.287 1.186,-1.805c0.509,-0.517 1.101,-0.922 1.778,-1.213c0.677,-0.292 1.412,-0.438 2.207,-0.438c0.788,-0 1.52,0.146 2.197,0.438c0.677,0.291 1.269,0.696 1.778,1.213c0.508,0.518 0.904,1.119 1.186,1.805c0.283,0.686 0.425,1.423 0.425,2.211c-0,0.782 -0.142,1.515 -0.425,2.198c-0.282,0.682 -0.678,1.283 -1.186,1.8c-0.509,0.517 -1.101,0.922 -1.778,1.214c-0.677,0.292 -1.409,0.437 -2.197,0.437Zm-0.028,-3.718c0.41,0 0.774,-0.118 1.092,-0.356c0.319,-0.238 0.572,-0.591 0.758,-1.06l4.504,-0l-0.01,-1.029l-4.494,-0c-0.186,-0.463 -0.439,-0.812 -0.758,-1.047c-0.318,-0.235 -0.682,-0.352 -1.092,-0.352c-0.054,0 -0.117,0.005 -0.189,0.014c-0.072,0.009 -0.169,0.025 -0.289,0.049l-2.256,-3.862l-0.92,0.523l2.292,3.899c-0.193,0.216 -0.333,0.431 -0.42,0.645c-0.087,0.214 -0.131,0.435 -0.131,0.663c0,0.211 0.042,0.42 0.127,0.627c0.084,0.208 0.222,0.423 0.415,0.646l-2.374,3.862l0.903,0.542l2.355,-3.827c0.114,0.03 0.211,0.048 0.289,0.054c0.078,0.006 0.144,0.009 0.198,0.009Zm-0.785,-1.922c0,-0.228 0.082,-0.418 0.244,-0.568c0.162,-0.151 0.349,-0.226 0.559,-0.226c0.223,0 0.416,0.075 0.578,0.226c0.162,0.15 0.244,0.34 0.244,0.568c-0,0.223 -0.082,0.412 -0.244,0.569c-0.162,0.156 -0.355,0.234 -0.578,0.234c-0.21,0 -0.397,-0.078 -0.559,-0.234c-0.162,-0.157 -0.244,-0.346 -0.244,-0.569Z");
         settingsIcon.setFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
 
-        MacosToggleButtonBarSeparator sep1 = createSeparator(darkMode);
-        MacosToggleButtonBarSeparator sep2 = createSeparator(darkMode);
-        MacosToggleButtonBarSeparator sep3 = createSeparator(darkMode);
-        MacosToggleButtonBarSeparator sep4 = createSeparator(darkMode);
-        MacosToggleButtonBarSeparator sep5 = createSeparator(darkMode);
-        MacosToggleButtonBarSeparator sep6 = createSeparator(darkMode);
+        sep1 = createSeparator(darkMode);
+        sep2 = createSeparator(darkMode);
+        sep3 = createSeparator(darkMode);
+        sep4 = createSeparator(darkMode);
+        sep5 = createSeparator(darkMode);
+        sep6 = createSeparator(darkMode);
 
         toggleButtonBar = new MacosToggleButtonBar(sevenDays, sep1, seventyTwoHours, sep2, fourtyEightHours, sep3, twentyFourHours, sep4, twelveHours, sep5, sixHours, sep6, threeHours);
         toggleButtonBar.setDark(darkMode);
@@ -451,7 +460,11 @@ public class Main extends Application {
     @Override public void start(final Stage stage) {
         this.stage  = stage;
         this.webApi = WebAPI.getWebAPI(stage);
-        adjustToMode(webApi.isDarkMode());
+
+        if (WebAPI.isBrowser()) {
+            darkMode = webApi.isDarkMode();
+            adjustToMode(darkMode);
+        }
 
         notifier = NotifierBuilder.create()
                                   .owner(stage)
@@ -502,6 +515,10 @@ public class Main extends Application {
             chartPane.setMaxHeight(stage.getHeight() - 285);
             chartPane.setPrefHeight(stage.getHeight() - 285);
         });
+
+        //webApi.loadJSFile(getClass().getResource("/eu/hansolo/fx/glucostatus/http/js/notifier.js"));
+
+        //webApi.executeScript("notify(TITLE,MSG);");
     }
 
     @Override public void stop() {
@@ -630,7 +647,12 @@ public class Main extends Application {
                 String msg   = translator.get(I18nKeys.PREDICTION_TOO_LOW);
                 Notification notification = NotificationBuilder.create().title(title).message(msg).image(icon).build();
                 if (PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_PLAY_SOUND_FOR_TOO_LOW_NOTIFICATION)) { notificationSound.play(); }
-                Platform.runLater(() -> { if (notifier.getNoOfPopups() == 0) { notifier.notify(notification); }});
+                if (WebAPI.isBrowser()) {
+                    WebAPI.getWebAPI(stage).executeScript("window.alert(\"" + notification.title + "\n\n" + notification.message + "\");");
+                } else {
+                    Platform.runLater(() -> { if (notifier.getNoOfPopups() == 0) { notifier.notify(notification); } });
+                }
+
                 return true;
             }
         } else if (soonTooHigh) {
@@ -639,7 +661,11 @@ public class Main extends Application {
                 String msg   = translator.get(I18nKeys.PREDICTION_TOO_HIGH);
                 Notification notification = NotificationBuilder.create().title(title).message(msg).image(icon).build();
                 if (PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_PLAY_SOUND_FOR_TOO_HIGH_NOTIFICATION)) { notificationSound.play(); }
-                Platform.runLater(() -> { if (notifier.getNoOfPopups() == 0) { notifier.notify(notification); }});
+                if (WebAPI.isBrowser()) {
+                    WebAPI.getWebAPI(stage).executeScript("window.alert(\"" + notification.title + "\n\n" + notification.message + "\");");
+                } else {
+                    Platform.runLater(() -> { if (notifier.getNoOfPopups() == 0) { notifier.notify(notification); }});
+                }
                 return true;
             }
         }
@@ -759,7 +785,11 @@ public class Main extends Application {
         Notification notification = NotificationBuilder.create().title(translator.get(I18nKeys.NOTIFICATION_TITLE)).message(body).image(icon).build();
 
         if (playSound) { notificationSound.play(); }
-        Platform.runLater(() -> { if (notifier.getNoOfPopups() == 0) { notifier.notify(notification); }});
+        if (WebAPI.isBrowser()) {
+            WebAPI.getWebAPI(stage).executeScript("window.alert(\"" + notification.title + "\n\n" + notification.message + "\");");
+        } else {
+            Platform.runLater(() -> { if (notifier.getNoOfPopups() == 0) { notifier.notify(notification); }});
+        }
 
         lastNotification = now;
     }
@@ -1090,25 +1120,72 @@ public class Main extends Application {
 
     private void adjustToMode(final boolean isDark) {
         Platform.runLater(() -> {
-            Color color = isDark ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT;
-            settingsIcon.setFill(color);
+            Color textFill = isDark ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT;
+            settingsIcon.setFill(textFill);
             titleLabel.setDark(isDark);
             valueLabel.setDark(isDark);
-            unit.setFill(color);
-            delta4.setFill(color);
-            delta3.setFill(color);
-            delta2.setFill(color);
-            delta1.setFill(color);
-            delta0.setFill(color);
-            matrixButton.setFill(color);
-            reloadButton.setFill(color);
-            patternChartButton.setFill(color);
-            timeInRangeChartButton.setFill(color);
+            toggleButtonBar.setDark(isDark);
+            sep1.setDark(isDark);
+            sep2.setDark(isDark);
+            sep3.setDark(isDark);
+            sep4.setDark(isDark);
+            sep5.setDark(isDark);
+            sep6.setDark(isDark);
+            sevenDays.setDark(isDark);
+            seventyTwoHours.setDark(isDark);
+            fourtyEightHours.setDark(isDark);
+            twentyFourHours.setDark(isDark);
+            twelveHours.setDark(isDark);
+            sixHours.setDark(isDark);
+            threeHours.setDark(isDark);
+            prefButton.setDark(isDark);
+            unit.setFill(textFill);
+            delta4.setFill(textFill);
+            delta3.setFill(textFill);
+            delta2.setFill(textFill);
+            delta1.setFill(textFill);
+            delta0.setFill(textFill);
+            valueLabel.setTextFill(textFill);
+            timestampLabel.setTextFill(textFill);
+            rangeAverageLabel.setTextFill(textFill);
+            matrixButton.setFill(textFill);
+            reloadButton.setFill(textFill);
+            patternChartButton.setFill(textFill);
+            timeInRangeChartButton.setFill(textFill);
             drawChart();
-            exclamationMark.setFill(color);
+            exclamationMark.setFill(textFill);
 
+            pane.setBackground(new Background(new BackgroundFill(isDark ? MacosSystemColor.BACKGROUND.dark() : MacosSystemColor.BACKGROUND.aqua(), CornerRadii.EMPTY, Insets.EMPTY)));
             prefContentPane.setBackground(new Background(new BackgroundFill(isDark ? MacosSystemColor.BACKGROUND.dark() : MacosSystemColor.BACKGROUND.aqua(), new CornerRadii(10), Insets.EMPTY)));
             eu.hansolo.applefx.tools.Helper.getAllNodes(prefPane).stream().filter(node -> node instanceof MacosControl).forEach(node -> ((MacosControl) node).setDark(isDark));
+
+            timeInRangeTitleLabel.setTextFill(textFill);
+            timeInRangeTimeIntervalLabel.setTextFill(textFill);
+            timeInRangeTooHighValue.setTextFill(textFill);
+            timeInRangeTooHighValueText.setTextFill(textFill);
+            timeInRangeHighValue.setTextFill(textFill);
+            timeInRangeHighValueText.setTextFill(textFill);
+            timeInRangeNormalValue.setTextFill(textFill);
+            timeInRangeNormalValueText.setTextFill(textFill);
+            timeInRangeLowValue.setTextFill(textFill);
+            timeInRangeLowValueText.setTextFill(textFill);
+            timeInRangeTooLowValue.setTextFill(textFill);
+            timeInRangeTooLowValueText.setTextFill(textFill);
+            timeInRangeCloseButton.setDark(isDark);
+            timeInRangePane.setBackground(new Background(new BackgroundFill(isDark ? Constants.DARK_BACKGROUND : Color.WHITE, new CornerRadii(10), Insets.EMPTY)));
+
+            patternChartTitleLabel.setTextFill(textFill);
+            patternChartHbac1Label.setTextFill(textFill);
+            patternChartZones.setCellFactory(zoneListView -> new ZoneCell(isDark));
+            patternChartCloseButton.setDark(isDark);
+            patternChartPane.setBackground(new Background(new BackgroundFill(isDark ? Constants.DARK_BACKGROUND : Color.WHITE, new CornerRadii(10), Insets.EMPTY)));
+
+            matrixChartTitleLabel.setTextFill(textFill);
+            matrixChartSubTitleLabel.setTextFill(textFill);
+            matrixChartHbac1Label.setTextFill(textFill);
+            matrixChartThirtyDayView.setDark(isDark);
+            matrixChartCloseButton.setDark(isDark);
+            matrixChartPane.setBackground(new Background(new BackgroundFill(isDark ? Constants.DARK_BACKGROUND : Color.WHITE , new CornerRadii(10), Insets.EMPTY)));
         });
     }
 
@@ -1481,11 +1558,13 @@ public class Main extends Application {
         double pLow     = 0.2;
         double pTooLow  = 0.2;
 
+        Color textFill = darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT;
+
         timeInRangeTitleLabel = createLabel("In target range", 24, true, false, Pos.CENTER);
-        timeInRangeTitleLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
+        timeInRangeTitleLabel.setTextFill(textFill);
 
         timeInRangeTimeIntervalLabel = createLabel(currentInterval.getUiString(), 20, false, false, Pos.CENTER);
-        timeInRangeTimeIntervalLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
+        timeInRangeTimeIntervalLabel.setTextFill(textFill);
 
         double columnSize  = chartPane.getHeight();
         timeInRangeTooHighRect = createTimeInRangeRectangle(pTooHigh, columnSize, Constants.RED);
@@ -1494,8 +1573,6 @@ public class Main extends Application {
         timeInRangeLowRect     = createTimeInRangeRectangle(pLow, columnSize, Constants.ORANGE);
         timeInRangeTooLowRect  = createTimeInRangeRectangle(pTooLow, columnSize, Constants.RED);
         VBox rectBox = new VBox(timeInRangeTooHighRect, timeInRangeHighRect, timeInRangeNormalRect, timeInRangeLowRect, timeInRangeTooLowRect);
-
-        Color textFill = darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT;
 
         timeInRangeTooHighValue     = createTimeInRangeLabel(String.format(Locale.US, "%.0f%% ", pTooHigh * 100), 20, textFill, false, Pos.CENTER_RIGHT);
         timeInRangeTooHighValueText = createTimeInRangeLabel("Very high", 20, textFill, false, Pos.CENTER_LEFT);
@@ -1525,10 +1602,10 @@ public class Main extends Application {
         inRangeBox.setFillHeight(true);
         inRangeBox.setPadding(new Insets(0, 20, 0, 20));
 
-        MacosButton closeButton = new MacosButton("Close");
-        closeButton.setDark(darkMode);
+        timeInRangeCloseButton = new MacosButton("Close");
+        timeInRangeCloseButton.setDark(darkMode);
 
-        VBox       content          = new VBox(20, titleLabel, timeInRangeTimeIntervalLabel, inRangeBox, closeButton);
+        VBox       content          = new VBox(20, titleLabel, timeInRangeTimeIntervalLabel, inRangeBox, timeInRangeCloseButton);
         content.setAlignment(Pos.CENTER);
         content.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, new CornerRadii(10), Insets.EMPTY)));
 
@@ -1538,7 +1615,7 @@ public class Main extends Application {
         timeInRangePane.setBackground(new Background(new BackgroundFill(darkMode ? Constants.DARK_BACKGROUND : Color.WHITE, new CornerRadii(10), Insets.EMPTY)));
         timeInRangePane.setBorder(new Border(new BorderStroke(Color.rgb(78, 77, 76), BorderStrokeStyle.SOLID, new CornerRadii(10), new BorderWidths(1))));
 
-        closeButton.setOnAction(e -> {
+        timeInRangeCloseButton.setOnAction(e -> {
             timeInRangePane.setVisible(false);
             timeInRangePane.setManaged(false);
             vpane.setVisible(true);
@@ -1622,10 +1699,10 @@ public class Main extends Application {
 
         patternChartCanvas = new Canvas(390, 300);
 
-        MacosButton closeButton = new MacosButton("Close");
-        closeButton.setDark(darkMode);
+        patternChartCloseButton = new MacosButton("Close");
+        patternChartCloseButton.setDark(darkMode);
 
-        VBox content = new VBox(20, patternChartTitleLabel, patternChartHbac1Label, patternChartZones, patternChartCanvas, closeButton);
+        VBox content = new VBox(20, patternChartTitleLabel, patternChartHbac1Label, patternChartZones, patternChartCanvas, patternChartCloseButton);
         content.setAlignment(Pos.CENTER);
         content.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, new CornerRadii(10), Insets.EMPTY)));
         content.setPadding(new Insets(0, 0, 20, 0));
@@ -1636,7 +1713,7 @@ public class Main extends Application {
         patternChartPane.setBackground(new Background(new BackgroundFill(darkMode ? Constants.DARK_BACKGROUND : Color.WHITE, new CornerRadii(10), Insets.EMPTY)));
         patternChartPane.setBorder(new Border(new BorderStroke(Color.rgb(78, 77, 76), BorderStrokeStyle.SOLID, new CornerRadii(10),new BorderWidths(1))));
 
-        closeButton.setOnAction(e -> {
+        patternChartCloseButton.setOnAction(e -> {
             patternChartPane.setVisible(false);
             patternChartPane.setManaged(false);
             vpane.setVisible(true);
@@ -1774,10 +1851,10 @@ public class Main extends Application {
         matrixChartThirtyDayView = new ThirtyDayView(allEntries, currentUnit);
         matrixChartThirtyDayView.setDark(darkMode);
 
-        MacosButton closeButton = new MacosButton("Close");
-        closeButton.setDark(darkMode);
+        matrixChartCloseButton = new MacosButton("Close");
+        matrixChartCloseButton.setDark(darkMode);
 
-        VBox content = new VBox(20, matrixChartTitleLabel, matrixChartSubTitleLabel, matrixChartHbac1Label, matrixChartThirtyDayView, closeButton);
+        VBox content = new VBox(20, matrixChartTitleLabel, matrixChartSubTitleLabel, matrixChartHbac1Label, matrixChartThirtyDayView, matrixChartCloseButton);
         content.setAlignment(Pos.CENTER);
         content.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, new CornerRadii(10), Insets.EMPTY)));
 
@@ -1787,7 +1864,7 @@ public class Main extends Application {
         matrixChartPane.setBackground(new Background(new BackgroundFill(darkMode ? Constants.DARK_BACKGROUND : Color.WHITE , new CornerRadii(10), Insets.EMPTY)));
         matrixChartPane.setBorder(new Border(new BorderStroke(Color.rgb(78, 77, 76), BorderStrokeStyle.SOLID, new CornerRadii(10),new BorderWidths(1))));
 
-        closeButton.setOnAction(e -> {
+        matrixChartCloseButton.setOnAction(e -> {
             matrixChartPane.setVisible(false);
             matrixChartPane.setManaged(false);
             vpane.setVisible(true);
