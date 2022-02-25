@@ -46,6 +46,7 @@ import eu.hansolo.toolbox.tuples.Pair;
 import eu.hansolo.toolbox.unit.UnitDefinition;
 import eu.hansolo.toolboxfx.HelperFX;
 import eu.hansolo.toolboxfx.geom.Point;
+import javafx.animation.AnimationTimer;
 import javafx.animation.FadeTransition;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -257,6 +258,10 @@ public class Main extends Application {
     private              MacosButton                   matrixChartCloseButton;
     private              DateTimeFormatter             dtf;
 
+    private              long                          lastTimerCall;
+    private              AnimationTimer                timer;
+
+
 
     // ******************** Initialization ************************************
     @Override public void init() {
@@ -452,6 +457,21 @@ public class Main extends Application {
         pane = new StackPane(vpane, glassOverlay, prefPane, timeInRangePane, patternChartPane, matrixChartPane);
         pane.setBackground(new Background(new BackgroundFill(darkMode ? MacosSystemColor.BACKGROUND.dark() : MacosSystemColor.BACKGROUND.aqua(), CornerRadii.EMPTY, Insets.EMPTY)));
 
+
+        lastTimerCall = System.nanoTime();
+        timer = new AnimationTimer() {
+            @Override public void handle(final long now) {
+                if (now - lastTimerCall > 2_000_000_000l) {
+                    if (darkMode != webApi.isDarkMode()) {
+                        darkMode = webApi.isDarkMode();
+                        adjustToMode(darkMode);
+                    }
+                    lastTimerCall = now;
+                }
+            }
+        };
+
+
         registerListeners();
     }
 
@@ -519,6 +539,8 @@ public class Main extends Application {
         //webApi.loadJSFile(getClass().getResource("/eu/hansolo/fx/glucostatus/http/js/notifier.js"));
 
         //webApi.executeScript("notify(TITLE,MSG);");
+
+        timer.start();
     }
 
     @Override public void stop() {
