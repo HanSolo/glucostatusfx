@@ -18,6 +18,7 @@
 
 package eu.hansolo.fx.glucostatus.notification;
 
+import com.jpro.webapi.WebAPI;
 import eu.hansolo.fx.glucostatus.Fonts;
 import eu.hansolo.jdktools.OperatingSystem;
 import javafx.animation.KeyFrame;
@@ -86,17 +87,17 @@ public class Notification {
     public enum Notifier {
         INSTANCE;
 
-        private static final double                ICON_WIDTH      = 46;
-        private static final double                ICON_HEIGHT     = 46;
-        private static       OperatingSystem       operatingSystem = eu.hansolo.jdktools.util.Helper.getOperatingSystem();
-        private static       double                width           = OperatingSystem.WINDOWS == operatingSystem ? 332 : 345;
-        private static       double                height          = OperatingSystem.WINDOWS == operatingSystem ? 92 : 65;
-        private static       double                offsetX         = OperatingSystem.WINDOWS == operatingSystem ? 0 : 16;
-        private static       double                offsetY         = OperatingSystem.WINDOWS == operatingSystem ? 72 : 50;
-        private static       double                spacingY        = 5;
-        private static       Pos                   popupLocation   = Pos.TOP_RIGHT;
-        private static       Stage                 stageRef        = null;
-        private              ObservableList<Popup> popups          = FXCollections.observableArrayList();
+        private static final double                ICON_WIDTH    = 46;
+        private static final double                ICON_HEIGHT   = 46;
+        private              OperatingSystem       operatingSystem;
+        private              double                width;
+        private              double                height;
+        private              double                offsetX;
+        private              double                offsetY;
+        private              double                spacingY      = 5;
+        private              Pos                   popupLocation = Pos.TOP_RIGHT;
+        private              Stage                 stageRef      = null;
+        private              ObservableList<Popup> popups        = FXCollections.observableArrayList();
         private              Duration              popupLifetime;
         private              Duration              popupAnimationTime;
         private              Stage                 stage;
@@ -105,17 +106,18 @@ public class Notification {
 
         // ******************** Constructors **************************************
         Notifier() {
-            init();
+            operatingSystem    = WebAPI.isBrowser() ? OperatingSystem.MACOS : eu.hansolo.jdktools.util.Helper.getOperatingSystem();
+            width              = OperatingSystem.WINDOWS == operatingSystem ? 332 : 345;
+            height             = OperatingSystem.WINDOWS == operatingSystem ? 92 : 65;
+            offsetX            = OperatingSystem.WINDOWS == operatingSystem ? 0 : 16;
+            offsetY            = OperatingSystem.WINDOWS == operatingSystem ? 72 : 50;
+            popupLifetime      = Duration.millis(DEFAULT_POPUP_LIFETIME);
+            popupAnimationTime = Duration.millis(DEFAULT_POPUP_ANIMATION_TIME);
             Platform.runLater(() -> initGraphics());
         }
 
 
         // ******************** Initialization ************************************
-        private void init() {
-            popupLifetime      = Duration.millis(DEFAULT_POPUP_LIFETIME);
-            popupAnimationTime = Duration.millis(DEFAULT_POPUP_ANIMATION_TIME);
-        }
-
         private void initGraphics() {
             scene = new Scene(new Region());
             scene.setFill(null);
@@ -147,9 +149,9 @@ public class Notification {
         public static void setPopupLocation(final Stage stageRef, final Pos popupLocation) {
             if (null != stageRef) {
                 INSTANCE.stage.initOwner(stageRef);
-                Notifier.stageRef = stageRef;
+                Notifier.INSTANCE.stageRef = stageRef;
             }
-            Notifier.popupLocation = popupLocation;
+            Notifier.INSTANCE.popupLocation = popupLocation;
         }
 
         /**
@@ -168,7 +170,7 @@ public class Notification {
          * <br> The default is 0 px.
          */
         public static void setOffsetX(final double offsetX) {
-            Notifier.offsetX = offsetX;
+            Notifier.INSTANCE.offsetX = offsetX;
         }
 
         /**
@@ -176,21 +178,21 @@ public class Notification {
          * <br> The default is 25 px.
          */
         public static void setOffsetY(final double offsetY) {
-            Notifier.offsetY = offsetY;
+            Notifier.INSTANCE.offsetY = offsetY;
         }
 
         /**
          * @param width  The default is 300 px.
          */
         public static void setWidth(final double width) {
-            Notifier.width = width;
+            Notifier.INSTANCE.width = width;
         }
 
         /**
          * @param height  The default is 80 px.
          */
         public static void setHeight(final double height) {
-            Notifier.height = height;
+            Notifier.INSTANCE.height = height;
         }
 
         /**
@@ -198,7 +200,7 @@ public class Notification {
          * <br> The default is 5 px.
          */
         public static void setSpacingY(final double spacingY) {
-            Notifier.spacingY = spacingY;
+            Notifier.INSTANCE.spacingY = spacingY;
         }
                
         public void stop() {
@@ -434,12 +436,16 @@ public class Notification {
             if (stage.isShowing()) {
                 stage.toFront();
             } else {
-                stage.show();
+                if (WebAPI.isBrowser()) {
+                    WebAPI.getWebAPI(stageRef).openStageAsPopup(stage);
+                } else {
+                    stage.show();
+                }
             }
 
             if (OperatingSystem.WINDOWS == operatingSystem) {
-            popup.show(stage);
-            fireNotificationEvent(new NotificationEvent(notification, Notifier.this, popup, NotificationEvent.SHOW_NOTIFICATION));
+                popup.show(stage);
+                fireNotificationEvent(new NotificationEvent(notification, Notifier.this, popup, NotificationEvent.SHOW_NOTIFICATION));
                 timelineOut.play();
             } else {
                 popup.setOpacity(0);

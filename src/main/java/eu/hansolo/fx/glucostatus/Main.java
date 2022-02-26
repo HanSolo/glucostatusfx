@@ -545,7 +545,9 @@ public class Main extends Application {
 
     @Override public void stop() {
         service.cancel();
-        Platform.exit();
+        if (!WebAPI.isBrowser()) {
+            Platform.exit();
+        }
     }
 
 
