@@ -44,6 +44,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.TextAlignment;
 import javafx.stage.Modality;
 import javafx.stage.Popup;
 import javafx.stage.Screen;
@@ -63,8 +64,13 @@ public enum Notifier {
     public  static final Image                 ERROR_ICON                   = new Image(Notifier.class.getResourceAsStream("error.png"));
     public  static final long                  DEFAULT_POPUP_LIFETIME       = 5000;
     public  static final long                  DEFAULT_POPUP_ANIMATION_TIME = 250;
-    public  static final double                DEFAULT_POPUP_PADDING        = 10;
+    private static final double                DEFAULT_POPUP_PADDING        = 10;
+    public  static final Insets                DEFAULT_POPUP_INSETS         = new Insets(10);
+    public  static final Insets                MACOS_POPUP_INSETS           = new Insets(8, 9, 10, 9);
     public  static final double                DEFAULT_POPUP_SPACING        = 5;
+    public  static final double                MACOS_POPUP_SPACING          = 4;
+    public  static final double                DEFAULT_ICON_TEXT_GAP        = 10;
+    public  static final double                MACOS_ICON_TEXT_GAP          = 6;
     private static final double                ICON_WIDTH                   = 46;
     private static final double                ICON_HEIGHT                  = 46;
     private              OperatingSystem       operatingSystem;
@@ -86,9 +92,9 @@ public enum Notifier {
     Notifier() {
         operatingSystem    = eu.hansolo.jdktools.util.Helper.getOperatingSystem();
         width              = OperatingSystem.WINDOWS == operatingSystem ? 332 : 345;
-        height             = OperatingSystem.WINDOWS == operatingSystem ? 92 : 65;
-        offsetX            = OperatingSystem.WINDOWS == operatingSystem ? 0 : 16;
-        offsetY            = OperatingSystem.WINDOWS == operatingSystem ? 72 : 50;
+        height             = OperatingSystem.WINDOWS == operatingSystem ? 92  : 73;
+        offsetX            = OperatingSystem.WINDOWS == operatingSystem ? 0   : 15;
+        offsetY            = OperatingSystem.WINDOWS == operatingSystem ? 72  : 50;
         spacingY           = 5;
         popupLocation      = Pos.TOP_RIGHT;
         stageRef           = null;
@@ -343,34 +349,42 @@ public enum Notifier {
      */
     private void showPopup(final Notification notification) {
         if (null == stage) { Platform.runLater(() -> initGraphics()); }
+
+        final boolean isWindows = OperatingSystem.WINDOWS == operatingSystem;
+
         ImageView icon = null == notification.image() ? new ImageView() : new ImageView(notification.image());
         icon.setFitWidth(ICON_WIDTH);
         icon.setFitHeight(ICON_HEIGHT);
+        HBox.setMargin(icon, new Insets(isWindows ? 0 : 1, 0, 0, 0));
 
         Label title = new Label(notification.title());
         title.setFont(Fonts.sfProTextBold(12));
         title.getStyleClass().add("title");
+        VBox.setMargin(title, new Insets(isWindows ? 0 : -2, 0, 0, 0));
 
-        double winSpacer = OperatingSystem.WINDOWS == operatingSystem ? 29 : 0;
+        double winSpacer = isWindows ? 29 : 0;
 
         Label msg = new Label(notification.message());
         msg.setMaxWidth(width - 2 * DEFAULT_POPUP_PADDING - winSpacer);
+        msg.setPadding(new Insets(-5, 0, -5, 0));
+        msg.setLineSpacing(isWindows ? 0 : -1);
+        msg.setTextAlignment(TextAlignment.LEFT);
         msg.setTranslateX(winSpacer);
         msg.setFocusTraversable(false);
         msg.getStyleClass().add("msg-area");
 
-        VBox textLayout = new VBox();
-        textLayout.setSpacing(DEFAULT_POPUP_SPACING);
-        textLayout.getChildren().addAll(title, msg);
+        VBox textLayout = new VBox(isWindows ? DEFAULT_POPUP_SPACING : MACOS_POPUP_SPACING, title, msg);
+        textLayout.setPrefWidth(width - 2 * DEFAULT_POPUP_PADDING - winSpacer);
+        textLayout.setFillWidth(true);
         textLayout.setAlignment(Pos.CENTER_LEFT);
 
-        HBox popupLayout = new HBox(10, icon, textLayout);
-        popupLayout.setPadding(new Insets(DEFAULT_POPUP_PADDING));
+        HBox popupLayout = new HBox(isWindows ? DEFAULT_ICON_TEXT_GAP : MACOS_ICON_TEXT_GAP, icon, textLayout);
+        popupLayout.setPadding(isWindows ? DEFAULT_POPUP_INSETS : MACOS_POPUP_INSETS);
         popupLayout.setAlignment(Pos.CENTER_LEFT);
 
         StackPane popupContent = new StackPane();
         popupContent.setPrefSize(width, height);
-        popupContent.getStyleClass().add(OperatingSystem.WINDOWS == operatingSystem ? "notification-win" : "notification-mac");
+        popupContent.getStyleClass().add(isWindows ? "notification-win" : "notification-mac");
         popupContent.getChildren().addAll(popupLayout);
 
         final Popup popup = new Popup();
@@ -383,7 +397,7 @@ public enum Notifier {
 
         // Add a timeline for popup fade out
         Timeline timelineOut;
-        if (OperatingSystem.WINDOWS == operatingSystem) {
+        if (isWindows) {
             KeyValue fadeOutBegin = new KeyValue(popup.opacityProperty(), 1.0);
             KeyValue fadeOutEnd   = new KeyValue(popup.opacityProperty(), 0.0);
 
@@ -421,7 +435,7 @@ public enum Notifier {
             stage.show();
         }
 
-        if (OperatingSystem.WINDOWS == operatingSystem) {
+        if (isWindows) {
             popup.show(stage);
             fireNotificationEvent(new NotificationEvent(notification, INSTANCE, popup, NotificationEvent.SHOW_NOTIFICATION));
             timelineOut.play();
@@ -484,25 +498,25 @@ public enum Notifier {
     public final ObjectProperty<EventHandler<NotificationEvent>> onNotificationPressedProperty() { return onNotificationPressed; }
     public final void setOnNotificationPressed(EventHandler<NotificationEvent> value) { onNotificationPressedProperty().set(value); }
     public final EventHandler<NotificationEvent> getOnNotificationPressed() { return onNotificationPressedProperty().get(); }
-    private ObjectProperty<EventHandler<NotificationEvent>> onNotificationPressed = new ObjectPropertyBase<EventHandler<NotificationEvent>>() {
+    private ObjectProperty<EventHandler<NotificationEvent>> onNotificationPressed = new ObjectPropertyBase<>() {
         @Override public Object getBean() { return this; }
-        @Override public String getName() { return "onNotificationPressed";}
+        @Override public String getName() { return "onNotificationPressed"; }
     };
 
     public final ObjectProperty<EventHandler<NotificationEvent>> onShowNotificationProperty() { return onShowNotification; }
     public final void setOnShowNotification(EventHandler<NotificationEvent> value) { onShowNotificationProperty().set(value); }
     public final EventHandler<NotificationEvent> getOnShowNotification() { return onShowNotificationProperty().get(); }
-    private ObjectProperty<EventHandler<NotificationEvent>> onShowNotification = new ObjectPropertyBase<EventHandler<NotificationEvent>>() {
+    private ObjectProperty<EventHandler<NotificationEvent>> onShowNotification = new ObjectPropertyBase<>() {
         @Override public Object getBean() { return this; }
-        @Override public String getName() { return "onShowNotification";}
+        @Override public String getName() { return "onShowNotification"; }
     };
 
     public final ObjectProperty<EventHandler<NotificationEvent>> onHideNotificationProperty() { return onHideNotification; }
     public final void setOnHideNotification(EventHandler<NotificationEvent> value) { onHideNotificationProperty().set(value); }
     public final EventHandler<NotificationEvent> getOnHideNotification() { return onHideNotificationProperty().get(); }
-    private ObjectProperty<EventHandler<NotificationEvent>> onHideNotification = new ObjectPropertyBase<EventHandler<NotificationEvent>>() {
+    private ObjectProperty<EventHandler<NotificationEvent>> onHideNotification = new ObjectPropertyBase<>() {
         @Override public Object getBean() { return this; }
-        @Override public String getName() { return "onHideNotification";}
+        @Override public String getName() { return "onHideNotification"; }
     };
 
 
@@ -521,5 +535,4 @@ public enum Notifier {
         if (null == handler) return;
         handler.handle(event);
     }
-
 }

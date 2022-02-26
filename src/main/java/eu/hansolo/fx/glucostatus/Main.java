@@ -42,6 +42,7 @@ import eu.hansolo.fx.glucostatus.i18n.I18nKeys;
 import eu.hansolo.fx.glucostatus.i18n.Translator;
 import eu.hansolo.fx.glucostatus.notification.Notification;
 import eu.hansolo.fx.glucostatus.notification.NotificationBuilder;
+import eu.hansolo.fx.glucostatus.notification.Notifier;
 import eu.hansolo.fx.glucostatus.notification.NotifierBuilder;
 import eu.hansolo.jdktools.Architecture;
 import eu.hansolo.jdktools.OperatingSystem;
@@ -132,6 +133,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import static eu.hansolo.toolbox.unit.UnitDefinition.MILLIGRAM_PER_DECILITER;
@@ -139,14 +141,14 @@ import static eu.hansolo.toolbox.unit.UnitDefinition.MILLIMOL_PER_LITER;
 
 
 public class Main extends Application {
-    private static final Insets      GRAPH_INSETS   = new Insets(5, 10, 5, 10);
-    private              MacosWindow                macosWindow;
-    private static       boolean                    switchingUnits = false;
-    private final        Image                      icon           = new Image(Main.class.getResourceAsStream("icon48x48.png"));
-    private final        Image                      stageIcon      = new Image(Main.class.getResourceAsStream("icon128x128.png"));
+    private static final Insets                     GRAPH_INSETS   = new Insets(5, 10, 5, 10);
+    private        final Image                      icon           = new Image(Main.class.getResourceAsStream("icon48x48.png"));
+    private        final Image                      stageIcon      = new Image(Main.class.getResourceAsStream("icon128x128.png"));
+    private        final Translator                 translator     = new Translator(I18nKeys.RESOURCE_NAME);
     private              ZonedDateTime              lastUpdate     = ZonedDateTime.now().minusMinutes(6);
-    private final        Translator                 translator     = new Translator(I18nKeys.RESOURCE_NAME);
+    private              AtomicBoolean              switchingUnits = new AtomicBoolean(false);
     private              String                     nightscoutUrl  = "";
+    private              MacosWindow                macosWindow;
     private              boolean                    trayIconSupported;
     private              OsArcMode                  sysinfo;
     private              OperatingSystem            operatingSystem;
@@ -156,7 +158,7 @@ public class Main extends Application {
     private              ZonedDateTime              lastNotification;
     private              ZonedDateTime              lastSpeak;
     private              String                     voice;
-    private              Notification.Notifier      notifier;
+    private              Notifier                   notifier;
     private              AudioClip                  notificationSound;
     private              Dialog                     aboutDialog;
     private              Stage                      stage;
@@ -270,7 +272,7 @@ public class Main extends Application {
         deltaChartVisible = false;
         lastNotification  = ZonedDateTime.now();
         lastSpeak         = ZonedDateTime.now().minusMinutes(6);
-        notificationSound = new AudioClip(getClass().getResource("alarm.wav").toExternalForm());
+        notificationSound = new AudioClip(getClass().getResource(Constants.ALARM_SOUND_FILENAME).toExternalForm());
         slowlyRising      = false;
         slowlyFalling     = false;
         currentEntry      = new GlucoEntry("-1", 0, Instant.now().getEpochSecond(), Instant.now(), "", Trend.NONE, "", "", "", 2, 0, 0, 0, 0, 0, "");
@@ -378,12 +380,14 @@ public class Main extends Application {
         patternChartButton = new SVGPath();
         patternChartButton.setContent("M10.993,22c1.508,0 2.924,-0.286 4.25,-0.859c1.326,-0.572 2.495,-1.367 3.508,-2.385c1.013,-1.018 1.807,-2.19 2.384,-3.517c0.577,-1.327 0.865,-2.74 0.865,-4.239c0,-1.499 -0.288,-2.912 -0.865,-4.239c-0.577,-1.327 -1.374,-2.499 -2.391,-3.517c-1.017,-1.018 -2.188,-1.813 -3.514,-2.385c-1.326,-0.573 -2.743,-0.859 -4.25,-0.859c-1.499,0 -2.911,0.286 -4.237,0.859c-1.326,0.572 -2.493,1.367 -3.501,2.385c-1.008,1.018 -1.8,2.19 -2.377,3.517c-0.577,1.327 -0.865,2.74 -0.865,4.239c-0,1.499 0.288,2.912 0.865,4.239c0.577,1.327 1.371,2.499 2.384,3.517c1.013,1.018 2.182,1.813 3.508,2.385c1.326,0.573 2.738,0.859 4.236,0.859Zm-6.062,-6.911l0,-8.792c0,-0.19 0.068,-0.354 0.205,-0.49c0.136,-0.137 0.295,-0.205 0.476,-0.205c0.191,0 0.355,0.068 0.491,0.205c0.136,0.136 0.204,0.3 0.204,0.49l0,4.158l1.321,-1.363c0.273,-0.273 0.573,-0.409 0.9,-0.409c0.336,-0 0.635,0.136 0.899,0.409l1.866,1.949c0.036,0.045 0.073,0.041 0.109,-0.014l1.839,-1.854l-0.749,-0.736c-0.155,-0.145 -0.196,-0.311 -0.123,-0.497c0.073,-0.186 0.218,-0.311 0.436,-0.375l3.215,-0.831c0.2,-0.055 0.37,-0.014 0.511,0.122c0.14,0.137 0.184,0.3 0.129,0.491l-0.845,3.23c-0.063,0.228 -0.188,0.378 -0.374,0.45c-0.186,0.073 -0.352,0.032 -0.497,-0.122l-0.736,-0.764l-1.962,2.018c-0.272,0.281 -0.576,0.422 -0.912,0.422c-0.327,0 -0.631,-0.141 -0.913,-0.422l-1.839,-1.909c-0.036,-0.054 -0.077,-0.054 -0.123,0l-2.152,2.181l0,2.14c0,0.064 0.027,0.096 0.082,0.096l9.958,-0c0.181,-0 0.34,0.068 0.477,0.204c0.136,0.136 0.204,0.295 0.204,0.477c-0,0.191 -0.068,0.355 -0.204,0.491c-0.137,0.136 -0.296,0.204 -0.477,0.204l-10.476,0c-0.281,0 -0.508,-0.086 -0.681,-0.259c-0.172,-0.172 -0.259,-0.404 -0.259,-0.695Z");
         patternChartButton.setFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
+        patternChartButton.setOpacity(0.5);
         AnchorPane.setBottomAnchor(patternChartButton, 20d);
         AnchorPane.setLeftAnchor(patternChartButton, 10d);
 
         matrixButton = new SVGPath();
         matrixButton.setContent("M10.993,22c1.508,0 2.924,-0.286 4.25,-0.859c1.326,-0.572 2.495,-1.367 3.508,-2.385c1.013,-1.018 1.807,-2.19 2.384,-3.517c0.577,-1.327 0.865,-2.74 0.865,-4.239c0,-1.499 -0.288,-2.912 -0.865,-4.239c-0.577,-1.327 -1.374,-2.499 -2.391,-3.517c-1.017,-1.018 -2.188,-1.813 -3.514,-2.385c-1.326,-0.573 -2.743,-0.859 -4.25,-0.859c-1.499,0 -2.911,0.286 -4.237,0.859c-1.326,0.572 -2.493,1.367 -3.501,2.385c-1.008,1.018 -1.8,2.19 -2.377,3.517c-0.577,1.327 -0.865,2.74 -0.865,4.239c-0,1.499 0.288,2.912 0.865,4.239c0.577,1.327 1.371,2.499 2.384,3.517c1.013,1.018 2.182,1.813 3.508,2.385c1.326,0.573 2.738,0.859 4.236,0.859Zm0.014,-5.861c-0.418,-0 -0.777,-0.15 -1.076,-0.45c-0.3,-0.3 -0.45,-0.659 -0.45,-1.077c0,-0.418 0.15,-0.777 0.45,-1.077c0.299,-0.3 0.658,-0.449 1.076,-0.449c0.408,-0 0.765,0.149 1.069,0.449c0.304,0.3 0.456,0.659 0.456,1.077c0,0.418 -0.152,0.777 -0.456,1.077c-0.304,0.3 -0.661,0.45 -1.069,0.45Zm-3.855,-0c-0.418,-0 -0.777,-0.15 -1.076,-0.45c-0.3,-0.3 -0.45,-0.659 -0.45,-1.077c0,-0.418 0.15,-0.777 0.45,-1.077c0.299,-0.3 0.658,-0.449 1.076,-0.449c0.417,-0 0.774,0.149 1.069,0.449c0.295,0.3 0.443,0.659 0.443,1.077c-0,0.427 -0.148,0.788 -0.443,1.084c-0.295,0.295 -0.652,0.443 -1.069,0.443Zm7.696,-0c-0.408,-0 -0.763,-0.15 -1.062,-0.45c-0.3,-0.3 -0.45,-0.659 -0.45,-1.077c0,-0.418 0.15,-0.777 0.45,-1.077c0.299,-0.3 0.654,-0.449 1.062,-0.449c0.418,-0 0.777,0.149 1.076,0.449c0.3,0.3 0.45,0.659 0.45,1.077c-0,0.418 -0.15,0.777 -0.45,1.077c-0.299,0.3 -0.658,0.45 -1.076,0.45Zm-3.841,-3.612c-0.418,-0 -0.777,-0.15 -1.076,-0.45c-0.3,-0.3 -0.45,-0.659 -0.45,-1.077c0,-0.418 0.15,-0.775 0.45,-1.07c0.299,-0.295 0.658,-0.443 1.076,-0.443c0.408,-0.009 0.765,0.136 1.069,0.436c0.304,0.3 0.456,0.659 0.456,1.077c0,0.418 -0.152,0.777 -0.456,1.077c-0.304,0.3 -0.661,0.45 -1.069,0.45Zm-3.855,-0c-0.418,-0 -0.777,-0.15 -1.076,-0.45c-0.3,-0.3 -0.45,-0.659 -0.45,-1.077c0,-0.418 0.15,-0.775 0.45,-1.07c0.299,-0.295 0.658,-0.443 1.076,-0.443c0.417,-0.009 0.774,0.136 1.069,0.436c0.295,0.3 0.443,0.659 0.443,1.077c-0,0.418 -0.148,0.777 -0.443,1.077c-0.295,0.3 -0.652,0.45 -1.069,0.45Zm7.696,-0c-0.408,-0 -0.763,-0.15 -1.062,-0.45c-0.3,-0.3 -0.45,-0.659 -0.45,-1.077c0,-0.418 0.15,-0.775 0.45,-1.07c0.299,-0.295 0.654,-0.443 1.062,-0.443c0.418,-0.009 0.777,0.136 1.076,0.436c0.3,0.3 0.45,0.659 0.45,1.077c-0,0.418 -0.15,0.777 -0.45,1.077c-0.299,0.3 -0.658,0.45 -1.076,0.45Zm-3.841,-3.599c-0.418,0 -0.777,-0.15 -1.076,-0.45c-0.3,-0.3 -0.45,-0.658 -0.45,-1.077c0,-0.427 0.15,-0.786 0.45,-1.076c0.299,-0.291 0.658,-0.441 1.076,-0.45c0.408,-0 0.765,0.148 1.069,0.443c0.304,0.295 0.456,0.656 0.456,1.083c0,0.419 -0.152,0.777 -0.456,1.077c-0.304,0.3 -0.661,0.45 -1.069,0.45Zm-3.855,0c-0.418,0 -0.777,-0.15 -1.076,-0.45c-0.3,-0.3 -0.45,-0.658 -0.45,-1.077c0,-0.418 0.15,-0.776 0.45,-1.076c0.299,-0.3 0.658,-0.45 1.076,-0.45c0.417,-0 0.774,0.15 1.069,0.45c0.295,0.3 0.443,0.658 0.443,1.076c-0,0.419 -0.148,0.777 -0.443,1.077c-0.295,0.3 -0.652,0.45 -1.069,0.45Zm7.696,0c-0.408,0 -0.763,-0.15 -1.062,-0.45c-0.3,-0.3 -0.45,-0.658 -0.45,-1.077c0,-0.427 0.15,-0.786 0.45,-1.076c0.299,-0.291 0.654,-0.441 1.062,-0.45c0.418,-0 0.777,0.148 1.076,0.443c0.3,0.295 0.45,0.656 0.45,1.083c-0,0.419 -0.15,0.777 -0.45,1.077c-0.299,0.3 -0.658,0.45 -1.076,0.45Z");
         matrixButton.setFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
+        matrixButton.setOpacity(0.5);
         AnchorPane.setTopAnchor(matrixButton, 10d);
         AnchorPane.setLeftAnchor(matrixButton, 10d);
 
@@ -440,7 +444,6 @@ public class Main extends Application {
         AnchorPane.setRightAnchor(chartPane, 0d);
         AnchorPane.setBottomAnchor(chartPane, 0d);
         AnchorPane.setLeftAnchor(chartPane, 0d);
-
 
         prefPane = createPrefPane();
         prefPane.setVisible(false);
@@ -573,7 +576,6 @@ public class Main extends Application {
         scene.getStylesheets().add(Main.class.getResource("glucostatus.css").toExternalForm());
 
         stage.setScene(scene);
-        //stage.setAlwaysOnTop(true);
         stage.show();
         stage.getIcons().add(stageIcon);
         stage.centerOnScreen();
@@ -594,7 +596,11 @@ public class Main extends Application {
 
     private void postStart() {
         if (null != nightscoutUrl && !nightscoutUrl.isEmpty()) {
-            Helper.getEntriesFromLast30Days(nightscoutUrl + Constants.URL_API).thenAccept(l -> allEntries.addAll(l));
+            Helper.getEntriesFromLast30Days(nightscoutUrl + Constants.URL_API).thenAccept(l -> {
+                allEntries.addAll(l);
+                matrixButton.setOpacity(1.0);
+                patternChartButton.setOpacity(1.0);
+            });
             service = new ScheduledService<>() {
                 @Override protected Task<Void> createTask() {
                     Task task = new Task() {
@@ -742,8 +748,14 @@ public class Main extends Application {
 
     private void reloadAllEntries() {
         if (null != nightscoutUrl && !nightscoutUrl.isEmpty()) {
+            matrixButton.setOpacity(0.5);
+            patternChartButton.setOpacity(0.5);
             allEntries.clear();
-            Helper.getEntriesFromLast30Days(nightscoutUrl + Constants.URL_API).thenAccept(l -> allEntries.addAll(l));
+            Helper.getEntriesFromLast30Days(nightscoutUrl + Constants.URL_API).thenAccept(l -> {
+                allEntries.addAll(l);
+                matrixButton.setOpacity(1.0);
+                patternChartButton.setOpacity(1.0);
+            });
             drawChart();
         }
     }
@@ -1467,7 +1479,7 @@ public class Main extends Application {
         HBox unitBox = new HBox(10, unitSwitch, unitLabel);
         unitBox.setAlignment(Pos.CENTER_LEFT);
         unitSwitch.selectedProperty().addListener((o, ov, nv) -> {
-            switchingUnits = true;
+            switchingUnits.set(true);
             currentUnit = nv ? MILLIGRAM_PER_DECILITER : MILLIMOL_PER_LITER;
             unitLabel.setText(translator.get(I18nKeys.SETTINGS_UNIT) + currentUnit.UNIT.getUnitShort());
             if (MILLIGRAM_PER_DECILITER == currentUnit) {
@@ -1519,7 +1531,7 @@ public class Main extends Application {
                 maxAcceptableSlider.setBlockIncrement(Helper.mgPerDeciliterToMmolPerLiter(5));
                 maxAcceptableSlider.setValue(Helper.mgPerDeciliterToMmolPerLiter(PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MAX_ACCEPTABLE)));
             }
-            switchingUnits = false;
+            switchingUnits.set(false);
         });
 
 
@@ -1746,7 +1758,7 @@ public class Main extends Application {
         maxNormalSlider.setValue(UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? Constants.DEFAULT_MAX_NORMAL : Helper.mgPerDeciliterToMmolPerLiter(Constants.DEFAULT_MAX_NORMAL));
         maxNormalSlider.valueProperty().addListener((o, ov, nv) -> {
             maxNormalLabel.setText(new StringBuilder().append("Max normal: ").append(String.format(Locale.US, format, maxNormalSlider.getValue())).append(" ").append(currentUnit.UNIT.getUnitShort()).toString());
-            if (switchingUnits) { return; }
+            if (switchingUnits.get()) { return; }
             if (nv.doubleValue() > maxAcceptableSlider.getValue()) { maxAcceptableSlider.setValue(nv.doubleValue()); }
         });
 
@@ -1764,7 +1776,7 @@ public class Main extends Application {
         maxAcceptableSlider.setValue(UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? Constants.DEFAULT_MAX_ACCEPTABLE : Helper.mgPerDeciliterToMmolPerLiter(Constants.DEFAULT_MAX_ACCEPTABLE));
         maxAcceptableSlider.valueProperty().addListener((o, ov, nv) -> {
             maxAcceptableLabel.setText(new StringBuilder().append(translator.get(I18nKeys.SETTINGS_MAX_ACCEPTABLE)).append(String.format(Locale.US, format, maxAcceptableSlider.getValue())).append(" ").append(currentUnit.UNIT.getUnitShort()).toString());
-            if (switchingUnits) { return; }
+            if (switchingUnits.get()) { return; }
             if (nv.doubleValue() < maxNormalSlider.getValue()) { maxNormalSlider.setValue(nv.doubleValue()); }
         });
 
