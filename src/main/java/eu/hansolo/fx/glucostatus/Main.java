@@ -41,6 +41,7 @@ import eu.hansolo.fx.glucostatus.i18n.I18nKeys;
 import eu.hansolo.fx.glucostatus.i18n.Translator;
 import eu.hansolo.fx.glucostatus.notification.Notification;
 import eu.hansolo.fx.glucostatus.notification.NotificationBuilder;
+import eu.hansolo.fx.glucostatus.notification.Notifier;
 import eu.hansolo.fx.glucostatus.notification.NotifierBuilder;
 import eu.hansolo.toolbox.tuples.Pair;
 import eu.hansolo.toolbox.unit.UnitDefinition;
@@ -129,7 +130,7 @@ public class Main extends Application {
     private              boolean                       darkMode;
     private              Color                         accentColor;
     private              ZonedDateTime                 lastNotification;
-    private              Notification.Notifier         notifier;
+    private              Notifier                      notifier;
     private              AudioClip                     notificationSound;
     private              Stage                         stage;
     private              Region                        glassOverlay;
@@ -672,7 +673,7 @@ public class Main extends Application {
                 Notification notification = NotificationBuilder.create().title(title).message(msg).image(icon).build();
                 if (PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_PLAY_SOUND_FOR_TOO_LOW_NOTIFICATION)) { notificationSound.play(); }
                 if (WebAPI.isBrowser()) {
-                    WebAPI.getWebAPI(stage).executeScript("window.alert(\"" + notification.title + "\n\n" + notification.message + "\");");
+                    WebAPI.getWebAPI(stage).executeScript("window.alert(\"" + notification.title() + "\n\n" + notification.message() + "\");");
                 } else {
                     Platform.runLater(() -> { if (notifier.getNoOfPopups() == 0) { notifier.notify(notification); } });
                 }
@@ -686,7 +687,7 @@ public class Main extends Application {
                 Notification notification = NotificationBuilder.create().title(title).message(msg).image(icon).build();
                 if (PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_PLAY_SOUND_FOR_TOO_HIGH_NOTIFICATION)) { notificationSound.play(); }
                 if (WebAPI.isBrowser()) {
-                    WebAPI.getWebAPI(stage).executeScript("window.alert(\"" + notification.title + "\n\n" + notification.message + "\");");
+                    WebAPI.getWebAPI(stage).executeScript("window.alert(\"" + notification.title() + "\n\n" + notification.message() + "\");");
                 } else {
                     Platform.runLater(() -> { if (notifier.getNoOfPopups() == 0) { notifier.notify(notification); }});
                 }
@@ -810,7 +811,7 @@ public class Main extends Application {
 
         if (playSound) { notificationSound.play(); }
         if (WebAPI.isBrowser()) {
-            WebAPI.getWebAPI(stage).executeScript("window.alert(\"" + notification.title + "\n\n" + notification.message + "\");");
+            WebAPI.getWebAPI(stage).executeScript("window.alert(\"" + notification.title() + "\n\n" + notification.message() + "\");");
         } else {
             Platform.runLater(() -> { if (notifier.getNoOfPopups() == 0) { notifier.notify(notification); }});
         }

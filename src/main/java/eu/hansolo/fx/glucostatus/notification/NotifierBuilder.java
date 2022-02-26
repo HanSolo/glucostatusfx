@@ -86,8 +86,8 @@ public class NotifierBuilder<B extends NotifierBuilder<B>> {
         return (B) this;
     }
 
-    public final Notification.Notifier build() {
-        final Notification.Notifier notifier = Notification.Notifier.INSTANCE;
+    public final Notifier build() {
+        final Notifier notifier = Notifier.INSTANCE;
         for (String key : properties.keySet()) {
             if ("owner".equals(key)) {
                 notifier.setNotificationOwner(((ObjectProperty<Stage>) properties.get(key)).get());
