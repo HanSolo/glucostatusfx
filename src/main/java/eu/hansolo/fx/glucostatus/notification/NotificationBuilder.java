@@ -61,15 +61,11 @@ public class NotificationBuilder<B extends NotificationBuilder<B>> {
     public final Notification build() {
         final Notification notification;
         if (properties.keySet().contains("title") && properties.keySet().contains("message") && properties.keySet().contains("image")) {
-            notification = new Notification(((StringProperty) properties.get("title")).get(),
-                                            ((StringProperty) properties.get("message")).get(),
-                                            ((ObjectProperty<Image>) properties.get("image")).get());
+            notification = new Notification(((StringProperty) properties.get("title")).get(), ((StringProperty) properties.get("message")).get(), ((ObjectProperty<Image>) properties.get("image")).get());
         } else if (properties.keySet().contains("title") && properties.keySet().contains("message")) {
-            notification = new Notification(((StringProperty) properties.get("title")).get(),
-                                            ((StringProperty) properties.get("message")).get());
+            notification = new Notification(((StringProperty) properties.get("title")).get(), ((StringProperty) properties.get("message")).get());
         } else if (properties.keySet().contains("message") && properties.keySet().contains("image")) {
-            notification = new Notification(((StringProperty) properties.get("message")).get(),
-                                            ((ObjectProperty<Image>) properties.get("image")).get());
+            notification = new Notification(((StringProperty) properties.get("message")).get(), ((ObjectProperty<Image>) properties.get("image")).get());
         } else {
             throw new IllegalArgumentException("Wrong or missing parameters.");
         }               
