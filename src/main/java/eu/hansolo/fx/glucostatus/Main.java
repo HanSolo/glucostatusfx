@@ -1031,8 +1031,9 @@ public class Main extends Application {
         long          hourCounter      = 0;
 
         // Collect nights
-        ZonedDateTime startTime = ZonedDateTime.ofInstant(Instant.ofEpochSecond(startX + minEntry.datelong()), ZoneId.systemDefault());
-        int           startHour = startTime.getHour();
+        ZonedDateTime startTime    = ZonedDateTime.ofInstant(Instant.ofEpochSecond(startX + minEntry.datelong()), ZoneId.systemDefault());
+        int           startHour    = startTime.getHour();
+        boolean       startAtNight = false;
         List<eu.hansolo.toolboxfx.geom.Rectangle> nights = new ArrayList<>();
 
         // Chart starts at night
@@ -1040,6 +1041,7 @@ public class Main extends Application {
             double widthToNextFullHour = java.time.Duration.between(startTime, startTime.plusHours(1).truncatedTo(ChronoUnit.HOURS)).toSeconds() * stepX;
             double w                   = widthToNextFullHour + (10 - Constants.NIGHT_HOURS.indexOf(startHour) - 1) * oneHourStep;
             nights.add(new eu.hansolo.toolboxfx.geom.Rectangle(GRAPH_INSETS.getLeft(), GRAPH_INSETS.getTop(), w, availableHeight));
+            startAtNight = true;
         }
 
         // Full nights
@@ -1049,7 +1051,7 @@ public class Main extends Application {
             int    h = ZonedDateTime.ofInstant(Instant.ofEpochSecond(i + minEntry.datelong()), ZoneId.systemDefault()).getHour();
             double x = GRAPH_INSETS.getLeft() + i * stepX;
             if (h != lastHour) {
-                if (Constants.NIGHT_START == h && !nightStart) {
+                if (!startAtNight && Constants.NIGHT_START == h && !nightStart) {
                     nightStart = true;
                     nightX = x;
                     }
