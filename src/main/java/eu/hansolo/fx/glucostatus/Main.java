@@ -600,8 +600,10 @@ public class Main extends Application {
         if (null != nightscoutUrl && !nightscoutUrl.isEmpty()) {
             Helper.getEntriesFromLast30Days(nightscoutUrl + Constants.URL_API).thenAccept(l -> {
                 allEntries.addAll(l);
-                matrixButton.setOpacity(1.0);
-                patternChartButton.setOpacity(1.0);
+                Platform.runLater(() -> {
+                    matrixButton.setOpacity(1.0);
+                    patternChartButton.setOpacity(1.0);
+                });
             });
             service = new ScheduledService<>() {
                 @Override protected Task<Void> createTask() {
@@ -755,8 +757,10 @@ public class Main extends Application {
             allEntries.clear();
             Helper.getEntriesFromLast30Days(nightscoutUrl + Constants.URL_API).thenAccept(l -> {
                 allEntries.addAll(l);
-                matrixButton.setOpacity(1.0);
-                patternChartButton.setOpacity(1.0);
+                Platform.runLater(() -> {
+                    matrixButton.setOpacity(1.0);
+                    patternChartButton.setOpacity(1.0);
+                });
             });
             drawChart();
         }
