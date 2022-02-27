@@ -148,6 +148,7 @@ public class Main extends Application {
     private        final Image                      stageIcon      = new Image(Main.class.getResourceAsStream("icon128x128.png"));
     private        final Translator                 translator     = new Translator(I18nKeys.RESOURCE_NAME);
     private              ZonedDateTime              lastUpdate     = ZonedDateTime.now().minusMinutes(6);
+    private              ZonedDateTime              lastFullUpdate = ZonedDateTime.now().minusMinutes(5);
     private              AtomicBoolean              switchingUnits = new AtomicBoolean(false);
     private              String                     nightscoutUrl  = "";
     private              MacosWindow                macosWindow;
@@ -604,6 +605,7 @@ public class Main extends Application {
                     matrixButton.setOpacity(1.0);
                     patternChartButton.setOpacity(1.0);
                 });
+                lastFullUpdate = ZonedDateTime.now();
             });
             service = new ScheduledService<>() {
                 @Override protected Task<Void> createTask() {
@@ -751,7 +753,7 @@ public class Main extends Application {
     }
 
     private void reloadAllEntries() {
-        if (null != nightscoutUrl && !nightscoutUrl.isEmpty()) {
+        if (null != nightscoutUrl && !nightscoutUrl.isEmpty() && ZonedDateTime.now().toEpochSecond() - lastFullUpdate.toEpochSecond() > Constants.SECONDS_PER_MINUTE) {
             matrixButton.setOpacity(0.5);
             patternChartButton.setOpacity(0.5);
             allEntries.clear();
@@ -761,6 +763,7 @@ public class Main extends Application {
                     matrixButton.setOpacity(1.0);
                     patternChartButton.setOpacity(1.0);
                 });
+                lastFullUpdate = ZonedDateTime.now();
             });
             drawChart();
         }

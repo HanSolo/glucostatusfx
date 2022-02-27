@@ -128,6 +128,7 @@ public class Constants {
     public static final double SETTINGS_MAX_ACCEPTABLE_MIN                            = 120;
     public static final double SETTINGS_MAX_ACCEPTABLE_MAX                            = 250;
 
+    public static final long          SECONDS_PER_MINUTE                              = 60;
     public static final long          SECONDS_PER_HOUR                                = 3600;
     public static final Integer       NIGHT_START                                     = 20;
     public static final Integer       NIGHT_END                                       = 6;
