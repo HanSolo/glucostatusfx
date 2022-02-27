@@ -124,9 +124,11 @@ import java.net.http.HttpResponse;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -275,7 +277,7 @@ public class Main extends Application {
         notificationSound = new AudioClip(getClass().getResource(Constants.ALARM_SOUND_FILENAME).toExternalForm());
         slowlyRising      = false;
         slowlyFalling     = false;
-        currentEntry      = new GlucoEntry("-1", 0, Instant.now().getEpochSecond(), Instant.now(), "", Trend.NONE, "", "", "", 2, 0, 0, 0, 0, 0, "");
+        currentEntry      = new GlucoEntry("-1", 0, OffsetDateTime.now().toEpochSecond(), OffsetDateTime.now(), "", Trend.NONE, "", "", "", 2, 0, 0, 0, 0, 0, "");
         dtf               = DateTimeFormatter.ofPattern(translator.get(I18nKeys.DATE_TIME_FORMAT));
 
 
@@ -1040,7 +1042,7 @@ public class Main extends Application {
     private void updateUI() {
         if (allEntries.isEmpty()) { return; }
         Collections.sort(allEntries, Comparator.comparingLong(GlucoEntry::datelong).reversed());
-        long limit = Instant.now().getEpochSecond() - currentInterval.getSeconds();
+        long limit = OffsetDateTime.now().toEpochSecond() - currentInterval.getSeconds();
         entries      = allEntries.stream().filter(entry -> entry.datelong() > limit).collect(Collectors.toList());
         currentEntry = entries.get(0);
         currentColor = null == currentEntry ? Constants.GRAY : Helper.getColorForValue(currentUnit, UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? currentEntry.sgv() : Helper.mgPerDeciliterToMmolPerLiter(currentEntry.sgv()));
@@ -1077,7 +1079,7 @@ public class Main extends Application {
         String currentValueText = new StringBuilder().append(String.format(Locale.US, format, currentValue)).append(" ").append(currentEntry.trend().getSymbol()).toString();
 
         Instant lastTimestamp = Instant.ofEpochSecond(currentEntry.datelong());
-        outdated = (Instant.now().getEpochSecond() - lastTimestamp.getEpochSecond() > Constants.TIMEOUT_IN_SECONDS);
+        outdated = (OffsetDateTime.now().toEpochSecond() - lastTimestamp.getEpochSecond() > Constants.TIMEOUT_IN_SECONDS);
         LocalDateTime dateTime = LocalDateTime.ofInstant(lastTimestamp, ZoneId.systemDefault());
         if (MILLIGRAM_PER_DECILITER == currentUnit) {
             avg = entries.stream().map(entry -> entry.sgv()).collect(Collectors.summingDouble(Double::doubleValue)) / entries.size();
@@ -1143,40 +1145,64 @@ public class Main extends Application {
         ctx.setLineWidth(1);
         List<String> yAxisLabels = MILLIGRAM_PER_DECILITER == currentUnit ? Constants.yAxisLabelsMgPerDeciliter : Constants.yAxisLabelsMmolPerLiter;
 
-        // Draw vertical grid lines
-        GlucoEntry    minEntry        = entries.get(0);
-        GlucoEntry    maxEntry        = entries.get(entries.size() - 1);
-        double        deltaTime       = (maxEntry.datelong() - minEntry.datelong());
-        double        stepX           = availableWidth / deltaTime;
-        double        stepY           = availableHeight / (Constants.DEFAULT_GLUCO_RANGE);
-        ZonedDateTime minDate         = Helper.getZonedDateTimeFromEpochSeconds(minEntry.datelong());
-        int           hour            = minDate.getHour();
-        ZonedDateTime adjMinDate      = (hour == 23 && currentInterval != TimeInterval.LAST_12_HOURS) ? minDate.plusSeconds(TimeInterval.LAST_24_HOURS.getSeconds()) : minDate;
-        ZonedDateTime firstFullHour   = (hour == 23 && currentInterval != TimeInterval.LAST_12_HOURS) ? ZonedDateTime.of(adjMinDate.plusDays(1).toLocalDate(), LocalTime.MIDNIGHT, ZoneId.systemDefault()) : adjMinDate;
-        long          startX          = firstFullHour.toEpochSecond() - minEntry.datelong();
-        int           lh              = -1;
-        double        nightLeftBounds = -1;
-        double       nightRightBounds = -1;
-        ctx.setFill(darkMode ? Color.rgb(255, 255, 255, 0.1) : Color.rgb(0, 0, 0, 0.1));
+        // Draw chart
+        GlucoEntry    minEntry         = entries.get(0);
+        GlucoEntry    maxEntry         = entries.get(entries.size() - 1);
+        double        deltaTime        = (maxEntry.datelong() - minEntry.datelong());
+        double        stepX            = availableWidth / deltaTime;
+        double        stepY            = availableHeight / (Constants.DEFAULT_GLUCO_RANGE);
+        ZonedDateTime minDate          = Helper.getZonedDateTimeFromEpochSeconds(minEntry.datelong());
+        int           hour             = minDate.getHour();
+        ZonedDateTime adjMinDate       = (hour == 23 && currentInterval != TimeInterval.LAST_12_HOURS) ? minDate.plusSeconds(TimeInterval.LAST_24_HOURS.getSeconds()) : minDate;
+        ZonedDateTime firstFullHour    = (hour == 23 && currentInterval != TimeInterval.LAST_12_HOURS) ? ZonedDateTime.of(adjMinDate.plusDays(1).toLocalDate(), LocalTime.MIDNIGHT, ZoneId.systemDefault()) : adjMinDate;
+        long          startX           = firstFullHour.toEpochSecond() - minEntry.datelong();
+        int           lastHour         = -1;
+        double        oneHourStep      = Constants.SECONDS_PER_HOUR * stepX;
+        long          hourCounter      = 0;
+
+        // Collect nights
+        ZonedDateTime startTime = ZonedDateTime.ofInstant(Instant.ofEpochSecond(startX + minEntry.datelong()), ZoneId.systemDefault());
+        int           startHour = startTime.getHour();
+        List<eu.hansolo.toolboxfx.geom.Rectangle> nights = new ArrayList<>();
+
+        // Chart starts at night
+        if (Constants.NIGHT_HOURS.contains(startHour)) {
+            double widthToNextFullHour = java.time.Duration.between(startTime, startTime.plusHours(1).truncatedTo(ChronoUnit.HOURS)).toSeconds() * stepX;
+            double w                   = widthToNextFullHour + (10 - Constants.NIGHT_HOURS.indexOf(startHour) - 1) * oneHourStep;
+            nights.add(new eu.hansolo.toolboxfx.geom.Rectangle(GRAPH_INSETS.getLeft(), GRAPH_INSETS.getTop(), w, availableHeight));
+        }
+
+        // Full nights
+        boolean nightStart = false;
+        double  nightX     = -1;
         for (long i = startX ; i <= deltaTime ; i++) {
             int    h = ZonedDateTime.ofInstant(Instant.ofEpochSecond(i + minEntry.datelong()), ZoneId.systemDefault()).getHour();
             double x = GRAPH_INSETS.getLeft() + i * stepX;
-            if (h != lh && lh != -1) {
-                if (h == 20) {
-                    nightLeftBounds = x;
-                } else if (h == 6) {
-                    nightRightBounds = x;
-                    if (nightLeftBounds == -1) {
-                        nightLeftBounds = startX * stepX;
-                    }
-                    if (nightRightBounds > nightLeftBounds) {
-                        ctx.fillRect(nightLeftBounds, GRAPH_INSETS.getTop(), nightRightBounds - nightLeftBounds, availableHeight);
-                    }
+            if (h != lastHour) {
+                if (Constants.NIGHT_START == h && !nightStart) {
+                    nightStart = true;
+                    nightX = x;
+                }
+                if (Constants.NIGHT_END == h && nightStart) {
+                    nightStart = false;
+                    nights.add(new eu.hansolo.toolboxfx.geom.Rectangle(nightX, GRAPH_INSETS.getTop(), 10 * oneHourStep, availableHeight));
                 }
             }
-            lh = h;
+            lastHour = h;
         }
 
+        // Chart ends at night
+        if (nightStart) {
+            nights.add(new eu.hansolo.toolboxfx.geom.Rectangle(nightX, GRAPH_INSETS.getTop(), availableWidth - nightX, availableHeight));
+        }
+        // Draw nights
+        ctx.save();
+        ctx.setFill(darkMode ? Color.rgb(255, 255, 255, 0.1) : Color.rgb(0, 0, 0, 0.1));
+        nights.forEach(night -> ctx.fillRect(night.getX(), night.getY(), night.width, night.getHeight()));
+        ctx.restore();
+
+
+        // Draw vertical lines
         ctx.setFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
         ctx.setTextAlign(TextAlignment.CENTER);
         long interval;
@@ -1187,11 +1213,11 @@ public class Main extends Application {
             case LAST_48_HOURS -> interval = TimeInterval.LAST_3_HOURS.getHours();
             default            -> interval = 1;
         }
-        long hourCounter = 0;
+        hourCounter = 0;
         for (long i = startX ; i <= deltaTime ; i++) {
             int    h = ZonedDateTime.ofInstant(Instant.ofEpochSecond(i + minEntry.datelong()), ZoneId.systemDefault()).getHour();
             double x = GRAPH_INSETS.getLeft() + i * stepX;
-            if (h != lh && lh != -1 && i != startX) {
+            if (h != lastHour && lastHour != -1 && i != startX) {
                 if (hourCounter % interval == 0) {
                     ctx.strokeLine(x, GRAPH_INSETS.getTop(), x, height - GRAPH_INSETS.getBottom());
                     switch (currentInterval) {
@@ -1201,7 +1227,7 @@ public class Main extends Application {
                 }
                 hourCounter++;
             }
-            lh = h;
+            lastHour = h;
         }
 
         // Draw horizontal grid lines
@@ -1940,7 +1966,7 @@ public class Main extends Application {
         MacosLabel hbac1Label = createLabel(String.format(Locale.US, "HbAc1 %.1f%% " + translator.get(I18nKeys.HBAC1_RANGE), Helper.getHbA1c(allEntries, currentUnit)), 20, false, false, Pos.CENTER);
         hbac1Label.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
 
-        long             limit           = Instant.now().getEpochSecond() - TimeInterval.LAST_168_HOURS.getSeconds();
+        long             limit           = OffsetDateTime.now().toEpochSecond() - TimeInterval.LAST_168_HOURS.getSeconds();
         List<GlucoEntry> entriesLastWeek = allEntries.stream().filter(entry -> entry.datelong() > limit).collect(Collectors.toList());
 
         Map<LocalTime, DataPoint>        dataMap         = Statistics.analyze(entriesLastWeek);

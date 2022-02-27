@@ -128,6 +128,11 @@ public class Constants {
     public static final double SETTINGS_MAX_ACCEPTABLE_MIN                            = 120;
     public static final double SETTINGS_MAX_ACCEPTABLE_MAX                            = 250;
 
+    public static final long          SECONDS_PER_HOUR                                = 3600;
+    public static final Integer       NIGHT_START                                     = 20;
+    public static final Integer       NIGHT_END                                       = 6;
+    public static final List<Integer> NIGHT_HOURS                                     = List.of( NIGHT_START, 21, 22, 23, 00, 1, 2, 3, 4, 5, NIGHT_END );
+
     public static final List<String> yAxisLabelsMgPerDeciliter = List.of("40", "80", "120", "160", "200", "240", "280", "320", "360", "400");
     public static final List<String> yAxisLabelsMmolPerLiter   = List.of("2.2", "4.4", "6.7", "8.9", "11.1", "13.3", "15.5", "17.8", "20.0", "22.2");
 }
