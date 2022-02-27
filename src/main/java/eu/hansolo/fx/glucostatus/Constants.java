@@ -26,11 +26,12 @@ import java.util.List;
 
 
 public class Constants {
-    public static final String            HOME_FOLDER        = new StringBuilder(System.getProperty("user.home")).append(File.separator).toString();
-    public static final String            URL_API            = "/api/v1/entries.json";
-    public static final String            URL_PARAM_COUNT_1  = "?count=1";
-    public static final long              TIMEOUT_IN_SECONDS = 480;
-    public static final DateTimeFormatter DTF                = DateTimeFormatter.ofPattern("dd/MM/YY HH:mm");
+    public static final String            HOME_FOLDER          = new StringBuilder(System.getProperty("user.home")).append(File.separator).toString();
+    public static final String            URL_API              = "/api/v1/entries.json";
+    public static final String            URL_PARAM_COUNT_1    = "?count=1";
+    public static final long              TIMEOUT_IN_SECONDS   = 480;
+    public static final DateTimeFormatter DTF                  = DateTimeFormatter.ofPattern("dd/MM/YY HH:mm");
+    public static final String            ALARM_SOUND_FILENAME = "alarm.wav";
 
     public static final String FIELD_ID                                               = "_id";
     public static final String FIELD_SGV                                              = "sgv";
@@ -51,8 +52,8 @@ public class Constants {
     public static final String PROPERTIES_NIGHTSCOUT_URL                              = "NIGHTSCOUT_URL";
     public static final String PROPERTIES_UNIT_MG                                     = "UNIT_MG";
     public static final String PROPERTIES_SHOW_DELTA_CHART                            = "SHOW_DELTA_CHART";
-    public static final String PROPERTIES_TOO_LOW_INTERVAL                            = "TOO_LOW_INTERVAL";
-    public static final String PROPERTIES_TOO_HIGH_INTERVAL                           = "TOO_HIGH_INTERVAL";
+    public static final String PROPERTIES_VOICE_OUTPUT                                = "VOICE_OUTPUT";
+    public static final String PROPERTIES_VOICE_OUTPUT_INTERVAL                       = "VOICE_OUTPUT_INTERVAL";
     public static final String PROPERTIES_MIN_ACCEPTABLE_MIN                          = "MIN_ACCEPTABLE_MIN";
     public static final String PROPERTIES_MIN_ACCEPTABLE_MAX                          = "MIN_ACCEPTABLE_MAX";
     public static final String PROPERTIES_MIN_NORMAL_MIN                              = "MIN_NORMAL_MIN";
@@ -74,7 +75,9 @@ public class Constants {
     public static final String PROPERTIES_SHOW_LOW_VALUE_NOTIFICATION                 = "SHOW_LOW_VALUE_NOTIFICATION";
     public static final String PROPERTIES_SHOW_ACCEPTABLE_LOW_VALUE_NOTIFICATION      = "SHOW_ACCEPTABLE_LOW_VALUE_NOTIFICATION";
     public static final String PROPERTIES_PLAY_SOUND_FOR_TOO_LOW_NOTIFICATION         = "PLAY_SOUND_FOR_TOO_LOW_NOTIFICATION";
+    public static final String PROPERTIES_SPEAK_TOO_LOW_NOTIFICATION                  = "SPEAK_TOO_LOW_NOTIFICATION";
     public static final String PROPERTIES_PLAY_SOUND_FOR_LOW_NOTIFICATION             = "PLAY_SOUND_FOR_LOW_NOTIFICATION";
+    public static final String PROPERTIES_SPEAK_LOW_NOTIFICATION                      = "SPEAK_LOW_NOTIFICATION";
     public static final String PROPERTIES_PLAY_SOUND_FOR_ACCEPTABLE_LOW_NOTIFICATION  = "PLAY_SOUND_FOR_ACCEPTABLE_LOW_NOTIFICATION";
     public static final String PROPERTIES_PLAY_SOUND_FOR_ACCEPTABLE_HIGH_NOTIFICATION = "PLAY_SOUND_FOR_ACCEPTABLE_HIGH_NOTIFICATION";
     public static final String PROPERTIES_PLAY_SOUND_FOR_HIGH_NOTIFICATION            = "PLAY_SOUND_FOR_HIGH_NOTIFICATION";
@@ -124,6 +127,11 @@ public class Constants {
     public static final double SETTINGS_MAX_NORMAL_MAX                                = 160;
     public static final double SETTINGS_MAX_ACCEPTABLE_MIN                            = 120;
     public static final double SETTINGS_MAX_ACCEPTABLE_MAX                            = 250;
+
+    public static final long          SECONDS_PER_HOUR                                = 3600;
+    public static final Integer       NIGHT_START                                     = 20;
+    public static final Integer       NIGHT_END                                       = 6;
+    public static final List<Integer> NIGHT_HOURS                                     = List.of( NIGHT_START, 21, 22, 23, 00, 1, 2, 3, 4, 5, NIGHT_END );
 
     public static final List<String> yAxisLabelsMgPerDeciliter = List.of("40", "80", "120", "160", "200", "240", "280", "320", "360", "400");
     public static final List<String> yAxisLabelsMmolPerLiter   = List.of("2.2", "4.4", "6.7", "8.9", "11.1", "13.3", "15.5", "17.8", "20.0", "22.2");

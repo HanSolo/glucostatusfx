@@ -61,8 +61,8 @@ public class Statistics {
                 final int h = hour;
                 final int m = minute;
                 List<GlucoEntry> bucketEntries = entries.stream()
-                                                        .filter(entry -> ZonedDateTime.ofInstant(entry.date(), ZoneId.systemDefault()).getHour() == h)
-                                                        .filter(entry -> ZonedDateTime.ofInstant(entry.date(), ZoneId.systemDefault()).getMinute() <= m)
+                                                        .filter(entry -> entry.date().getHour() == h)
+                                                        .filter(entry -> entry.date().getMinute() <= m)
                                                         .collect(Collectors.toList());
 
                 if (bucketEntries.isEmpty()) { continue; }

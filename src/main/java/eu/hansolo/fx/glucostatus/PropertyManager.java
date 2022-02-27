@@ -118,8 +118,8 @@ public enum PropertyManager {
             properties.put(Constants.PROPERTIES_NIGHTSCOUT_URL, "");
             properties.put(Constants.PROPERTIES_UNIT_MG, "TRUE");
             properties.put(Constants.PROPERTIES_SHOW_DELTA_CHART, "TRUE");
-            properties.put(Constants.PROPERTIES_TOO_LOW_INTERVAL, "5");
-            properties.put(Constants.PROPERTIES_TOO_HIGH_INTERVAL, "5");
+            properties.put(Constants.PROPERTIES_VOICE_OUTPUT, "FALSE");
+            properties.put(Constants.PROPERTIES_VOICE_OUTPUT_INTERVAL, "5");
             properties.put(Constants.PROPERTIES_MIN_ACCEPTABLE_MIN, "60.0");
             properties.put(Constants.PROPERTIES_MIN_ACCEPTABLE_MAX, "70.0");
             properties.put(Constants.PROPERTIES_MIN_NORMAL_MIN, "70.0");
@@ -141,13 +141,15 @@ public enum PropertyManager {
             properties.put(Constants.PROPERTIES_SHOW_ACCEPTABLE_HIGH_VALUE_NOTIFICATION, "TRUE");
             properties.put(Constants.PROPERTIES_SHOW_HIGH_VALUE_NOTIFICATION, "TRUE");
             properties.put(Constants.PROPERTIES_PLAY_SOUND_FOR_TOO_LOW_NOTIFICATION, "TRUE");
+            properties.put(Constants.PROPERTIES_SPEAK_TOO_LOW_NOTIFICATION, "FALSE");
             properties.put(Constants.PROPERTIES_PLAY_SOUND_FOR_LOW_NOTIFICATION, "TRUE");
+            properties.put(Constants.PROPERTIES_SPEAK_LOW_NOTIFICATION, "FALSE");
             properties.put(Constants.PROPERTIES_PLAY_SOUND_FOR_ACCEPTABLE_LOW_NOTIFICATION, "TRUE");
             properties.put(Constants.PROPERTIES_PLAY_SOUND_FOR_ACCEPTABLE_HIGH_NOTIFICATION, "TRUE");
             properties.put(Constants.PROPERTIES_PLAY_SOUND_FOR_HIGH_NOTIFICATION, "TRUE");
             properties.put(Constants.PROPERTIES_PLAY_SOUND_FOR_TOO_HIGH_NOTIFICATION, "TRUE");
-            properties.put(Constants.PROPERTIES_CRITICAL_MAX_NOTIFICATION_INTERVAL, "300");
-            properties.put(Constants.PROPERTIES_CRITICAL_MIN_NOTIFICATION_INTERVAL, "300");
+            properties.put(Constants.PROPERTIES_CRITICAL_MAX_NOTIFICATION_INTERVAL, "5");
+            properties.put(Constants.PROPERTIES_CRITICAL_MIN_NOTIFICATION_INTERVAL, "5");
 
             properties.store(output, null);
         } catch (IOException ex) {

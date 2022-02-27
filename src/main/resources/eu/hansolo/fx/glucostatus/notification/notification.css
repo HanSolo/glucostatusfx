@@ -73,18 +73,18 @@
 }
 .notification-mac .msg-area .content,
 .notification-mac .msg-area:focused .content {
-    -fx-background-color : transparent; /*-background-color;*/
+    -fx-background-color : transparent;
     -fx-background-insets: 0;
     -fx-background-radius: 0;
     -fx-padding          : 0px;
 }
 .notification-mac .msg-area > .scroll-pane {
-    -fx-background-color : transparent; /*-background-color;*/
+    -fx-background-color : transparent;
     -fx-background-insets: 0;
     -fx-padding          : 0;
 }
 .notification-mac .msg-area > .scroll-pane > .viewport {
-    -fx-background-color : transparent; /*-background-color;*/
+    -fx-background-color : transparent;
     -fx-background-insets: 0;
     -fx-padding          : 0;
 }

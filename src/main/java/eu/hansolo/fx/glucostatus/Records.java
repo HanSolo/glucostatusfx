@@ -19,6 +19,7 @@
 package eu.hansolo.fx.glucostatus;
 
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Objects;
@@ -26,7 +27,7 @@ import java.util.Objects;
 
 public class Records {
 
-    public record GlucoEntry(String id, double sgv, long datelong, Instant date, String dateString, Trend trend, String direction, String device, String type, int utcOffset, int noise, double filtered, double unfiltered, int rssi, double delta, String sysTime) implements Comparable<GlucoEntry> {
+    public record GlucoEntry(String id, double sgv, long datelong, OffsetDateTime date, String dateString, Trend trend, String direction, String device, String type, int utcOffset, int noise, double filtered, double unfiltered, int rssi, double delta, String sysTime) implements Comparable<GlucoEntry> {
 
         @Override public int compareTo(final GlucoEntry other) { return Long.compare(datelong, other.datelong()); }
 
@@ -45,7 +46,7 @@ public class Records {
 
         @Override public String toString() {
             return new StringBuilder().append("{")
-                                      .append("\"date\":\"").append(Constants.DTF.format(ZonedDateTime.ofInstant(date, ZoneId.systemDefault()))).append("\",")
+                                      .append("\"date\":\"").append(Constants.DTF.format(date)).append("\",")
                                       .append("\"sgv\":").append(sgv)
                                       .append("}")
                                       .toString();

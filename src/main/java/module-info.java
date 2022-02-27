@@ -10,7 +10,6 @@ module eu.hansolo.fx.glucostatus {
     requires transitive javafx.media;
     requires transitive javafx.swing;
 
-
     // 3rd Party
     requires transitive eu.hansolo.jdktools;
     requires transitive eu.hansolo.toolbox;

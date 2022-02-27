@@ -103,15 +103,18 @@ import java.net.http.HttpResponse;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import static eu.hansolo.toolbox.unit.UnitDefinition.MILLIGRAM_PER_DECILITER;
@@ -119,12 +122,12 @@ import static eu.hansolo.toolbox.unit.UnitDefinition.MILLIMOL_PER_LITER;
 
 
 public class Main extends Application {
-    private static final Insets                        GRAPH_INSETS   = new Insets(20, 10, 20, 10);
-    private static       boolean                       switchingUnits = false;
+    private static final Insets                        GRAPH_INSETS   = new Insets(5, 10, 5, 10);
     private final        Image                         icon           = new Image(Main.class.getResourceAsStream("icon48x48.png"));
     private final        Image                         stageIcon      = new Image(Main.class.getResourceAsStream("icon128x128.png"));
-    private              ZonedDateTime                 lastUpdate     = ZonedDateTime.now().minusMinutes(6);
     private final        Translator                    translator     = new Translator(I18nKeys.RESOURCE_NAME);
+    private              ZonedDateTime                 lastUpdate     = ZonedDateTime.now().minusMinutes(6);
+    private              AtomicBoolean                 switchingUnits = new AtomicBoolean(false);
     private              WebAPI                        webApi         = null;
     private              String                        nightscoutUrl  = "";
     private              boolean                       darkMode;
@@ -278,10 +281,10 @@ public class Main extends Application {
         dialogVisible     = new SimpleBooleanProperty(false);
         deltaChartVisible = false;
         lastNotification  = ZonedDateTime.now();
-        notificationSound = new AudioClip(getClass().getResource("alarm.wav").toExternalForm());
+        notificationSound = new AudioClip(getClass().getResource(Constants.ALARM_SOUND_FILENAME).toExternalForm());
         slowlyRising      = false;
         slowlyFalling     = false;
-        currentEntry      = new GlucoEntry("-1", 0, Instant.now().getEpochSecond(), Instant.now(), "", Trend.NONE, "", "", "", 2, 0, 0, 0, 0, 0, "");
+        currentEntry      = new GlucoEntry("-1", 0, OffsetDateTime.now().toEpochSecond(), OffsetDateTime.now(), "", Trend.NONE, "", "", "", 2, 0, 0, 0, 0, 0, "");
         dtf               = DateTimeFormatter.ofPattern(translator.get(I18nKeys.DATE_TIME_FORMAT));
         updateSettings();
 
@@ -376,12 +379,14 @@ public class Main extends Application {
         patternChartButton = new SVGPath();
         patternChartButton.setContent("M10.993,22c1.508,0 2.924,-0.286 4.25,-0.859c1.326,-0.572 2.495,-1.367 3.508,-2.385c1.013,-1.018 1.807,-2.19 2.384,-3.517c0.577,-1.327 0.865,-2.74 0.865,-4.239c0,-1.499 -0.288,-2.912 -0.865,-4.239c-0.577,-1.327 -1.374,-2.499 -2.391,-3.517c-1.017,-1.018 -2.188,-1.813 -3.514,-2.385c-1.326,-0.573 -2.743,-0.859 -4.25,-0.859c-1.499,0 -2.911,0.286 -4.237,0.859c-1.326,0.572 -2.493,1.367 -3.501,2.385c-1.008,1.018 -1.8,2.19 -2.377,3.517c-0.577,1.327 -0.865,2.74 -0.865,4.239c-0,1.499 0.288,2.912 0.865,4.239c0.577,1.327 1.371,2.499 2.384,3.517c1.013,1.018 2.182,1.813 3.508,2.385c1.326,0.573 2.738,0.859 4.236,0.859Zm-6.062,-6.911l0,-8.792c0,-0.19 0.068,-0.354 0.205,-0.49c0.136,-0.137 0.295,-0.205 0.476,-0.205c0.191,0 0.355,0.068 0.491,0.205c0.136,0.136 0.204,0.3 0.204,0.49l0,4.158l1.321,-1.363c0.273,-0.273 0.573,-0.409 0.9,-0.409c0.336,-0 0.635,0.136 0.899,0.409l1.866,1.949c0.036,0.045 0.073,0.041 0.109,-0.014l1.839,-1.854l-0.749,-0.736c-0.155,-0.145 -0.196,-0.311 -0.123,-0.497c0.073,-0.186 0.218,-0.311 0.436,-0.375l3.215,-0.831c0.2,-0.055 0.37,-0.014 0.511,0.122c0.14,0.137 0.184,0.3 0.129,0.491l-0.845,3.23c-0.063,0.228 -0.188,0.378 -0.374,0.45c-0.186,0.073 -0.352,0.032 -0.497,-0.122l-0.736,-0.764l-1.962,2.018c-0.272,0.281 -0.576,0.422 -0.912,0.422c-0.327,0 -0.631,-0.141 -0.913,-0.422l-1.839,-1.909c-0.036,-0.054 -0.077,-0.054 -0.123,0l-2.152,2.181l0,2.14c0,0.064 0.027,0.096 0.082,0.096l9.958,-0c0.181,-0 0.34,0.068 0.477,0.204c0.136,0.136 0.204,0.295 0.204,0.477c-0,0.191 -0.068,0.355 -0.204,0.491c-0.137,0.136 -0.296,0.204 -0.477,0.204l-10.476,0c-0.281,0 -0.508,-0.086 -0.681,-0.259c-0.172,-0.172 -0.259,-0.404 -0.259,-0.695Z");
         patternChartButton.setFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
+        patternChartButton.setOpacity(0.5);
         AnchorPane.setBottomAnchor(patternChartButton, 20d);
         AnchorPane.setLeftAnchor(patternChartButton, 10d);
 
         matrixButton = new SVGPath();
         matrixButton.setContent("M10.993,22c1.508,0 2.924,-0.286 4.25,-0.859c1.326,-0.572 2.495,-1.367 3.508,-2.385c1.013,-1.018 1.807,-2.19 2.384,-3.517c0.577,-1.327 0.865,-2.74 0.865,-4.239c0,-1.499 -0.288,-2.912 -0.865,-4.239c-0.577,-1.327 -1.374,-2.499 -2.391,-3.517c-1.017,-1.018 -2.188,-1.813 -3.514,-2.385c-1.326,-0.573 -2.743,-0.859 -4.25,-0.859c-1.499,0 -2.911,0.286 -4.237,0.859c-1.326,0.572 -2.493,1.367 -3.501,2.385c-1.008,1.018 -1.8,2.19 -2.377,3.517c-0.577,1.327 -0.865,2.74 -0.865,4.239c-0,1.499 0.288,2.912 0.865,4.239c0.577,1.327 1.371,2.499 2.384,3.517c1.013,1.018 2.182,1.813 3.508,2.385c1.326,0.573 2.738,0.859 4.236,0.859Zm0.014,-5.861c-0.418,-0 -0.777,-0.15 -1.076,-0.45c-0.3,-0.3 -0.45,-0.659 -0.45,-1.077c0,-0.418 0.15,-0.777 0.45,-1.077c0.299,-0.3 0.658,-0.449 1.076,-0.449c0.408,-0 0.765,0.149 1.069,0.449c0.304,0.3 0.456,0.659 0.456,1.077c0,0.418 -0.152,0.777 -0.456,1.077c-0.304,0.3 -0.661,0.45 -1.069,0.45Zm-3.855,-0c-0.418,-0 -0.777,-0.15 -1.076,-0.45c-0.3,-0.3 -0.45,-0.659 -0.45,-1.077c0,-0.418 0.15,-0.777 0.45,-1.077c0.299,-0.3 0.658,-0.449 1.076,-0.449c0.417,-0 0.774,0.149 1.069,0.449c0.295,0.3 0.443,0.659 0.443,1.077c-0,0.427 -0.148,0.788 -0.443,1.084c-0.295,0.295 -0.652,0.443 -1.069,0.443Zm7.696,-0c-0.408,-0 -0.763,-0.15 -1.062,-0.45c-0.3,-0.3 -0.45,-0.659 -0.45,-1.077c0,-0.418 0.15,-0.777 0.45,-1.077c0.299,-0.3 0.654,-0.449 1.062,-0.449c0.418,-0 0.777,0.149 1.076,0.449c0.3,0.3 0.45,0.659 0.45,1.077c-0,0.418 -0.15,0.777 -0.45,1.077c-0.299,0.3 -0.658,0.45 -1.076,0.45Zm-3.841,-3.612c-0.418,-0 -0.777,-0.15 -1.076,-0.45c-0.3,-0.3 -0.45,-0.659 -0.45,-1.077c0,-0.418 0.15,-0.775 0.45,-1.07c0.299,-0.295 0.658,-0.443 1.076,-0.443c0.408,-0.009 0.765,0.136 1.069,0.436c0.304,0.3 0.456,0.659 0.456,1.077c0,0.418 -0.152,0.777 -0.456,1.077c-0.304,0.3 -0.661,0.45 -1.069,0.45Zm-3.855,-0c-0.418,-0 -0.777,-0.15 -1.076,-0.45c-0.3,-0.3 -0.45,-0.659 -0.45,-1.077c0,-0.418 0.15,-0.775 0.45,-1.07c0.299,-0.295 0.658,-0.443 1.076,-0.443c0.417,-0.009 0.774,0.136 1.069,0.436c0.295,0.3 0.443,0.659 0.443,1.077c-0,0.418 -0.148,0.777 -0.443,1.077c-0.295,0.3 -0.652,0.45 -1.069,0.45Zm7.696,-0c-0.408,-0 -0.763,-0.15 -1.062,-0.45c-0.3,-0.3 -0.45,-0.659 -0.45,-1.077c0,-0.418 0.15,-0.775 0.45,-1.07c0.299,-0.295 0.654,-0.443 1.062,-0.443c0.418,-0.009 0.777,0.136 1.076,0.436c0.3,0.3 0.45,0.659 0.45,1.077c-0,0.418 -0.15,0.777 -0.45,1.077c-0.299,0.3 -0.658,0.45 -1.076,0.45Zm-3.841,-3.599c-0.418,0 -0.777,-0.15 -1.076,-0.45c-0.3,-0.3 -0.45,-0.658 -0.45,-1.077c0,-0.427 0.15,-0.786 0.45,-1.076c0.299,-0.291 0.658,-0.441 1.076,-0.45c0.408,-0 0.765,0.148 1.069,0.443c0.304,0.295 0.456,0.656 0.456,1.083c0,0.419 -0.152,0.777 -0.456,1.077c-0.304,0.3 -0.661,0.45 -1.069,0.45Zm-3.855,0c-0.418,0 -0.777,-0.15 -1.076,-0.45c-0.3,-0.3 -0.45,-0.658 -0.45,-1.077c0,-0.418 0.15,-0.776 0.45,-1.076c0.299,-0.3 0.658,-0.45 1.076,-0.45c0.417,-0 0.774,0.15 1.069,0.45c0.295,0.3 0.443,0.658 0.443,1.076c-0,0.419 -0.148,0.777 -0.443,1.077c-0.295,0.3 -0.652,0.45 -1.069,0.45Zm7.696,0c-0.408,0 -0.763,-0.15 -1.062,-0.45c-0.3,-0.3 -0.45,-0.658 -0.45,-1.077c0,-0.427 0.15,-0.786 0.45,-1.076c0.299,-0.291 0.654,-0.441 1.062,-0.45c0.418,-0 0.777,0.148 1.076,0.443c0.3,0.295 0.45,0.656 0.45,1.083c-0,0.419 -0.15,0.777 -0.45,1.077c-0.299,0.3 -0.658,0.45 -1.076,0.45Z");
         matrixButton.setFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
+        matrixButton.setOpacity(0.5);
         AnchorPane.setTopAnchor(matrixButton, 10d);
         AnchorPane.setLeftAnchor(matrixButton, 10d);
 
@@ -437,7 +442,6 @@ public class Main extends Application {
         AnchorPane.setRightAnchor(chartPane, 0d);
         AnchorPane.setBottomAnchor(chartPane, 0d);
         AnchorPane.setLeftAnchor(chartPane, 0d);
-
 
         prefPane = createPrefPane();
         prefPane.setVisible(false);
@@ -511,7 +515,11 @@ public class Main extends Application {
 
     private void postStart() {
         if (null != nightscoutUrl && !nightscoutUrl.isEmpty()) {
-            Helper.getEntriesFromLast30Days(nightscoutUrl + Constants.URL_API).thenAccept(l -> allEntries.addAll(l));
+            Helper.getEntriesFromLast30Days(nightscoutUrl + Constants.URL_API).thenAccept(l -> {
+                allEntries.addAll(l);
+                matrixButton.setOpacity(1.0);
+                patternChartButton.setOpacity(1.0);
+            });
             service = new ScheduledService<>() {
                 @Override protected Task<Void> createTask() {
                     Task task = new Task() {
@@ -649,8 +657,14 @@ public class Main extends Application {
 
     private void reloadAllEntries() {
         if (null != nightscoutUrl && !nightscoutUrl.isEmpty()) {
+            matrixButton.setOpacity(0.5);
+            patternChartButton.setOpacity(0.5);
             allEntries.clear();
-            Helper.getEntriesFromLast30Days(nightscoutUrl + Constants.URL_API).thenAccept(l -> allEntries.addAll(l));
+            Helper.getEntriesFromLast30Days(nightscoutUrl + Constants.URL_API).thenAccept(l -> {
+                allEntries.addAll(l);
+                matrixButton.setOpacity(1.0);
+                patternChartButton.setOpacity(1.0);
+            });
             drawChart();
         }
     }
@@ -717,12 +731,13 @@ public class Main extends Application {
         boolean       playSoundForTooLowNotification         = PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_PLAY_SOUND_FOR_TOO_LOW_NOTIFICATION);
         boolean       playSoundForLowNotification            = PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_PLAY_SOUND_FOR_LOW_NOTIFICATION);
         boolean       playSoundForAcceptableLowNotification  = PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_PLAY_SOUND_FOR_ACCEPTABLE_LOW_NOTIFICATION);
-        long          criticalMaxNotificationInterval        = PropertyManager.INSTANCE.getLong(Constants.PROPERTIES_CRITICAL_MAX_NOTIFICATION_INTERVAL);
-        long          criticalMinNotificationInterval        = PropertyManager.INSTANCE.getLong(Constants.PROPERTIES_CRITICAL_MIN_NOTIFICATION_INTERVAL);
+        double        criticalMinNotificationInterval        = PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_CRITICAL_MIN_NOTIFICATION_INTERVAL) * 60.0;
+        double        criticalMaxNotificationInterval        = PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_CRITICAL_MAX_NOTIFICATION_INTERVAL) * 60.0;
+
+        String        format                                 = MILLIGRAM_PER_DECILITER == currentUnit ? "%.0f" : "%.1f";
 
         boolean playSound = false;
         String  msg       = "";
-
 
         if (value > maxCritical) {
             // TOO HIGH
@@ -805,7 +820,6 @@ public class Main extends Application {
 
         if (msg.isEmpty()) { return; }
 
-        String format = MILLIGRAM_PER_DECILITER == currentUnit ? "%.0f" : "%.1f";
         String body = new StringBuilder().append(msg).append(" (").append(String.format(Locale.US, format, currentEntry.sgv())).append(" ").append(currentEntry.trend().getSymbol()).append(")").toString();
         Notification notification = NotificationBuilder.create().title(translator.get(I18nKeys.NOTIFICATION_TITLE)).message(body).image(icon).build();
 
@@ -833,8 +847,8 @@ public class Main extends Application {
         enableHighSoundSwitch.setSelected(PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_SHOW_HIGH_VALUE_NOTIFICATION));
         highSoundSwitch.setSelected(PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_PLAY_SOUND_FOR_HIGH_NOTIFICATION));
         tooHighSoundSwitch.setSelected(PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_PLAY_SOUND_FOR_TOO_HIGH_NOTIFICATION));
-        tooLowIntervalSlider.setValue(PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_TOO_LOW_INTERVAL));
-        tooHighIntervalSlider.setValue(PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_TOO_HIGH_INTERVAL));
+        tooLowIntervalSlider.setValue(PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_CRITICAL_MIN_NOTIFICATION_INTERVAL));
+        tooHighIntervalSlider.setValue(PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_CRITICAL_MAX_NOTIFICATION_INTERVAL));
         minAcceptableSlider.setValue(UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MIN_ACCEPTABLE) : Helper.mgPerDeciliterToMmolPerLiter(PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MIN_ACCEPTABLE)));
         minNormalSlider.setValue(UnitDefinition.MILLIGRAM_PER_DECILITER     == currentUnit ? PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MIN_NORMAL)     : Helper.mgPerDeciliterToMmolPerLiter(PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MIN_NORMAL)));
         maxNormalSlider.setValue(UnitDefinition.MILLIGRAM_PER_DECILITER     == currentUnit ? PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MAX_NORMAL)     : Helper.mgPerDeciliterToMmolPerLiter(PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MAX_NORMAL)));
@@ -855,8 +869,8 @@ public class Main extends Application {
         PropertyManager.INSTANCE.setBoolean(Constants.PROPERTIES_SHOW_HIGH_VALUE_NOTIFICATION, enableHighSoundSwitch.isSelected());
         PropertyManager.INSTANCE.setBoolean(Constants.PROPERTIES_PLAY_SOUND_FOR_HIGH_NOTIFICATION, highSoundSwitch.isSelected());
         PropertyManager.INSTANCE.setBoolean(Constants.PROPERTIES_PLAY_SOUND_FOR_TOO_HIGH_NOTIFICATION, tooHighSoundSwitch.isSelected());
-        PropertyManager.INSTANCE.setDouble(Constants.PROPERTIES_TOO_LOW_INTERVAL, tooLowIntervalSlider.getValue());
-        PropertyManager.INSTANCE.setDouble(Constants.PROPERTIES_TOO_HIGH_INTERVAL, tooHighIntervalSlider.getValue());
+        PropertyManager.INSTANCE.setDouble(Constants.PROPERTIES_CRITICAL_MIN_NOTIFICATION_INTERVAL, tooLowIntervalSlider.getValue());
+        PropertyManager.INSTANCE.setDouble(Constants.PROPERTIES_CRITICAL_MAX_NOTIFICATION_INTERVAL, tooHighIntervalSlider.getValue());
         PropertyManager.INSTANCE.setDouble(Constants.PROPERTIES_MIN_ACCEPTABLE, UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? minAcceptableSlider.getValue() : Helper.mmolPerLiterToMgPerDeciliter(minAcceptableSlider.getValue()));
         PropertyManager.INSTANCE.setDouble(Constants.PROPERTIES_MIN_NORMAL,     UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? minNormalSlider.getValue()     : Helper.mmolPerLiterToMgPerDeciliter(minNormalSlider.getValue()));
         PropertyManager.INSTANCE.setDouble(Constants.PROPERTIES_MAX_NORMAL,     UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? maxNormalSlider.getValue()     : Helper.mmolPerLiterToMgPerDeciliter(maxNormalSlider.getValue()));
@@ -907,7 +921,7 @@ public class Main extends Application {
     private void updateUI() {
         if (allEntries.isEmpty()) { return; }
         Collections.sort(allEntries, Comparator.comparingLong(GlucoEntry::datelong).reversed());
-        long limit = Instant.now().getEpochSecond() - currentInterval.getSeconds();
+        long limit = OffsetDateTime.now().toEpochSecond() - currentInterval.getSeconds();
         entries      = allEntries.stream().filter(entry -> entry.datelong() > limit).collect(Collectors.toList());
         currentEntry = entries.get(0);
         currentColor = null == currentEntry ? Constants.GRAY : Helper.getColorForValue(currentUnit, UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? currentEntry.sgv() : Helper.mgPerDeciliterToMmolPerLiter(currentEntry.sgv()));
@@ -944,7 +958,7 @@ public class Main extends Application {
         String currentValueText = new StringBuilder().append(String.format(Locale.US, format, currentValue)).append(" ").append(currentEntry.trend().getSymbol()).toString();
 
         Instant lastTimestamp = Instant.ofEpochSecond(currentEntry.datelong());
-        outdated = (Instant.now().getEpochSecond() - lastTimestamp.getEpochSecond() > Constants.TIMEOUT_IN_SECONDS);
+        outdated = (OffsetDateTime.now().toEpochSecond() - lastTimestamp.getEpochSecond() > Constants.TIMEOUT_IN_SECONDS);
         LocalDateTime dateTime = LocalDateTime.ofInstant(lastTimestamp, ZoneId.systemDefault());
         if (MILLIGRAM_PER_DECILITER == currentUnit) {
             avg = entries.stream().map(entry -> entry.sgv()).collect(Collectors.summingDouble(Double::doubleValue)) / entries.size();
@@ -1001,7 +1015,7 @@ public class Main extends Application {
         ctx.setLineWidth(1);
         List<String> yAxisLabels = MILLIGRAM_PER_DECILITER == currentUnit ? Constants.yAxisLabelsMgPerDeciliter : Constants.yAxisLabelsMmolPerLiter;
 
-        // Draw vertical grid lines
+        // Draw chart
         GlucoEntry    minEntry        = entries.get(0);
         GlucoEntry    maxEntry        = entries.get(entries.size() - 1);
         double        deltaTime       = (maxEntry.datelong() - minEntry.datelong());
@@ -1012,29 +1026,53 @@ public class Main extends Application {
         ZonedDateTime adjMinDate      = (hour == 23 && currentInterval != TimeInterval.LAST_12_HOURS) ? minDate.plusSeconds(TimeInterval.LAST_24_HOURS.getSeconds()) : minDate;
         ZonedDateTime firstFullHour   = (hour == 23 && currentInterval != TimeInterval.LAST_12_HOURS) ? ZonedDateTime.of(adjMinDate.plusDays(1).toLocalDate(), LocalTime.MIDNIGHT, ZoneId.systemDefault()) : adjMinDate;
         long          startX          = firstFullHour.toEpochSecond() - minEntry.datelong();
-        int           lh              = -1;
-        double        nightLeftBounds = -1;
-        double       nightRightBounds = -1;
-        ctx.setFill(darkMode ? Color.rgb(255, 255, 255, 0.1) : Color.rgb(0, 0, 0, 0.1));
+        int           lastHour         = -1;
+        double        oneHourStep      = Constants.SECONDS_PER_HOUR * stepX;
+        long          hourCounter      = 0;
+
+        // Collect nights
+        ZonedDateTime startTime = ZonedDateTime.ofInstant(Instant.ofEpochSecond(startX + minEntry.datelong()), ZoneId.systemDefault());
+        int           startHour = startTime.getHour();
+        List<eu.hansolo.toolboxfx.geom.Rectangle> nights = new ArrayList<>();
+
+        // Chart starts at night
+        if (Constants.NIGHT_HOURS.contains(startHour)) {
+            double widthToNextFullHour = java.time.Duration.between(startTime, startTime.plusHours(1).truncatedTo(ChronoUnit.HOURS)).toSeconds() * stepX;
+            double w                   = widthToNextFullHour + (10 - Constants.NIGHT_HOURS.indexOf(startHour) - 1) * oneHourStep;
+            nights.add(new eu.hansolo.toolboxfx.geom.Rectangle(GRAPH_INSETS.getLeft(), GRAPH_INSETS.getTop(), w, availableHeight));
+        }
+
+        // Full nights
+        boolean nightStart = false;
+        double  nightX     = -1;
         for (long i = startX ; i <= deltaTime ; i++) {
             int    h = ZonedDateTime.ofInstant(Instant.ofEpochSecond(i + minEntry.datelong()), ZoneId.systemDefault()).getHour();
             double x = GRAPH_INSETS.getLeft() + i * stepX;
-            if (h != lh && lh != -1) {
-                if (h == 20) {
-                    nightLeftBounds = x;
-                } else if (h == 6) {
-                    nightRightBounds = x;
-                    if (nightLeftBounds == -1) {
-                        nightLeftBounds = startX * stepX;
+            if (h != lastHour) {
+                if (Constants.NIGHT_START == h && !nightStart) {
+                    nightStart = true;
+                    nightX = x;
                     }
-                    if (nightRightBounds > nightLeftBounds) {
-                        ctx.fillRect(nightLeftBounds, GRAPH_INSETS.getTop(), nightRightBounds - nightLeftBounds, availableHeight);
+                if (Constants.NIGHT_END == h && nightStart) {
+                    nightStart = false;
+                    nights.add(new eu.hansolo.toolboxfx.geom.Rectangle(nightX, GRAPH_INSETS.getTop(), 10 * oneHourStep, availableHeight));
                     }
                 }
+            lastHour = h;
             }
-            lh = h;
-        }
 
+        // Chart ends at night
+        if (nightStart) {
+            nights.add(new eu.hansolo.toolboxfx.geom.Rectangle(nightX, GRAPH_INSETS.getTop(), availableWidth - nightX, availableHeight));
+        }
+        // Draw nights
+        ctx.save();
+        ctx.setFill(darkMode ? Color.rgb(255, 255, 255, 0.1) : Color.rgb(0, 0, 0, 0.1));
+        nights.forEach(night -> ctx.fillRect(night.getX(), night.getY(), night.width, night.getHeight()));
+        ctx.restore();
+
+
+        // Draw vertical lines
         ctx.setFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
         ctx.setTextAlign(TextAlignment.CENTER);
         long interval;
@@ -1045,11 +1083,11 @@ public class Main extends Application {
             case LAST_48_HOURS -> interval = TimeInterval.LAST_3_HOURS.getHours();
             default            -> interval = 1;
         }
-        long hourCounter = 0;
+        hourCounter = 0;
         for (long i = startX ; i <= deltaTime ; i++) {
             int    h = ZonedDateTime.ofInstant(Instant.ofEpochSecond(i + minEntry.datelong()), ZoneId.systemDefault()).getHour();
             double x = GRAPH_INSETS.getLeft() + i * stepX;
-            if (h != lh && lh != -1 && i != startX) {
+            if (h != lastHour && lastHour != -1 && i != startX) {
                 if (hourCounter % interval == 0) {
                     ctx.strokeLine(x, GRAPH_INSETS.getTop(), x, height - GRAPH_INSETS.getBottom());
                     switch (currentInterval) {
@@ -1059,7 +1097,7 @@ public class Main extends Application {
                 }
                 hourCounter++;
             }
-            lh = h;
+            lastHour = h;
         }
 
         // Draw horizontal grid lines
@@ -1311,7 +1349,7 @@ public class Main extends Application {
         HBox unitBox = new HBox(10, unitSwitch, unitLabel);
         unitBox.setAlignment(Pos.CENTER_LEFT);
         unitSwitch.selectedProperty().addListener((o, ov, nv) -> {
-            switchingUnits = true;
+            switchingUnits.set(true);
             currentUnit = nv ? MILLIGRAM_PER_DECILITER : MILLIMOL_PER_LITER;
             unitLabel.setText(translator.get(I18nKeys.SETTINGS_UNIT) + currentUnit.UNIT.getUnitShort());
             if (MILLIGRAM_PER_DECILITER == currentUnit) {
@@ -1363,7 +1401,7 @@ public class Main extends Application {
                 maxAcceptableSlider.setBlockIncrement(Helper.mgPerDeciliterToMmolPerLiter(5));
                 maxAcceptableSlider.setValue(Helper.mgPerDeciliterToMmolPerLiter(PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MAX_ACCEPTABLE)));
             }
-            switchingUnits = false;
+            switchingUnits.set(false);
         });
 
 
@@ -1528,7 +1566,7 @@ public class Main extends Application {
         maxNormalSlider.setValue(UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? Constants.DEFAULT_MAX_NORMAL : Helper.mgPerDeciliterToMmolPerLiter(Constants.DEFAULT_MAX_NORMAL));
         maxNormalSlider.valueProperty().addListener((o, ov, nv) -> {
             maxNormalLabel.setText(new StringBuilder().append("Max normal: ").append(String.format(Locale.US, format, maxNormalSlider.getValue())).append(" ").append(currentUnit.UNIT.getUnitShort()).toString());
-            if (switchingUnits) { return; }
+            if (switchingUnits.get()) { return; }
             if (nv.doubleValue() > maxAcceptableSlider.getValue()) { maxAcceptableSlider.setValue(nv.doubleValue()); }
         });
 
@@ -1546,7 +1584,7 @@ public class Main extends Application {
         maxAcceptableSlider.setValue(UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? Constants.DEFAULT_MAX_ACCEPTABLE : Helper.mgPerDeciliterToMmolPerLiter(Constants.DEFAULT_MAX_ACCEPTABLE));
         maxAcceptableSlider.valueProperty().addListener((o, ov, nv) -> {
             maxAcceptableLabel.setText(new StringBuilder().append(translator.get(I18nKeys.SETTINGS_MAX_ACCEPTABLE)).append(String.format(Locale.US, format, maxAcceptableSlider.getValue())).append(" ").append(currentUnit.UNIT.getUnitShort()).toString());
-            if (switchingUnits) { return; }
+            if (switchingUnits.get()) { return; }
             if (nv.doubleValue() < maxNormalSlider.getValue()) { maxNormalSlider.setValue(nv.doubleValue()); }
         });
 
