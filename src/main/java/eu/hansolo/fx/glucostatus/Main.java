@@ -1675,7 +1675,7 @@ public class Main extends Application {
         for (int i = 0 ; i <= 23 ; i++) {
             double x = GRAPH_INSETS.getLeft() + i * stepX;
             ctx.strokeLine(x, GRAPH_INSETS.getTop(), x, height - GRAPH_INSETS.getBottom());
-            ctx.fillText(i + ":00", x, height - GRAPH_INSETS.getBottom() * 0.25);
+            ctx.fillText(Integer.toString(i), x, height - GRAPH_INSETS.getBottom() * 0.25);
         }
 
         // Draw horizontal grid lines

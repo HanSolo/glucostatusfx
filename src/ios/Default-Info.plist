@@ -9,11 +9,11 @@
 	<key>CFBundleShortVersionString</key>
 	<string>1.0</string>
 	<key>CFBundleExecutable</key>
-	<string>GlucoStatusFXG</string>
+	<string>GlucoStatusFX</string>
 	<key>CFBundleIconName</key>
 	<string>AppIcon</string>
 	<key>CFBundleName</key>
-	<string>GlucoStatusFXG</string>
+	<string>GlucoStatusFX</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

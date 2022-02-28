@@ -1,0 +1,45 @@
+Process
+=======
+compile
+
+Command Line
+============
+/Library/Java/JavaVirtualMachines/graalvm-svm-java17-darwin-gluon-22.0.0.3-Final/Contents/Home/bin/native-image -Djdk.internal.lambda.eagerlyInitialize=false --no-server -H:+ExitAfterRelocatableImageWrite -H:+SharedLibrary -H:+AddAllCharsets -H:+ReportExceptionStackTraces -H:-DeadlockWatchdogExitOnTimeout -H:DeadlockWatchdogInterval=0 -H:+RemoveSaturatedTypeFlows --features=org.graalvm.home.HomeFinderFeature -H:TempDirectory=/Users/hansolo/IntelliJ_Projects/glucostatusfx/target/gluonfx/arm64-ios/gvm/tmp -H:EnableURLProtocols=http,https --initialize-at-build-time=com.gluonhq.charm.glisten.visual.MaterialDesignIcon -H:ReflectionConfigurationFiles=/Users/hansolo/IntelliJ_Projects/glucostatusfx/target/gluonfx/arm64-ios/gvm/reflectionconfig-arm64-ios.json -H:JNIConfigurationFiles=/Users/hansolo/IntelliJ_Projects/glucostatusfx/target/gluonfx/arm64-ios/gvm/jniconfig-arm64-ios.json -H:ResourceConfigurationFiles=/Users/hansolo/IntelliJ_Projects/glucostatusfx/target/gluonfx/arm64-ios/gvm/resourceconfig-arm64-ios.json -H:PageSize=16384 -Dsvm.targetName=iOS -Dsvm.targetArch=arm64 -H:+UseCAPCache -H:CAPCacheDir=/Users/hansolo/IntelliJ_Projects/glucostatusfx/target/gluonfx/arm64-ios/gvm/capcache -H:CompilerBackend=lir -H:IncludeResourceBundles=com/sun/javafx/scene/control/skin/resources/controls,com/sun/javafx/scene/control/skin/resources/controls-nt,com.sun.javafx.tk.quantum.QuantumMessagesBundle,com.sun.media.jfxmedia.MediaErrors -Dsvm.platform=org.graalvm.nativeimage.Platform$IOS_AARCH64 -cp /Users/hansolo/.m2/repository/com/gluonhq/substrate/0.0.52/substrate-0.0.52.jar:/Users/hansolo/IntelliJ_Projects/glucostatusfx/target/gluonfx/arm64-ios/gvm/tmp/classpathJar.jar eu.hansolo.fx.glucostatus.Main
+
+Output
+======
+Warning: Ignoring server-mode native-image argument --no-server.
+========================================================================================================================
+GraalVM Native Image: Generating 'eu.hansolo.fx.glucostatus.main'...
+========================================================================================================================
+[1/7] Initializing...                                                                                    (3,6s @ 0,15GB)
+ Version info: 'GraalVM 22.0.0.2 Java 17 CE'
+ 1 user-provided feature(s)
+  - com.oracle.svm.thirdparty.gson.GsonFeature
+[2/7] Performing analysis...  [**********]                                                              (42,0s @ 2,57GB)
+  13.190 (90,60%) of 14.558 classes reachable
+  24.047 (72,75%) of 33.056 fields reachable
+  63.995 (63,10%) of 101.418 methods reachable
+     671 classes,   232 fields, and 1.545 methods registered for reflection
+     121 classes,   105 fields, and   200 methods registered for JNI access
+[3/7] Building universe...                                                                               (3,2s @ 3,45GB)
+[4/7] Parsing methods...      [*]                                                                        (1,5s @ 4,75GB)
+[5/7] Inlining methods...     [*****]                                                                    (4,1s @ 2,96GB)
+[6/7] Compiling methods...    [*****]                                                                   (21,3s @ 3,72GB)
+[7/7] Creating image...
+------------------------------------------------------------------------------------------------------------------------
+                        8,1s (9,2% of total time) in 37 GCs | Peak RSS: 7,81GB | CPU load: 10,55
+------------------------------------------------------------------------------------------------------------------------
+Produced artifacts:
+ /Users/hansolo/IntelliJ_Projects/glucostatusfx/target/gluonfx/arm64-ios/gvm/GlucoStatusFX/eu.hansolo.fx.glucostatus.main.h (header)
+ /Users/hansolo/IntelliJ_Projects/glucostatusfx/target/gluonfx/arm64-ios/gvm/GlucoStatusFX/graal_isolate.h (header)
+ /Users/hansolo/IntelliJ_Projects/glucostatusfx/target/gluonfx/arm64-ios/gvm/GlucoStatusFX/eu.hansolo.fx.glucostatus.main_dynamic.h (header)
+ /Users/hansolo/IntelliJ_Projects/glucostatusfx/target/gluonfx/arm64-ios/gvm/GlucoStatusFX/graal_isolate_dynamic.h (header)
+ /Users/hansolo/IntelliJ_Projects/glucostatusfx/target/gluonfx/arm64-ios/gvm/GlucoStatusFX/eu.hansolo.fx.glucostatus.main.build_artifacts.txt
+========================================================================================================================
+Finished generating 'eu.hansolo.fx.glucostatus.main' in 1m 26s.
+
+
+Result
+======
+result: 0

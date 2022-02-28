@@ -1,4 +1,4 @@
-# GlucoStatusFXG
+# GlucoStatusFX
 
 This Gluon sample was generated from https://start.gluon.io
 
