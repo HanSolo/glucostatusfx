@@ -1167,12 +1167,21 @@ public class Main extends Application {
             minEntry = new GlucoEntry(firstEntry.id(), firstEntry.sgv(), chartStartEpoch, chartStartDate, firstEntry.dateString(), firstEntry.trend(), firstEntry.direction(),
                                       firstEntry.device(), firstEntry.type(), firstEntry.utcOffset(), firstEntry.noise(), firstEntry.filtered(), firstEntry.unfiltered(),
                                       firstEntry.rssi(), firstEntry.delta(), firstEntry.sysTime());
+        } else if (entries.get(0).datelong() > chartStartEpoch) {
+            GlucoEntry firstEntry = entries.get(0);
+            minEntry = new GlucoEntry(firstEntry.id(), firstEntry.sgv(), chartStartEpoch, chartStartDate, firstEntry.dateString(), firstEntry.trend(), firstEntry.direction(),
+                                      firstEntry.device(), firstEntry.type(), firstEntry.utcOffset(), firstEntry.noise(), firstEntry.filtered(), firstEntry.unfiltered(),
+                                      firstEntry.rssi(), firstEntry.delta(), firstEntry.sysTime());
         } else {
             minEntry = entries.get(0);
         }
 
         double        deltaTime        = OffsetDateTime.now().toEpochSecond() - minEntry.datelong();
-        if (deltaTime > currentInterval.getSeconds()) { deltaTime = OffsetDateTime.now().toEpochSecond() - OffsetDateTime.now().minusSeconds(currentInterval.getSeconds()).toEpochSecond(); }
+        if (deltaTime > currentInterval.getSeconds()) {
+            deltaTime = OffsetDateTime.now().toEpochSecond() - OffsetDateTime.now().minusSeconds(currentInterval.getSeconds()).toEpochSecond();
+        } else if (deltaTime < currentInterval.getSeconds()) {
+            deltaTime = OffsetDateTime.now().toEpochSecond() - OffsetDateTime.now().minusSeconds(currentInterval.getSeconds()).toEpochSecond();
+        }
 
         ZonedDateTime minDate          = Helper.getZonedDateTimeFromEpochSeconds(minEntry.datelong());
         double        stepX            = availableWidth / deltaTime;
@@ -1200,7 +1209,6 @@ public class Main extends Application {
             double widthToNextFullHour = java.time.Duration.between(startTime, startTime.plusHours(1).truncatedTo(ChronoUnit.HOURS)).toSeconds() * stepX;
             double w                   = widthToNextFullHour + (10 - Constants.NIGHT_HOURS.indexOf(startHour) - 1) * oneHourStep;
             nights.add(new eu.hansolo.toolboxfx.geom.Rectangle(GRAPH_INSETS.getLeft(), GRAPH_INSETS.getTop(), w, availableHeight));
-            startsAtNight = true;
         }
 
         // Chart ends at night
@@ -1338,7 +1346,8 @@ public class Main extends Application {
 
         ctx.setLineWidth(2);
         ctx.beginPath();
-        ctx.moveTo(GRAPH_INSETS.getLeft() + startX + (entries.get(0).datelong() - minEntry.datelong()) * stepX, height - GRAPH_INSETS.getBottom() - entries.get(0).sgv() * stepY);
+        //ctx.moveTo(GRAPH_INSETS.getLeft() + startX + (entries.get(0).datelong() - minEntry.datelong()) * stepX, height - GRAPH_INSETS.getBottom() - entries.get(0).sgv() * stepY);
+        ctx.moveTo(GRAPH_INSETS.getLeft() + startX, height - GRAPH_INSETS.getBottom() - entries.get(0).sgv() * stepY);
         for (int i = 0 ; i < entries.size() ; i++) {
             GlucoEntry entry = entries.get(i);
             ctx.lineTo(GRAPH_INSETS.getLeft() + startX + (entry.datelong() - minEntry.datelong()) * stepX, (height - GRAPH_INSETS.getBottom()) - entry.sgv() * stepY);
