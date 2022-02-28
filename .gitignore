@@ -1,9 +1,0 @@
-/.idea
-/.gradle
-.DS_Store
-/build
-/out
-/classes
-/RUNNING_PID
-/src/main/resources/jpro.conf
-/logs

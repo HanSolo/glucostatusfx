@@ -18,9 +18,12 @@
 
 package eu.hansolo.fx.glucostatus;
 
-import com.dustinredmond.fxtrayicon.FXTrayIcon;
+import com.gluonhq.attach.lifecycle.LifecycleEvent;
+import com.gluonhq.attach.lifecycle.LifecycleService;
+import com.gluonhq.attach.runtimeargs.RuntimeArgsService;
+import com.gluonhq.attach.util.Services;
+import com.gluonhq.charm.glisten.control.Alert;
 import eu.hansolo.applefx.MacosButton;
-import eu.hansolo.applefx.MacosControl;
 import eu.hansolo.applefx.MacosLabel;
 import eu.hansolo.applefx.MacosScrollPane;
 import eu.hansolo.applefx.MacosSeparator;
@@ -31,25 +34,16 @@ import eu.hansolo.applefx.MacosTextField;
 import eu.hansolo.applefx.MacosToggleButton;
 import eu.hansolo.applefx.MacosToggleButtonBar;
 import eu.hansolo.applefx.MacosToggleButtonBarSeparator;
-import eu.hansolo.applefx.MacosWindow;
-import eu.hansolo.applefx.MacosWindow.Style;
+import eu.hansolo.applefx.tools.MacosAccentColor;
 import eu.hansolo.applefx.tools.MacosSystemColor;
-import eu.hansolo.fx.glucostatus.Records.DataPoint;
-import eu.hansolo.fx.glucostatus.Records.GlucoEntry;
 import eu.hansolo.fx.glucostatus.Statistics.StatisticCalculation;
 import eu.hansolo.fx.glucostatus.Statistics.StatisticRange;
-import eu.hansolo.fx.glucostatus.i18n.I18nKeys;
-import eu.hansolo.fx.glucostatus.i18n.Translator;
-import eu.hansolo.fx.glucostatus.notification.Notification;
-import eu.hansolo.fx.glucostatus.notification.NotificationBuilder;
-import eu.hansolo.fx.glucostatus.notification.Notifier;
-import eu.hansolo.fx.glucostatus.notification.NotifierBuilder;
-import eu.hansolo.jdktools.Architecture;
-import eu.hansolo.jdktools.OperatingSystem;
-import eu.hansolo.jdktools.util.Helper.OsArcMode;
+import eu.hansolo.fx.glucostatus.notification.Message;
+import eu.hansolo.fx.glucostatus.notification.Message.Notifier;
 import eu.hansolo.toolbox.tuples.Pair;
 import eu.hansolo.toolbox.unit.UnitDefinition;
 import eu.hansolo.toolboxfx.HelperFX;
+import eu.hansolo.toolboxfx.geom.Dimension;
 import eu.hansolo.toolboxfx.geom.Point;
 import javafx.animation.FadeTransition;
 import javafx.application.Application;
@@ -65,29 +59,16 @@ import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.control.ButtonBar;
-import javafx.scene.control.CheckMenuItem;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ContentDisplay;
-import javafx.scene.control.CustomMenuItem;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.DialogPane;
-import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuBar;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
-import javafx.scene.effect.BlurType;
-import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Background;
@@ -102,7 +83,6 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.media.AudioClip;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.CycleMethod;
 import javafx.scene.paint.LinearGradient;
@@ -113,13 +93,10 @@ import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
-import javafx.stage.Modality;
+import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 import javafx.util.Duration;
 
-import javax.swing.*;
-import java.io.IOException;
 import java.net.http.HttpResponse;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -127,7 +104,6 @@ import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -135,7 +111,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import static eu.hansolo.toolbox.unit.UnitDefinition.MILLIGRAM_PER_DECILITER;
@@ -143,28 +118,17 @@ import static eu.hansolo.toolbox.unit.UnitDefinition.MILLIMOL_PER_LITER;
 
 
 public class Main extends Application {
+    private static final Dimension                  IPHONE_SCREEN  = new Dimension(390, 800);//844);
     private static final Insets                     GRAPH_INSETS   = new Insets(5, 10, 5, 10);
+    private static       boolean                    switchingUnits = false;
     private        final Image                      icon           = new Image(Main.class.getResourceAsStream("icon48x48.png"));
-    private        final Image                      stageIcon      = new Image(Main.class.getResourceAsStream("icon128x128.png"));
-    private        final Translator                 translator     = new Translator(I18nKeys.RESOURCE_NAME);
     private              ZonedDateTime              lastUpdate     = ZonedDateTime.now().minusMinutes(6);
-    private              ZonedDateTime              lastFullUpdate = ZonedDateTime.now().minusMinutes(5);
-    private              AtomicBoolean              switchingUnits = new AtomicBoolean(false);
-    private              String                     nightscoutUrl  = "";
-    private              MacosWindow                macosWindow;
-    private              boolean                    trayIconSupported;
-    private              OsArcMode                  sysinfo;
-    private              OperatingSystem            operatingSystem;
-    private              Architecture               architecture;
-    private              boolean                    darkMode;
-    private              Color                      accentColor;
+    private              ZonedDateTime              lastFullUpdate = ZonedDateTime.now().minusMinutes(6);
+    private              boolean                    darkMode       = true;
+    private              Color                      accentColor    = MacosAccentColor.BLUE.getColorDark();
+    private              String                     nightscoutUrl;
     private              ZonedDateTime              lastNotification;
-    private              ZonedDateTime              lastSpeak;
-    private              String                     voice;
-    private              Notifier                   notifier;
-    private              AudioClip                  notificationSound;
-    private              Dialog                     aboutDialog;
-    private              Stage                      stage;
+    private              Message.Notifier           notifier;
     private              Region                     glassOverlay;
     private              HBox                       buttonHBox;
     private              AnchorPane                 mainPane;
@@ -175,7 +139,7 @@ public class Main extends Application {
     private              SVGPath                    exclamationMark;
     private              MacosLabel                 titleLabel;
     private              MacosLabel                 valueLabel;
-    private              HBox                       last5DeltasLabel;
+    private              TextFlow                   last5DeltasLabel;
     private              MacosLabel                 timestampLabel;
     private              MacosLabel                 rangeAverageLabel;
     private              Text                       unit;
@@ -190,20 +154,10 @@ public class Main extends Application {
     private              MacosTextField             nightscoutUrlTextField;
     private              MacosSwitch                unitSwitch;
     private              MacosSwitch                deltaChartSwitch;
-    private              MacosSwitch                voiceOutputSwitch;
-    private              MacosSlider                voiceOutputIntervalSlider;
-    private              MacosSwitch                tooLowSoundSwitch;
-    private              MacosSwitch                tooLowSpeakSwitch;
     private              MacosSwitch                enableLowSoundSwitch;
-    private              MacosSwitch                lowSoundSwitch;
-    private              MacosSwitch                lowSpeakSwitch;
     private              MacosSwitch                enableAcceptableLowSoundSwitch;
-    private              MacosSwitch                acceptableLowSoundSwitch;
     private              MacosSwitch                enableAcceptableHighSoundSwitch;
-    private              MacosSwitch                acceptableHighSoundSwitch;
     private              MacosSwitch                enableHighSoundSwitch;
-    private              MacosSwitch                highSoundSwitch;
-    private              MacosSwitch                tooHighSoundSwitch;
     private              MacosSlider                tooLowIntervalSlider;
     private              MacosSlider                tooHighIntervalSlider;
     private              MacosSlider                minAcceptableSlider;
@@ -251,20 +205,43 @@ public class Main extends Application {
     private              Font                       smallTicklabelFont;
     private              boolean                    slowlyRising;
     private              boolean                    slowlyFalling;
-    private              boolean                    hideMenu;
-    private              FXTrayIcon                 trayIcon;
     private              EventHandler<MouseEvent>   eventConsumer;
-    private              DateTimeFormatter          dtf;
+    // Time in range chart
+    private              StackPane                  timeInRangePane;
+    private              MacosLabel                 timeInRangeTitleLabel;
+    private              MacosLabel                 timeInRangeTimeIntervalLabel ;
+    private              Rectangle                  timeInRangeTooHighRect;
+    private              Rectangle                  timeInRangeHighRect;
+    private              Rectangle                  timeInRangeNormalRect;
+    private              Rectangle                  timeInRangeLowRect;
+    private              Rectangle                  timeInRangeTooLowRect;
+    private              MacosLabel                 timeInRangeTooHighValue;
+    private              MacosLabel                 timeInRangeTooHighValueText;
+    private              MacosLabel                 timeInRangeHighValue;
+    private              MacosLabel                 timeInRangeHighValueText;
+    private              MacosLabel                 timeInRangeNormalValue;
+    private              MacosLabel                 timeInRangeNormalValueText;
+    private              MacosLabel                 timeInRangeLowValue;
+    private              MacosLabel                 timeInRangeLowValueText;
+    private              MacosLabel                 timeInRangeTooLowValue;
+    private              MacosLabel                 timeInRangeTooLowValueText;
+    // Pattern Chart Pane
+    private              StackPane                  patternChartPane;
+    private              MacosLabel                 patternChartTitleLabel;
+    private              MacosLabel                 patternChartHbac1Label;
+    private              ListView<String>           patternChartZones;
+    private              Canvas                     patternChartCanvas;
+    // Matrix Chart Pane
+    private              StackPane                  matrixChartPane;
+    private              MacosLabel                 matrixChartTitleLabel;
+    private              MacosLabel                 matrixChartSubTitleLabel;
+    private              MacosLabel                 matrixChartHbac1Label;
+    private              ThirtyDayView              matrixChartThirtyDayView;
 
 
     // ******************** Initialization ************************************
     @Override public void init() {
         nightscoutUrl     = PropertyManager.INSTANCE.getString(Constants.PROPERTIES_NIGHTSCOUT_URL);
-        sysinfo           = eu.hansolo.jdktools.util.Helper.getOperaringSystemArchitectureOperatingMode();
-        operatingSystem   = sysinfo.operatingSystem();
-        architecture      = sysinfo.architecture();
-        darkMode          = eu.hansolo.applefx.tools.Helper.isDarkMode();
-        accentColor       = eu.hansolo.applefx.tools.Helper.getMacosAccentColorAsColor();
         currentUnit       = MILLIGRAM_PER_DECILITER;
         outdated          = false;
         currentInterval   = TimeInterval.LAST_24_HOURS;
@@ -274,27 +251,13 @@ public class Main extends Application {
         dialogVisible     = new SimpleBooleanProperty(false);
         deltaChartVisible = false;
         lastNotification  = ZonedDateTime.now();
-        lastSpeak         = ZonedDateTime.now().minusMinutes(6);
-        notificationSound = new AudioClip(getClass().getResource(Constants.ALARM_SOUND_FILENAME).toExternalForm());
         slowlyRising      = false;
         slowlyFalling     = false;
         currentEntry      = new GlucoEntry("-1", 0, OffsetDateTime.now().toEpochSecond(), OffsetDateTime.now(), "", Trend.NONE, "", "", "", 2, 0, 0, 0, 0, 0, "");
-        dtf               = DateTimeFormatter.ofPattern(translator.get(I18nKeys.DATE_TIME_FORMAT));
-
-
-        Locale locale = Locale.getDefault();
-        if (locale.equals(Locale.GERMAN)) {
-            voice = "Anna";
-        } else if (locale.equals(Locale.ITALY)) {
-            voice = "Alice";
-        } else {
-            voice = "Samantha";
-        }
-
         updateSettings();
 
-        ticklabelFont      = Fonts.sfProTextRegular(10);
-        smallTicklabelFont = Fonts.sfProTextRegular(8);
+        ticklabelFont      = Fonts.configRoundedRegular(10);
+        smallTicklabelFont = Fonts.configRoundedRegular(8);
 
         eventConsumer = evt -> {
             ToggleButton src = (ToggleButton) evt.getSource();
@@ -302,14 +265,13 @@ public class Main extends Application {
         };
 
         intervalToggleGroup = new ToggleGroup();
-        sevenDays        = createToggleButton(translator.get(I18nKeys.TIME_NAME_168_HOURS), intervalToggleGroup, eventConsumer, darkMode);
-        seventyTwoHours  = createToggleButton(translator.get(I18nKeys.TIME_NAME_72_HOURS), intervalToggleGroup, eventConsumer, darkMode);
-        fourtyEightHours = createToggleButton(translator.get(I18nKeys.TIME_NAME_48_HOURS), intervalToggleGroup, eventConsumer, darkMode);
-        twentyFourHours  = createToggleButton(translator.get(I18nKeys.TIME_NAME_24_HOURS), intervalToggleGroup, eventConsumer, darkMode);
-        twelveHours      = createToggleButton(translator.get(I18nKeys.TIME_NAME_12_HOURS), intervalToggleGroup, eventConsumer, darkMode);
-        sixHours         = createToggleButton(translator.get(I18nKeys.TIME_NAME_6_HOURS), intervalToggleGroup, eventConsumer, darkMode);
-        threeHours       = createToggleButton(translator.get(I18nKeys.TIME_NAME_3_HOURS), intervalToggleGroup, eventConsumer, darkMode);
-
+        sevenDays        = createToggleButton("7 d", intervalToggleGroup, eventConsumer, darkMode);
+        seventyTwoHours  = createToggleButton("72 h", intervalToggleGroup, eventConsumer, darkMode);
+        fourtyEightHours = createToggleButton("48 h", intervalToggleGroup, eventConsumer, darkMode);
+        twentyFourHours  = createToggleButton("24 h", intervalToggleGroup, eventConsumer, darkMode);
+        twelveHours      = createToggleButton("12 h", intervalToggleGroup, eventConsumer, darkMode);
+        sixHours         = createToggleButton("6 h", intervalToggleGroup, eventConsumer, darkMode);
+        threeHours       = createToggleButton("3 h", intervalToggleGroup, eventConsumer, darkMode);
         twentyFourHours.setSelected(true);
 
         settingsIcon = new SVGPath();
@@ -328,6 +290,7 @@ public class Main extends Application {
         HBox.setHgrow(toggleButtonBar, Priority.ALWAYS);
 
         prefButton = new MacosButton("");
+        prefButton.setDark(darkMode);
         prefButton.setGraphic(settingsIcon);
         prefButton.setMinWidth(32);
         prefButton.setAlignment(Pos.CENTER);
@@ -341,7 +304,8 @@ public class Main extends Application {
 
         currentColor = null == currentEntry ? Constants.GRAY : Helper.getColorForValue(currentUnit, UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? currentEntry.sgv() : Helper.mgPerDeciliterToMmolPerLiter(currentEntry.sgv()));
 
-        titleLabel = createLabel(translator.get(I18nKeys.APP_NAME), 20, false, false, Pos.CENTER);
+        titleLabel = createLabel("Gluco Status FX", 20, false, false, Pos.CENTER);
+        titleLabel.setTextFill(Constants.BRIGHT_TEXT);
         AnchorPane.setTopAnchor(titleLabel, 5d);
         AnchorPane.setRightAnchor(titleLabel, 0d);
         AnchorPane.setLeftAnchor(titleLabel, 0d);
@@ -353,6 +317,7 @@ public class Main extends Application {
         AnchorPane.setRightAnchor(reloadButton, 10d);
 
         valueLabel = createLabel("-", 92, true, true, Pos.CENTER);
+        valueLabel.setTextFill(Constants.BRIGHT_TEXT);
         AnchorPane.setTopAnchor(valueLabel, 50d);
         AnchorPane.setRightAnchor(valueLabel, 0d);
         AnchorPane.setLeftAnchor(valueLabel, 0d);
@@ -364,18 +329,21 @@ public class Main extends Application {
         delta1 = createDeltaText("0.0, ", false, 14);
         delta0 = createDeltaText("0.0)", true, 16);
 
-        last5DeltasLabel = new HBox(unit, delta4, delta3, delta2, delta1, delta0);
-        last5DeltasLabel.setAlignment(Pos.CENTER);
+        last5DeltasLabel = new TextFlow(unit, delta4, delta3, delta2, delta1, delta0);
+        last5DeltasLabel.setTextAlignment(TextAlignment.CENTER);
         AnchorPane.setTopAnchor(last5DeltasLabel, 155d);
         AnchorPane.setRightAnchor(last5DeltasLabel, 0d);
         AnchorPane.setLeftAnchor(last5DeltasLabel, 0d);
 
         timestampLabel = createLabel("-", 16, false, true, Pos.CENTER);
+        timestampLabel.setTextFill(Constants.BRIGHT_TEXT);
         AnchorPane.setRightAnchor(timestampLabel, 0d);
         AnchorPane.setBottomAnchor(timestampLabel, 72d);
         AnchorPane.setLeftAnchor(timestampLabel, 0d);
 
         rangeAverageLabel = createLabel("-", 24, true, true, Pos.CENTER);
+        rangeAverageLabel.setAlignment(Pos.CENTER);
+        rangeAverageLabel.setTextFill(Constants.BRIGHT_TEXT);
         AnchorPane.setRightAnchor(rangeAverageLabel, 0d);
         AnchorPane.setBottomAnchor(rangeAverageLabel, 20d);
         AnchorPane.setLeftAnchor(rangeAverageLabel, 0d);
@@ -401,11 +369,11 @@ public class Main extends Application {
         AnchorPane.setBottomAnchor(timeInRangeChartButton, 20d);
 
         mainPane = new AnchorPane(titleLabel, matrixButton, reloadButton, valueLabel, last5DeltasLabel, timestampLabel, rangeAverageLabel, patternChartButton, timeInRangeChartButton);
-        mainPane.setPrefSize(820, 295);
-        mainPane.setMinHeight(295);
+        mainPane.setPrefSize(IPHONE_SCREEN.getWidth(), 285);
+        mainPane.setMinHeight(285);
         mainPane.setBackground(new Background(new BackgroundFill(Constants.GRAY, CornerRadii.EMPTY, Insets.EMPTY)));
 
-        canvas = new Canvas(820, 365);
+        canvas = new Canvas(IPHONE_SCREEN.getWidth(), 365);
         ctx    = canvas.getGraphicsContext2D();
         AnchorPane.setTopAnchor(canvas, 10d);
         AnchorPane.setRightAnchor(canvas, 5d);
@@ -424,7 +392,7 @@ public class Main extends Application {
 
         chartPane = new AnchorPane(canvas, problemPane);
         chartPane.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, new CornerRadii(10), Insets.EMPTY)));
-        chartPane.setMinWidth(650);
+        chartPane.setMinWidth(IPHONE_SCREEN.getWidth());
         chartPane.setMinHeight(100);
 
         glassOverlay = new Region();
@@ -452,7 +420,22 @@ public class Main extends Application {
         prefPane.setVisible(false);
         prefPane.setManaged(false);
 
-        pane = new StackPane(vpane, glassOverlay, prefPane);
+        timeInRangePane = createTimeInRangePane();
+        timeInRangePane.setVisible(false);
+        timeInRangePane.setManaged(false);
+
+        patternChartPane = createPatternChartPane();
+        patternChartPane.setVisible(false);
+        patternChartPane.setManaged(false);
+
+        matrixChartPane = createMatrixChartPane();
+        matrixChartPane.setVisible(false);
+        matrixChartPane.setManaged(false);
+
+        pane = new StackPane(vpane, glassOverlay, prefPane, timeInRangePane, patternChartPane, matrixChartPane);
+        pane.setBackground(new Background(new BackgroundFill(MacosSystemColor.BACKGROUND.dark(), CornerRadii.EMPTY, Insets.EMPTY)));
+        StackPane.setMargin(vpane, new Insets(32, 0, 20, 0));
+        StackPane.setMargin(prefPane, new Insets(32, 0, 20, 0));
 
         registerListeners();
     }
@@ -460,128 +443,13 @@ public class Main extends Application {
 
     // ******************** App lifecycle *************************************
     @Override public void start(final Stage stage) {
-        this.stage = stage;
-        notifier = NotifierBuilder.create()
-                                  .owner(stage)
-                                  .popupLocation(OperatingSystem.MACOS == operatingSystem ? Pos.TOP_RIGHT : Pos.BOTTOM_RIGHT)
-                                  .popupLifeTime(Duration.millis(5000))
-                                  .build();
-        this.trayIconSupported = FXTrayIcon.isSupported();
+        notifier = Notifier.INSTANCE;
 
-        if (trayIconSupported) {
-            switch (operatingSystem) {
-                case WINDOWS -> trayIcon = new FXTrayIcon(stage, getClass().getResource("icon48x48.png"));
-                case MACOS   -> trayIcon = new FXTrayIcon(stage, Helper.createTextTrayIcon("--", Color.WHITE));
-                case LINUX   -> trayIcon = new FXTrayIcon(stage, getClass().getResource("icon48x48.png"));
-            }
-
-            trayIcon.setTrayIconTooltip(translator.get(I18nKeys.APP_NAME));
-            trayIcon.addExitItem(false);
-            trayIcon.setApplicationTitle(translator.get(I18nKeys.APP_NAME));
-
-            MenuItem aboutItem = new MenuItem(translator.get(I18nKeys.ABOUT_MENU_ITEM));
-            aboutItem.setOnAction(e -> { if (!aboutDialog.isShowing()) { aboutDialog.showAndWait(); }});
-            trayIcon.addMenuItem(aboutItem);
-
-            MenuItem chartItem = new MenuItem(translator.get(I18nKeys.CHART_MENU_ITEM));
-            chartItem.setOnAction(e -> {
-                prefPane.setVisible(false);
-                prefPane.setManaged(false);
-                stage.show();
-            });
-            trayIcon.addMenuItem(chartItem);
-
-            MenuItem preferencesItem = new MenuItem(translator.get(I18nKeys.PREFERENCES_MENU_ITEM));
-            preferencesItem.setOnAction(e -> {
-                applySettingsToPreferences();
-                prefPane.setPrefSize(stage.getWidth(), stage.getHeight());
-                prefPane.setManaged(true);
-                prefPane.setVisible(true);
-                stage.show();
-            });
-            trayIcon.addMenuItem(preferencesItem);
-
-            trayIcon.addSeparator();
-
-            MenuItem quitItem = new MenuItem(translator.get(I18nKeys.QUIT_MENU_ITEM));
-            quitItem.setOnAction(e -> stop());
-            trayIcon.addMenuItem(quitItem);
-
-            trayIcon.show();
-        } else {
-            MenuBar menuBar = new MenuBar();
-            menuBar.setUseSystemMenuBar(true);
-            menuBar.setTranslateX(16);
-
-            Menu menu = new Menu(translator.get(I18nKeys.APP_NAME));
-            menu.setText(translator.get(I18nKeys.MENU));
-            menu.setOnShowing(e -> hideMenu = false);
-            menu.setOnHidden(e -> {
-                if (!hideMenu) {
-                    menu.show();
-                }
-            });
-
-            CustomMenuItem aboutItem = new CustomMenuItem();
-            Label          mainLabel = new Label(translator.get(I18nKeys.ABOUT_MENU_ITEM));
-            mainLabel.addEventHandler(MouseEvent.MOUSE_ENTERED, e -> hideMenu = false);
-            mainLabel.addEventHandler(MouseEvent.MOUSE_EXITED, e -> hideMenu = true);
-            aboutItem.setContent(mainLabel);
-            aboutItem.setHideOnClick(false);
-            aboutItem.setOnAction(e -> { if (!aboutDialog.isShowing()) { aboutDialog.showAndWait(); } });
-            menu.getItems().add(aboutItem);
-
-            CustomMenuItem chartItem = new CustomMenuItem();
-            Label chartLabel = new Label(translator.get(I18nKeys.CHART_MENU_ITEM));
-            chartLabel.addEventHandler(MouseEvent.MOUSE_ENTERED, e -> hideMenu = false);
-            chartLabel.addEventHandler(MouseEvent.MOUSE_EXITED, e -> hideMenu = true);
-            chartItem.setContent(chartLabel);
-            chartItem.setHideOnClick(false);
-            chartItem.setOnAction(e -> {
-                prefPane.setVisible(false);
-                prefPane.setManaged(false);
-                stage.show();
-            });
-            menu.getItems().add(chartItem);
-
-            CheckMenuItem preferencesItem = new CheckMenuItem();
-            preferencesItem.setVisible(true);
-            preferencesItem.setText(translator.get(I18nKeys.PREFERENCES_MENU_ITEM));
-            preferencesItem.selectedProperty().addListener(o -> {
-                applySettingsToPreferences();
-                prefPane.setPrefSize(stage.getWidth(), stage.getHeight());
-                prefPane.setManaged(true);
-                prefPane.setVisible(true);
-                stage.show();
-            });
-            menu.getItems().add(preferencesItem);
-
-            menu.getItems().add(new SeparatorMenuItem());
-
-            CustomMenuItem quitItem = new CustomMenuItem();
-            Label quitLabel = new Label(translator.get(I18nKeys.QUIT_MENU_ITEM));
-            quitLabel.addEventHandler(MouseEvent.MOUSE_ENTERED, e -> hideMenu = false);
-            quitLabel.addEventHandler(MouseEvent.MOUSE_EXITED, e -> hideMenu = true);
-            quitItem.setContent(quitLabel);
-            quitItem.setHideOnClick(false);
-            quitItem.setOnAction(e -> stop());
-            menu.getItems().add(quitItem);
-
-            menuBar.getMenus().add(menu);
-
-            mainPane.getChildren().add(menuBar);
-        }
-
-        //macosWindow = new MacosWindow(stage, pane, eu.hansolo.applefx.tools.Helper.isDarkMode(), eu.hansolo.applefx.tools.Helper.getMacosAccentColor(), Style.DECORATED, false);
-        macosWindow = new MacosWindow(stage, pane, eu.hansolo.applefx.tools.Helper.isDarkMode(), eu.hansolo.applefx.tools.Helper.getMacosAccentColor(), Style.DEFAULT, false);
-
-        Scene scene = new Scene(macosWindow);
+        Scene scene = new Scene(pane);
         scene.getStylesheets().add(Main.class.getResource("glucostatus.css").toExternalForm());
 
         stage.setScene(scene);
         stage.show();
-        stage.getIcons().add(stageIcon);
-        stage.centerOnScreen();
         stage.setOnShowing(e -> {
             ZonedDateTime now = ZonedDateTime.now();
             if (now.toEpochSecond() - lastUpdate.toEpochSecond() > 300) {
@@ -589,10 +457,6 @@ public class Main extends Application {
                 Helper.getEntriesFromLast30Days(nightscoutUrl + Constants.URL_API).thenAccept(l -> allEntries.addAll(l));
             }
         });
-        stage.setWidth(820);
-        stage.setHeight(735);
-        stage.setMinWidth(650);
-        stage.setMinHeight(500);
 
         postStart();
     }
@@ -622,37 +486,12 @@ public class Main extends Application {
             service.setRestartOnFailure(true);
             service.start();
         }
-        aboutDialog = createAboutDialog();
-        macosWindow.darkProperty().addListener((o, ov, nv) -> {
-            darkMode = nv;
-            Color color = darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT;
-            settingsIcon.setFill(color);
-            titleLabel.setDark(darkMode);
-            valueLabel.setDark(darkMode);
-            unit.setFill(color);
-            delta4.setFill(color);
-            delta3.setFill(color);
-            delta2.setFill(color);
-            delta1.setFill(color);
-            delta0.setFill(color);
-            matrixButton.setFill(color);
-            reloadButton.setFill(color);
-            patternChartButton.setFill(color);
-            timeInRangeChartButton.setFill(color);
-            drawChart();
-            exclamationMark.setFill(color);
 
-            prefContentPane.setBackground(new Background(new BackgroundFill(darkMode ? MacosSystemColor.BACKGROUND.dark() : MacosSystemColor.BACKGROUND.aqua(), new CornerRadii(10), Insets.EMPTY)));
-            eu.hansolo.applefx.tools.Helper.getAllNodes(prefPane).stream().filter(node -> node instanceof MacosControl).forEach(node -> ((MacosControl) node).setDark(darkMode));
-        });
-
-        stage.widthProperty().addListener(o -> {
-            chartPane.setMaxWidth(stage.getWidth());
-            chartPane.setPrefWidth(stage.getWidth());
-        });
-        stage.heightProperty().addListener(o -> {
-            chartPane.setMaxHeight(stage.getHeight() - 285);
-            chartPane.setPrefHeight(stage.getHeight() - 285);
+        RuntimeArgsService.create().ifPresent(service -> {
+            service.addListener("ALERT", value -> {
+                Alert alert = new Alert(AlertType.WARNING, value);
+                Platform.runLater(() -> alert.showAndWait());
+            });
         });
     }
 
@@ -680,6 +519,8 @@ public class Main extends Application {
 
         prefButton.setOnAction(e -> {
             applySettingsToPreferences();
+            vpane.setVisible(false);
+            vpane.setManaged(false);
             prefPane.setManaged(true);
             prefPane.setVisible(true);
         });
@@ -735,6 +576,10 @@ public class Main extends Application {
 
         canvas.widthProperty().addListener(o -> drawChart());
         canvas.heightProperty().addListener(o -> drawChart());
+
+        Services.get(LifecycleService.class).ifPresent(service -> {
+            service.addListener(LifecycleEvent.RESUME, () -> reloadAllEntries());
+        });
     }
 
     private void updateEntries() {
@@ -765,6 +610,7 @@ public class Main extends Application {
                 });
                 lastFullUpdate = ZonedDateTime.now();
             });
+
             drawChart();
         }
     }
@@ -781,21 +627,19 @@ public class Main extends Application {
         boolean soonTooHigh = last3Entries.stream().filter(entry -> Trend.DOUBLE_UP == entry.trend() || Trend.SINGLE_UP == entry.trend()).count() == 3;
 
         if (soonTooLow) {
-            if (currentEntry.sgv() < PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MIN_ACCEPTABLE) && currentEntry.sgv() > Constants.DEFAULT_MIN_CRITICAL) {
-                String title = translator.get(I18nKeys.PREDICTION_TITLE_TOO_LOW);
-                String msg   = translator.get(I18nKeys.PREDICTION_TOO_LOW);
-                Notification notification = NotificationBuilder.create().title(title).message(msg).image(icon).build();
-                if (PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_PLAY_SOUND_FOR_TOO_LOW_NOTIFICATION)) { notificationSound.play(); }
-                Platform.runLater(() -> { if (notifier.getNoOfPopups() == 0) { notifier.notify(notification); }});
+            if (currentEntry.sgv() <= Constants.DEFAULT_SOON_TOO_LOW) {
+                String title         = "Attention";
+                String msg           = "Glucose too low soon !";
+                Message notification = new Message(title, msg, icon);
+                Platform.runLater(() -> notifier.notify(notification));
                 return true;
             }
         } else if (soonTooHigh) {
-            if (currentEntry.sgv() < Constants.DEFAULT_MAX_CRITICAL && currentEntry.sgv() > Constants.DEFAULT_SOON_TOO_HIGH) {
-                String title = translator.get(I18nKeys.PREDICTION_TITLE_TOO_HIGH);
-                String msg   = translator.get(I18nKeys.PREDICTION_TOO_HIGH);
-                Notification notification = NotificationBuilder.create().title(title).message(msg).image(icon).build();
-                if (PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_PLAY_SOUND_FOR_TOO_HIGH_NOTIFICATION)) { notificationSound.play(); }
-                Platform.runLater(() -> { if (notifier.getNoOfPopups() == 0) { notifier.notify(notification); }});
+            if (currentEntry.sgv() > Constants.DEFAULT_SOON_TOO_HIGH) {
+                String title         = "Attention";
+                String  msg          = "Glucose too high soon !";
+                Message notification = new Message(title, msg, icon);
+                Platform.runLater(() -> notifier.notify(notification));
                 return true;
             }
         }
@@ -806,8 +650,6 @@ public class Main extends Application {
         Trend         trend                                  = currentEntry.trend();
         ZonedDateTime now                                    = ZonedDateTime.now();
         double        value                                  = currentEntry.sgv();
-        boolean       voiceOutput                            = PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_VOICE_OUTPUT, false);
-        double        voiceOutputInterval                    = PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_VOICE_OUTPUT_INTERVAL, 5.0) * 60.0;
         double        maxCritical                            = PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MAX_CRITICAL);
         double        maxAcceptable                          = PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MAX_ACCEPTABLE);
         double        maxNormal                              = PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MAX_NORMAL);
@@ -822,27 +664,11 @@ public class Main extends Application {
         boolean       playSoundForHighNotification           = PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_PLAY_SOUND_FOR_HIGH_NOTIFICATION);
         boolean       playSoundForAcceptableHighNotification = PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_PLAY_SOUND_FOR_ACCEPTABLE_HIGH_NOTIFICATION);
         boolean       playSoundForTooLowNotification         = PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_PLAY_SOUND_FOR_TOO_LOW_NOTIFICATION);
-        boolean       speakTooLowNotification                = PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_SPEAK_TOO_LOW_NOTIFICATION, false);
         boolean       playSoundForLowNotification            = PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_PLAY_SOUND_FOR_LOW_NOTIFICATION);
-        boolean       speakLowNotification                   = PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_SPEAK_LOW_NOTIFICATION, false);
         boolean       playSoundForAcceptableLowNotification  = PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_PLAY_SOUND_FOR_ACCEPTABLE_LOW_NOTIFICATION);
-        double        criticalMinNotificationInterval        = PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_CRITICAL_MIN_NOTIFICATION_INTERVAL) * 60.0;
-        double        criticalMaxNotificationInterval        = PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_CRITICAL_MAX_NOTIFICATION_INTERVAL) * 60.0;
+        long          criticalMaxNotificationInterval        = PropertyManager.INSTANCE.getLong(Constants.PROPERTIES_CRITICAL_MAX_NOTIFICATION_INTERVAL);
+        long          criticalMinNotificationInterval        = PropertyManager.INSTANCE.getLong(Constants.PROPERTIES_CRITICAL_MIN_NOTIFICATION_INTERVAL);
 
-        String        format                                 = MILLIGRAM_PER_DECILITER == currentUnit ? "%.0f" : "%.1f";
-
-        if (voiceOutput) {
-            if (now.toEpochSecond() - lastSpeak.toEpochSecond() > voiceOutputInterval) {
-                // Speak
-                if (OperatingSystem.MACOS == operatingSystem) {
-                    String message = new StringBuilder().append(String.format(Locale.US, format, currentEntry.sgv())).append(" ").append(currentUnit.UNIT.getUnitName()).append(" ").append(translator.get(trend.getSpeakText())).toString();
-                    speak(voice, message);
-                }
-                lastSpeak = now;
-            }
-        }
-
-        boolean playSound = false;
         String  msg       = "";
 
         if (value > maxCritical) {
@@ -851,23 +677,20 @@ public class Main extends Application {
                 return; // Was critical but is falling again -> no notification
             } else if (trend == Trend.FLAT || Trend.FORTY_FIVE_DOWN == trend) {
                 if (now.toEpochSecond() - lastNotification.toEpochSecond() > criticalMaxNotificationInterval) {
-                    msg = translator.get(I18nKeys.NOTIFICATION_GLUCOSE_TOO_HIGH);
-                    if (playSoundForTooHighNotification) { playSound = true; }
+                    msg = "Glucose too high";
                 }
             } else {
-                msg = translator.get(I18nKeys.NOTIFICATION_GLUCOSE_TOO_HIGH);
-                if (playSoundForTooHighNotification) {  playSound = true;  }
+                msg = "Glucose too high";
             }
         } else if (value > maxAcceptable) {
             // HIGH
             if (showHighValueNotification) {
                 // High
                 if (Trend.SINGLE_UP == trend || Trend.DOUBLE_UP == trend) {
-                    msg = translator.get(I18nKeys.NOTIFICATION_GLUCOSE_TOO_HIGH_SOON);
+                    msg = "Glucose soon too high";
                 } else {
-                    msg = translator.get(I18nKeys.NOTIFICATION_GLUCOSE_HIGH);
+                    msg = "Glucose high";
                 }
-                if (playSoundForHighNotification) {  playSound = true;  }
             } else {
                 msg = "";
             }
@@ -875,11 +698,10 @@ public class Main extends Application {
             // ACCEPTABLE HIGH
             if (showAcceptableHighValueNotification) {
                 if (Trend.SINGLE_UP == trend || Trend.DOUBLE_UP == trend) {
-                    msg = translator.get(I18nKeys.NOTIFICATION_GLUCOSE_HIGH_SOON);
+                    msg = "Glucose high soon";
                 } else {
-                    msg = translator.get(I18nKeys.NOTIFICATION_GLUCOSE_A_BIT_HIGH);
+                    msg = "Glucose a bit high";
                 }
-                if (playSoundForAcceptableHighNotification) {  playSound = true;  }
             } else {
                 msg = "";
             }
@@ -889,11 +711,10 @@ public class Main extends Application {
             // ACCEPTABLE LOW
             if (showAcceptableLowValueNotification) {
                 if (Trend.SINGLE_DOWN == trend || Trend.DOUBLE_DOWN == trend) {
-                    msg = translator.get(I18nKeys.NOTIFICATION_GLUCOSE_LOW_SOON);
+                    msg = "Glucose low soon";
                 } else {
-                    msg = translator.get(I18nKeys.NOTIFICATION_GLUCOSE_A_BIT_LOW);
+                    msg = "Glucose a bit low";
                 }
-                if (playSoundForAcceptableLowNotification) {  playSound = true;  }
             } else {
                 msg = "";
             }
@@ -901,16 +722,9 @@ public class Main extends Application {
             // LOW
             if (showLowValueNotification) {
                 if (Trend.SINGLE_DOWN == trend || Trend.DOUBLE_DOWN == trend) {
-                    msg = translator.get(I18nKeys.NOTIFICATION_GLUCOSE_TOO_LOW_SOON);
+                    msg = "Glucose too low soon";
                 } else {
-                    msg = translator.get(I18nKeys.NOTIFICATION_GLUCOSE_LOW);
-                }
-                if (playSoundForLowNotification) {  playSound = true;  }
-                if (speakLowNotification) {
-                    // Speak low notification
-                    if (OperatingSystem.MACOS == operatingSystem) {
-                        speak(voice, msg);
-                    }
+                    msg = "Glucose low";
                 }
             } else {
                 msg = "";
@@ -921,34 +735,20 @@ public class Main extends Application {
                 return; // Was critical but is rising again -> no notification
             } else if (Trend.FLAT == trend || Trend.FORTY_FIVE_UP == trend) {
                 if (now.toEpochSecond() - lastNotification.toEpochSecond() > criticalMinNotificationInterval) {
-                    msg = translator.get(I18nKeys.NOTIFICATION_GLUCOSE_TOO_LOW);
-                    if (playSoundForTooLowNotification) {  playSound = true;  }
-                    if (speakTooLowNotification) {
-                        // Speak
-                        if (OperatingSystem.MACOS == operatingSystem) {
-                            speak(voice, msg);
-                        }
-                    }
+                    msg = "Glucose too low";
                 }
             } else {
-                msg = translator.get(I18nKeys.NOTIFICATION_GLUCOSE_TOO_LOW);
-                if (playSoundForTooLowNotification) {  playSound = true;  }
-                if (speakTooLowNotification) {
-                    // Speak
-                    if (OperatingSystem.MACOS == operatingSystem) {
-                        speak(voice, msg);
-                    }
-                }
+                msg = "Glucose too low";
             }
         }
 
         if (msg.isEmpty()) { return; }
 
-        String body = new StringBuilder().append(msg).append(" (").append(String.format(Locale.US, format, currentEntry.sgv())).append(" ").append(currentEntry.trend().getSymbol()).append(")").toString();
-        Notification notification = NotificationBuilder.create().title(translator.get(I18nKeys.NOTIFICATION_TITLE)).message(body).image(icon).build();
+        String format = MILLIGRAM_PER_DECILITER == currentUnit ? "%.0f" : "%.1f";
+        String  body         = new StringBuilder().append(msg).append(" (").append(String.format(Locale.US, format, currentEntry.sgv())).append(" ").append(currentEntry.trend().getSymbol()).append(")").toString();
+        Message notification = new Message("Attention", body, icon);
 
-        if (playSound) { notificationSound.play(); }
-        Platform.runLater(() -> { if (notifier.getNoOfPopups() == 0) { notifier.notify(notification); }});
+        notifier.notify(notification);
 
         lastNotification = now;
     }
@@ -957,22 +757,12 @@ public class Main extends Application {
         nightscoutUrlTextField.setText(PropertyManager.INSTANCE.getString(Constants.PROPERTIES_NIGHTSCOUT_URL));
         unitSwitch.setSelected(PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_UNIT_MG));
         deltaChartSwitch.setSelected(PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_SHOW_DELTA_CHART));
-        voiceOutputSwitch.setSelected(PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_VOICE_OUTPUT, false));
-        voiceOutputIntervalSlider.setValue(PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_VOICE_OUTPUT_INTERVAL, 5));
-        tooLowSoundSwitch.setSelected(PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_PLAY_SOUND_FOR_TOO_LOW_NOTIFICATION));
-        tooLowSpeakSwitch.setSelected(PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_SPEAK_TOO_LOW_NOTIFICATION, false));
         enableLowSoundSwitch.setSelected(PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_SHOW_LOW_VALUE_NOTIFICATION));
-        lowSpeakSwitch.setSelected(PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_SPEAK_LOW_NOTIFICATION, false));
-        lowSoundSwitch.setSelected(PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_PLAY_SOUND_FOR_LOW_NOTIFICATION));
         enableAcceptableLowSoundSwitch.setSelected(PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_SHOW_ACCEPTABLE_LOW_VALUE_NOTIFICATION));
-        acceptableLowSoundSwitch.setSelected(PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_PLAY_SOUND_FOR_ACCEPTABLE_LOW_NOTIFICATION));
         enableAcceptableHighSoundSwitch.setSelected(PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_SHOW_ACCEPTABLE_HIGH_VALUE_NOTIFICATION));
-        acceptableHighSoundSwitch.setSelected(PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_PLAY_SOUND_FOR_ACCEPTABLE_HIGH_NOTIFICATION));
         enableHighSoundSwitch.setSelected(PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_SHOW_HIGH_VALUE_NOTIFICATION));
-        highSoundSwitch.setSelected(PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_PLAY_SOUND_FOR_HIGH_NOTIFICATION));
-        tooHighSoundSwitch.setSelected(PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_PLAY_SOUND_FOR_TOO_HIGH_NOTIFICATION));
-        tooLowIntervalSlider.setValue(PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_CRITICAL_MIN_NOTIFICATION_INTERVAL));
-        tooHighIntervalSlider.setValue(PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_CRITICAL_MAX_NOTIFICATION_INTERVAL));
+        tooLowIntervalSlider.setValue(PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_TOO_LOW_INTERVAL));
+        tooHighIntervalSlider.setValue(PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_TOO_HIGH_INTERVAL));
         minAcceptableSlider.setValue(UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MIN_ACCEPTABLE) : Helper.mgPerDeciliterToMmolPerLiter(PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MIN_ACCEPTABLE)));
         minNormalSlider.setValue(UnitDefinition.MILLIGRAM_PER_DECILITER     == currentUnit ? PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MIN_NORMAL)     : Helper.mgPerDeciliterToMmolPerLiter(PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MIN_NORMAL)));
         maxNormalSlider.setValue(UnitDefinition.MILLIGRAM_PER_DECILITER     == currentUnit ? PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MAX_NORMAL)     : Helper.mgPerDeciliterToMmolPerLiter(PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MAX_NORMAL)));
@@ -983,22 +773,12 @@ public class Main extends Application {
         PropertyManager.INSTANCE.setString(Constants.PROPERTIES_NIGHTSCOUT_URL, nightscoutUrlTextField.getText());
         PropertyManager.INSTANCE.setBoolean(Constants.PROPERTIES_UNIT_MG, unitSwitch.isSelected());
         PropertyManager.INSTANCE.setBoolean(Constants.PROPERTIES_SHOW_DELTA_CHART, deltaChartSwitch.isSelected());
-        PropertyManager.INSTANCE.setBoolean(Constants.PROPERTIES_VOICE_OUTPUT, voiceOutputSwitch.isSelected());
-        PropertyManager.INSTANCE.setDouble(Constants.PROPERTIES_VOICE_OUTPUT_INTERVAL, voiceOutputIntervalSlider.getValue());
-        PropertyManager.INSTANCE.setBoolean(Constants.PROPERTIES_PLAY_SOUND_FOR_TOO_LOW_NOTIFICATION, tooLowSoundSwitch.isSelected());
-        PropertyManager.INSTANCE.setBoolean(Constants.PROPERTIES_SPEAK_TOO_LOW_NOTIFICATION, tooLowSpeakSwitch.isSelected());
         PropertyManager.INSTANCE.setBoolean(Constants.PROPERTIES_SHOW_LOW_VALUE_NOTIFICATION, enableLowSoundSwitch.isSelected());
-        PropertyManager.INSTANCE.setBoolean(Constants.PROPERTIES_PLAY_SOUND_FOR_LOW_NOTIFICATION, lowSoundSwitch.isSelected());
-        PropertyManager.INSTANCE.setBoolean(Constants.PROPERTIES_SPEAK_LOW_NOTIFICATION, lowSpeakSwitch.isSelected());
         PropertyManager.INSTANCE.setBoolean(Constants.PROPERTIES_SHOW_ACCEPTABLE_LOW_VALUE_NOTIFICATION, enableAcceptableLowSoundSwitch.isSelected());
-        PropertyManager.INSTANCE.setBoolean(Constants.PROPERTIES_PLAY_SOUND_FOR_ACCEPTABLE_LOW_NOTIFICATION, acceptableLowSoundSwitch.isSelected());
         PropertyManager.INSTANCE.setBoolean(Constants.PROPERTIES_SHOW_ACCEPTABLE_HIGH_VALUE_NOTIFICATION, enableAcceptableHighSoundSwitch.isSelected());
-        PropertyManager.INSTANCE.setBoolean(Constants.PROPERTIES_PLAY_SOUND_FOR_ACCEPTABLE_HIGH_NOTIFICATION, acceptableHighSoundSwitch.isSelected());
         PropertyManager.INSTANCE.setBoolean(Constants.PROPERTIES_SHOW_HIGH_VALUE_NOTIFICATION, enableHighSoundSwitch.isSelected());
-        PropertyManager.INSTANCE.setBoolean(Constants.PROPERTIES_PLAY_SOUND_FOR_HIGH_NOTIFICATION, highSoundSwitch.isSelected());
-        PropertyManager.INSTANCE.setBoolean(Constants.PROPERTIES_PLAY_SOUND_FOR_TOO_HIGH_NOTIFICATION, tooHighSoundSwitch.isSelected());
-        PropertyManager.INSTANCE.setDouble(Constants.PROPERTIES_CRITICAL_MIN_NOTIFICATION_INTERVAL, tooLowIntervalSlider.getValue());
-        PropertyManager.INSTANCE.setDouble(Constants.PROPERTIES_CRITICAL_MAX_NOTIFICATION_INTERVAL, tooHighIntervalSlider.getValue());
+        PropertyManager.INSTANCE.setDouble(Constants.PROPERTIES_TOO_LOW_INTERVAL, tooLowIntervalSlider.getValue());
+        PropertyManager.INSTANCE.setDouble(Constants.PROPERTIES_TOO_HIGH_INTERVAL, tooHighIntervalSlider.getValue());
         PropertyManager.INSTANCE.setDouble(Constants.PROPERTIES_MIN_ACCEPTABLE, UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? minAcceptableSlider.getValue() : Helper.mmolPerLiterToMgPerDeciliter(minAcceptableSlider.getValue()));
         PropertyManager.INSTANCE.setDouble(Constants.PROPERTIES_MIN_NORMAL,     UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? minNormalSlider.getValue()     : Helper.mmolPerLiterToMgPerDeciliter(minNormalSlider.getValue()));
         PropertyManager.INSTANCE.setDouble(Constants.PROPERTIES_MAX_NORMAL,     UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? maxNormalSlider.getValue()     : Helper.mmolPerLiterToMgPerDeciliter(maxNormalSlider.getValue()));
@@ -1050,7 +830,7 @@ public class Main extends Application {
         if (allEntries.isEmpty()) { return; }
         Collections.sort(allEntries, Comparator.comparingLong(GlucoEntry::datelong).reversed());
         long limit = OffsetDateTime.now().toEpochSecond() - currentInterval.getSeconds();
-        entries = allEntries.stream().filter(entry -> entry.datelong() > limit).collect(Collectors.toList());
+        entries      = allEntries.stream().filter(entry -> entry.datelong() > limit).collect(Collectors.toList());
 
         // Use last entry if filtered list is empty
         if (entries.isEmpty()) { entries.add(allEntries.get(0)); }
@@ -1098,14 +878,6 @@ public class Main extends Application {
             avg = entries.stream().map(entry -> Helper.mgPerDeciliterToMmolPerLiter(entry.sgv())).collect(Collectors.summingDouble(Double::doubleValue)) / entries.size();
         }
 
-        // Set value specific tray icon
-        if (null != trayIcon && OperatingSystem.MACOS == operatingSystem) {
-            SwingUtilities.invokeLater(() -> Platform.runLater(() -> {
-                String text = currentValueText + (outdated ? "\u26A0" : "");
-                trayIcon.setGraphic(Helper.createTextTrayIcon(text, Color.WHITE));
-                trayIcon.setTrayIconTooltip(text);
-            }));
-        }
         Platform.runLater(() -> {
             unit.setText(currentUnit.UNIT.getUnitShort() + " (");
             if (deltas.isEmpty()) {
@@ -1124,10 +896,9 @@ public class Main extends Application {
 
             mainPane.setBackground(new Background(new BackgroundFill(currentColor, CornerRadii.EMPTY, Insets.EMPTY)));
             valueLabel.setText(currentValueText);
-            //timestampLabel.setText(Constants.DTF.format(dateTime) + (outdated ? " \u26A0" : ""));
-            timestampLabel.setText(dtf.format(dateTime) + (outdated ? " \u26A0" : ""));
+            timestampLabel.setText(Constants.DTF.format(dateTime) + (outdated ? " 􀇾" : ""));
             exclamationMark.setVisible(outdated);
-            rangeAverageLabel.setText(currentInterval.getUiString() + " (\u2300" + String.format(Locale.US, format, avg) + ")");
+            rangeAverageLabel.setText(currentInterval.getUiString() + " (ø" + String.format(Locale.US, format, avg) + ")");
 
             drawChart();
         });
@@ -1144,7 +915,7 @@ public class Main extends Application {
         double  height          = canvas.getHeight();
         double  availableWidth  = (width - GRAPH_INSETS.getLeft() - GRAPH_INSETS.getRight());
         double  availableHeight = (height - GRAPH_INSETS.getTop() - GRAPH_INSETS.getBottom());
-        boolean darkMode        = eu.hansolo.applefx.tools.Helper.isDarkMode();
+        boolean darkMode        = true;
 
         ctx.clearRect(0, 0, width, height);
         ctx.setFill(darkMode ? Color.rgb(30, 28, 26) : Color.rgb(234, 233, 233));
@@ -1175,12 +946,12 @@ public class Main extends Application {
         if (deltaTime > currentInterval.getSeconds()) { deltaTime = OffsetDateTime.now().toEpochSecond() - OffsetDateTime.now().minusSeconds(currentInterval.getSeconds()).toEpochSecond(); }
 
         ZonedDateTime minDate          = Helper.getZonedDateTimeFromEpochSeconds(minEntry.datelong());
-        double        stepX            = availableWidth / deltaTime;
-        double        stepY            = availableHeight / (Constants.DEFAULT_GLUCO_RANGE);
-        int           hour             = minDate.getHour();
-        ZonedDateTime adjMinDate       = (hour == 23 && currentInterval != TimeInterval.LAST_12_HOURS) ? minDate.plusSeconds(TimeInterval.LAST_24_HOURS.getSeconds()) : minDate;
-        ZonedDateTime firstFullHour    = (hour == 23 && currentInterval != TimeInterval.LAST_12_HOURS) ? ZonedDateTime.of(adjMinDate.plusDays(1).toLocalDate(), LocalTime.MIDNIGHT, ZoneId.systemDefault()) : adjMinDate;
-        long          startX           = firstFullHour.toEpochSecond() - minEntry.datelong();
+        double        stepX           = availableWidth / deltaTime;
+        double        stepY           = availableHeight / (Constants.DEFAULT_GLUCO_RANGE);
+        int           hour            = minDate.getHour();
+        ZonedDateTime adjMinDate      = (hour == 23 && currentInterval != TimeInterval.LAST_12_HOURS) ? minDate.plusSeconds(TimeInterval.LAST_24_HOURS.getSeconds()) : minDate;
+        ZonedDateTime firstFullHour   = (hour == 23 && currentInterval != TimeInterval.LAST_12_HOURS) ? ZonedDateTime.of(adjMinDate.plusDays(1).toLocalDate(), LocalTime.MIDNIGHT, ZoneId.systemDefault()) : adjMinDate;
+        long          startX          = firstFullHour.toEpochSecond() - minEntry.datelong();
         int           lastHour         = -1;
         double        oneHourStep      = Constants.SECONDS_PER_HOUR * stepX;
         long          hourCounter      = 0;
@@ -1221,14 +992,14 @@ public class Main extends Application {
                 if (!startsAtNight && Constants.NIGHT_START == h && !nightStart) {
                     nightStart = true;
                     nightX = x;
-                }
+                    }
                 if (Constants.NIGHT_END == h && nightStart) {
                     nightStart = false;
                     nights.add(new eu.hansolo.toolboxfx.geom.Rectangle(nightX, GRAPH_INSETS.getTop(), 10 * oneHourStep, availableHeight));
+                    }
                 }
-            }
             lastHour = h;
-        }
+            }
 
         // Draw nights
         ctx.save();
@@ -1242,11 +1013,11 @@ public class Main extends Application {
         ctx.setTextAlign(TextAlignment.CENTER);
         long interval;
         switch(currentInterval) {
-            case LAST_168_HOURS,
-                 LAST_720_HOURS,
-                 LAST_72_HOURS -> interval = TimeInterval.LAST_6_HOURS.getHours();
-            case LAST_48_HOURS -> interval = TimeInterval.LAST_3_HOURS.getHours();
-            default            -> interval = 1;
+            case LAST_168_HOURS:
+            case LAST_720_HOURS:
+            case LAST_72_HOURS: interval = TimeInterval.LAST_6_HOURS.getHours(); break;
+            case LAST_48_HOURS: interval = TimeInterval.LAST_3_HOURS.getHours(); break;
+            default           : interval = 1; break;
         }
         hourCounter = 0;
         for (long i = startX ; i <= deltaTime ; i++) {
@@ -1256,8 +1027,9 @@ public class Main extends Application {
                 if (hourCounter % interval == 0) {
                     ctx.strokeLine(x, GRAPH_INSETS.getTop(), x, height - GRAPH_INSETS.getBottom());
                     switch (currentInterval) {
-                        case LAST_3_HOURS, LAST_6_HOURS -> ctx.fillText(h + ":00", x, height - GRAPH_INSETS.getBottom() * 0.5);
-                        default -> ctx.fillText(Integer.toString(h), x, height - GRAPH_INSETS.getBottom() * 0.25);
+                        case LAST_3_HOURS:
+                        case LAST_6_HOURS: ctx.fillText(h + ":00", x, height - GRAPH_INSETS.getBottom() * 0.5); break;
+                        default          : ctx.fillText(Integer.toString(h), x, height - GRAPH_INSETS.getBottom() * 0.25); break;
                     }
                 }
                 hourCounter++;
@@ -1347,42 +1119,28 @@ public class Main extends Application {
         ctx.stroke();
     }
 
-    private void speak(final String voice, final String msg) {
-        if (OperatingSystem.MACOS != operatingSystem || null == voice || voice.isEmpty() || null == msg || msg.isEmpty()) { return; }
-        final ProcessBuilder processBuilder = new ProcessBuilder();
-        final String         message        = new StringBuilder("say -v ").append(voice).append(" ").append(msg).toString();
-        processBuilder.command("sh", "-c", message);
-        try {
-            Process process = processBuilder.start();
-            process.waitFor();
-        } catch (InterruptedException | IOException e) {
-            e.printStackTrace();
-        }
-    }
-
 
     // ******************** Factory methods ***********************************
     private Text createDeltaText(final String text, final boolean bold, final double size) {
         Text t = new Text(text);
-        t.setFont(bold ? Fonts.sfProRoundedBold(size) : Fonts.sfProRoundedRegular(size));
+        t.setFont(bold ? Fonts.configRoundedSemibold(size) : Fonts.configRoundedRegular(size));
         t.setFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
         return t;
     }
-
     private MacosLabel createLabel(final String text, final double size, final boolean bold, final boolean rounded, final Pos alignment) {
         MacosLabel label = new MacosLabel(text);
         label.setDark(darkMode);
         if (rounded) {
-            label.setFont(bold ? Fonts.sfProRoundedBold(size) : Fonts.sfProRoundedRegular(size));
+            label.setFont(bold ? Fonts.sfRoundedBold(size) : Fonts.configRoundedRegular(size));
         } else {
-            label.setFont(bold ? Fonts.sfProTextBold(size) : Fonts.sfProTextRegular(size));
+            label.setFont(bold ? Fonts.configRoundedSemibold(size) : Fonts.configRoundedRegular(size));
         }
         label.setAlignment(alignment);
         return label;
     }
     private MacosLabel createLabel(final String text, final double size, final Paint color, final boolean bold, final Pos alignment, final Priority priority) {
         MacosLabel label = new MacosLabel(text);
-        label.setFont(bold ? Fonts.sfProTextBold(size) : Fonts.sfProTextRegular(size));
+        label.setFont(bold ? Fonts.configRoundedSemibold(size) : Fonts.configRoundedRegular(size));
         label.setDark(darkMode);
         label.setAlignment(alignment);
         label.setPrefWidth(250);
@@ -1407,119 +1165,37 @@ public class Main extends Application {
     }
 
 
-    // ******************** About *********************************************
-    private Dialog createAboutDialog() {
-        Dialog aboutDialog = new Dialog();
-        aboutDialog.setTitle(translator.get(I18nKeys.APP_NAME));
-        aboutDialog.initStyle(StageStyle.TRANSPARENT);
-        aboutDialog.initModality(Modality.WINDOW_MODAL);
-
-        DialogPane dialogPane = new DialogPane() {
-            @Override protected Node createButtonBar() {
-                ButtonBar buttonBar = (ButtonBar) super.createButtonBar();
-                buttonBar.setPadding(new Insets(0));
-                buttonBar.setVisible(false);
-                buttonBar.setManaged(false);
-                return buttonBar;
-            }
-        };
-        aboutDialog.setDialogPane(dialogPane);
-
-        Image img = new Image(Main.class.getResourceAsStream("icon128x128.png"));
-
-        Stage aboutDialogStage = (Stage) aboutDialog.getDialogPane().getScene().getWindow();
-        aboutDialogStage.getScene().setFill(Color.TRANSPARENT);
-        aboutDialogStage.setAlwaysOnTop(true);
-        aboutDialogStage.getScene().getStylesheets().add(Main.class.getResource("glucostatus.css").toExternalForm());
-
-        ImageView aboutImage = new ImageView(img);
-        aboutImage.setFitWidth(64);
-        aboutImage.setFitHeight(64);
-
-        MacosLabel nameLabel = new MacosLabel(translator.get(I18nKeys.APP_NAME));
-        nameLabel.setPrefWidth(Label.USE_COMPUTED_SIZE);
-        nameLabel.setMaxWidth(Double.MAX_VALUE);
-        nameLabel.setAlignment(Pos.CENTER);
-        nameLabel.setFont(Fonts.sfProTextBold(14));
-        nameLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
-
-        MacosLabel descriptionLabel = new MacosLabel("\u00A9 Gerrit Grunwald 2022");
-        descriptionLabel.setPrefWidth(Label.USE_COMPUTED_SIZE);
-        descriptionLabel.setMaxWidth(Double.MAX_VALUE);
-        descriptionLabel.setFont(Fonts.sfProTextRegular(12));
-        descriptionLabel.setTextAlignment(TextAlignment.CENTER);
-        descriptionLabel.setAlignment(Pos.CENTER);
-        descriptionLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
-
-        MacosButton closeButton = new MacosButton(translator.get(I18nKeys.ABOUT_ALERT_CLOSE_BUTTON));
-        closeButton.setDark(darkMode);
-        closeButton.setOnAction(e -> {
-            aboutDialog.setResult(Boolean.TRUE);
-            aboutDialog.close();
-        });
-        VBox.setMargin(closeButton, new Insets(20, 0, 0, 0));
-
-        VBox aboutTextBox = new VBox(10, nameLabel, descriptionLabel, closeButton);
-        aboutTextBox.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, CornerRadii.EMPTY, Insets.EMPTY)));
-        aboutTextBox.setAlignment(Pos.CENTER);
-
-        VBox aboutBox = new VBox(20, aboutImage, aboutTextBox);
-        aboutBox.setAlignment(Pos.CENTER);
-        aboutBox.setPadding(new Insets(20, 20, 20, 20));
-        aboutBox.setMinSize(260, 232);
-        aboutBox.setMaxSize(260, 232);
-        aboutBox.setPrefSize(260, 232);
-        aboutBox.setBackground(new Background(new BackgroundFill(darkMode ? MacosSystemColor.BACKGROUND.dark() : MacosSystemColor.BACKGROUND.aqua(), new CornerRadii(10), Insets.EMPTY)));
-
-
-        if (OperatingSystem.LINUX == operatingSystem && (Architecture.AARCH64 == architecture || Architecture.ARM64 == architecture)) {
-            aboutDialog.getDialogPane().setContent(new StackPane(aboutBox));
-        } else {
-            StackPane glassPane = new StackPane(aboutBox);
-            glassPane.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, CornerRadii.EMPTY, Insets.EMPTY)));
-            glassPane.setMinSize(260, 232);
-            glassPane.setMaxSize(260, 232);
-            glassPane.setPrefSize(260, 232);
-            glassPane.setEffect(new DropShadow(BlurType.TWO_PASS_BOX, Color.rgb(0, 0, 0, 0.35), 10.0, 0.0, 0.0, 5));
-            aboutDialog.getDialogPane().setContent(glassPane);
-        }
-
-        aboutDialog.getDialogPane().setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, new CornerRadii(10), Insets.EMPTY)));
-
-        aboutDialog.setOnShowing(e -> aboutDialogStage.centerOnScreen());
-
-        return aboutDialog;
-    }
-
-
     // ******************** Settings ******************************************
     private StackPane createPrefPane() {
         String format = MILLIGRAM_PER_DECILITER == currentUnit ? "%.0f" : "%.1f";
 
         MacosButton backButton = new MacosButton("\u2190");
         backButton.setDark(darkMode);
-        backButton.setFont(Fonts.sfProRoundedSemiBold(16));
+        backButton.setFont(Fonts.configRoundedSemibold(16));
         backButton.setPadding(new Insets(2, 5, 2, 5));
         AnchorPane.setTopAnchor(backButton, 10d);
         AnchorPane.setLeftAnchor(backButton, 10d);
         backButton.setOnAction(e -> {
             prefPane.setVisible(false);
             prefPane.setManaged(false);
+            vpane.setVisible(true);
+            vpane.setManaged(true);
             savePreferencesToSettings();
         });
 
-        MacosLabel settingsLabel = new MacosLabel(translator.get(I18nKeys.SETTINGS_TITLE));
+        MacosLabel settingsLabel = new MacosLabel("Settings");
         settingsLabel.setDark(darkMode);
-        settingsLabel.setFont(Fonts.sfProTextBold(14));
+        settingsLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
+        settingsLabel.setFont(Fonts.configRoundedSemibold(14));
         AnchorPane.setTopAnchor(settingsLabel, 50d);
         AnchorPane.setLeftAnchor(settingsLabel, 30d);
 
-        MacosLabel nightscoutUrlLabel = new MacosLabel(translator.get(I18nKeys.SETTINGS_NIGHTSCOUT_URL));
+        MacosLabel nightscoutUrlLabel = new MacosLabel("URL");
         nightscoutUrlLabel.setDark(darkMode);
-        nightscoutUrlLabel.setFont(Fonts.sfProTextRegular(14));
+        nightscoutUrlLabel.setFont(Fonts.configRoundedRegular(14));
         nightscoutUrlTextField = new MacosTextField();
         nightscoutUrlTextField.setDark(darkMode);
-        nightscoutUrlTextField.setFont(Fonts.sfProRoundedRegular(14));
+        nightscoutUrlTextField.setFont(Fonts.configRoundedRegular(14));
         nightscoutUrlTextField.setPrefWidth(TextField.USE_COMPUTED_SIZE);
         nightscoutUrlTextField.setMaxWidth(Double.MAX_VALUE);
         nightscoutUrlTextField.setPromptText("https://YOUR_DOMAIN.herokuapp.com");
@@ -1534,16 +1210,16 @@ public class Main extends Application {
 
 
         unitSwitch = MacosSwitchBuilder.create().dark(darkMode).ios(true).selectedColor(accentColor).build();
-        MacosLabel unitLabel = new MacosLabel(translator.get(I18nKeys.SETTINGS_UNIT) + currentUnit.UNIT.getUnitShort());
+        MacosLabel unitLabel = new MacosLabel("Unit " + currentUnit.UNIT.getUnitShort());
         unitLabel.setDark(darkMode);
-        unitLabel.setFont(Fonts.sfProTextRegular(14));
+        unitLabel.setFont(Fonts.configRoundedRegular(14));
         HBox.setHgrow(unitLabel, Priority.ALWAYS);
         HBox unitBox = new HBox(10, unitSwitch, unitLabel);
         unitBox.setAlignment(Pos.CENTER_LEFT);
         unitSwitch.selectedProperty().addListener((o, ov, nv) -> {
-            switchingUnits.set(true);
+            switchingUnits = true;
             currentUnit = nv ? MILLIGRAM_PER_DECILITER : MILLIMOL_PER_LITER;
-            unitLabel.setText(translator.get(I18nKeys.SETTINGS_UNIT) + currentUnit.UNIT.getUnitShort());
+            unitLabel.setText("Unit " + currentUnit.UNIT.getUnitShort());
             if (MILLIGRAM_PER_DECILITER == currentUnit) {
                 minAcceptableSlider.setMin(Constants.SETTINGS_MIN_ACCEPTABLE_MIN);
                 minAcceptableSlider.setMax(Constants.SETTINGS_MIN_ACCEPTABLE_MAX);
@@ -1593,7 +1269,7 @@ public class Main extends Application {
                 maxAcceptableSlider.setBlockIncrement(Helper.mgPerDeciliterToMmolPerLiter(5));
                 maxAcceptableSlider.setValue(Helper.mgPerDeciliterToMmolPerLiter(PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MAX_ACCEPTABLE)));
             }
-            switchingUnits.set(false);
+            switchingUnits = false;
         });
 
 
@@ -1603,9 +1279,9 @@ public class Main extends Application {
 
 
         deltaChartSwitch = MacosSwitchBuilder.create().dark(darkMode).ios(true).selectedColor(accentColor).build();
-        MacosLabel deltaChartLabel = new MacosLabel(translator.get(I18nKeys.SETTINGS_SHOW_DELTA_CHART));
+        MacosLabel deltaChartLabel = new MacosLabel("Show deltas");
         deltaChartLabel.setDark(darkMode);
-        deltaChartLabel.setFont(Fonts.sfProTextRegular(14));
+        deltaChartLabel.setFont(Fonts.configRoundedRegular(14));
         HBox.setHgrow(deltaChartLabel, Priority.ALWAYS);
         HBox deltaChartBox = new HBox(10, deltaChartSwitch, deltaChartLabel);
         deltaChartBox.setAlignment(Pos.CENTER_LEFT);
@@ -1613,125 +1289,44 @@ public class Main extends Application {
 
         MacosSeparator s3 = new MacosSeparator(Orientation.HORIZONTAL);
         s3.setDark(darkMode);
-        VBox.setMargin(s3, new Insets(5, 0, 10, 0));
+        VBox.setMargin(s3, new Insets(5, 0, 5, 0));
 
 
-        voiceOutputSwitch = MacosSwitchBuilder.create().dark(darkMode).ios(true).selectedColor(accentColor).build();
-        MacosLabel voiceOutputLabel = createLabel(translator.get(I18nKeys.SETTINGS_VOICE_OUTPUT), 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.ALWAYS);
-
-        MacosLabel voiceOutputIntervalLabel = createLabel(translator.get(I18nKeys.SETTINGS_VOICE_OUTPUT_INTERVAL) + "5 min", 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.ALWAYS);
-        VBox.setMargin(voiceOutputIntervalLabel, new Insets(10, 0, 5, 0));
-        voiceOutputIntervalSlider = new MacosSlider();
-        voiceOutputIntervalSlider.setDark(darkMode);
-        voiceOutputIntervalSlider.setMin(5);
-        voiceOutputIntervalSlider.setMax(60);
-        voiceOutputIntervalSlider.setSnapToTicks(true);
-        voiceOutputIntervalSlider.setShowTickMarks(true);
-        voiceOutputIntervalSlider.setMinorTickCount(0);
-        voiceOutputIntervalSlider.setMajorTickUnit(5);
-        voiceOutputIntervalSlider.setBlockIncrement(5);
-        voiceOutputIntervalSlider.valueProperty().addListener((o, ov, nv) -> voiceOutputIntervalLabel.setText(translator.get(I18nKeys.SETTINGS_VOICE_OUTPUT_INTERVAL) + String.format(Locale.US, "%.0f", voiceOutputIntervalSlider.getValue()) + " min"));
-        VBox.setMargin(voiceOutputIntervalSlider, new Insets(5, 0, 5, 0));
-
-        if (OperatingSystem.MACOS != operatingSystem) {
-            voiceOutputSwitch.setVisible(false);
-            voiceOutputSwitch.setManaged(false);
-            voiceOutputLabel.setVisible(false);
-            voiceOutputLabel.setManaged(false);
-            voiceOutputIntervalLabel.setVisible(false);
-            voiceOutputIntervalLabel.setManaged(false);
-            voiceOutputIntervalSlider.setVisible(false);
-            voiceOutputIntervalSlider.setManaged(false);
-        }
-
-        HBox voiceOutputBox = new HBox(10, voiceOutputSwitch, voiceOutputLabel);
-        unitBox.setAlignment(Pos.CENTER_LEFT);
-
-
-        MacosLabel notificationsLabel = new MacosLabel(translator.get(I18nKeys.SETTINGS_NOTIFICATION_TITLE));
+        MacosLabel notificationsLabel = new MacosLabel("Notifications");
         notificationsLabel.setDark(darkMode);
-        notificationsLabel.setFont(Fonts.sfProTextBold(14));
+        notificationsLabel.setFont(Fonts.configRoundedSemibold(14));
 
-        // Too low
-        MacosLabel tooLowLabel      = createLabel(translator.get(I18nKeys.SETTINGS_TOO_LOW_VALUE_NOTIFICATION), 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.SOMETIMES);
-        MacosLabel tooLowSoundLabel = createLabel(translator.get(I18nKeys.SETTINGS_TOO_LOW_VALUE_NOTIFICATION_SOUND), 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_RIGHT, Priority.ALWAYS);
-        tooLowSoundLabel.setMaxWidth(Double.MAX_VALUE);
-        tooLowSoundSwitch = MacosSwitchBuilder.create().dark(darkMode).ios(true).selectedColor(accentColor).build();
+        MacosLabel tooLowLabel      = createLabel("Too low", 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.SOMETIMES);
 
-        Region     tooLowLeftSpacer = new Region();
-        MacosLabel tooLowSpeakLabel = createLabel(translator.get(I18nKeys.SETTINGS_TOO_LOW_VALUE_NOTIFICATION_SPEAK), 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_RIGHT, Priority.NEVER);
-        tooLowSpeakSwitch = MacosSwitchBuilder.create().dark(darkMode).ios(true).selectedColor(accentColor).build();
-        HBox tooLowSpeakBox = new HBox(10, tooLowSpeakLabel, tooLowSpeakSwitch);
-        tooLowSpeakBox.setAlignment(Pos.CENTER);
-        Region tooLowRightSpacer = new Region();
-        if (OperatingSystem.MACOS != operatingSystem) {
-            tooLowSpeakBox.setVisible(false);
-            tooLowSpeakBox.setManaged(false);
-        }
-        HBox.setHgrow(tooLowLeftSpacer, Priority.ALWAYS);
-        HBox.setHgrow(tooLowSpeakBox, Priority.NEVER);
-        HBox.setHgrow(tooLowRightSpacer, Priority.ALWAYS);
-
-        HBox tooLowBox = new HBox(10, tooLowLabel, tooLowLeftSpacer, tooLowSpeakBox, tooLowRightSpacer, tooLowSoundLabel, tooLowSoundSwitch);
+        HBox tooLowBox = new HBox(10, tooLowLabel);
         tooLowBox.setAlignment(Pos.CENTER_LEFT);
 
         // Low
         enableLowSoundSwitch = MacosSwitchBuilder.create().dark(darkMode).ios(true).selectedColor(accentColor).build();
-        MacosLabel lowLabel      = createLabel(translator.get(I18nKeys.SETTINGS_LOW_VALUE_NOTIFICATION), 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.SOMETIMES);
-        MacosLabel lowSoundLabel = createLabel(translator.get(I18nKeys.SETTINGS_LOW_VALUE_NOTIFICATION_SOUND), 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_RIGHT, Priority.ALWAYS);
-        lowSoundLabel.setMaxWidth(Double.MAX_VALUE);
-        lowSoundSwitch = MacosSwitchBuilder.create().dark(darkMode).ios(true).selectedColor(accentColor).build();
-
-        Region     lowLeftSpacer = new Region();
-        MacosLabel lowSpeakLabel = createLabel(translator.get(I18nKeys.SETTINGS_LOW_VALUE_NOTIFICATION_SPEAK), 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_RIGHT, Priority.NEVER);
-        lowSpeakSwitch = MacosSwitchBuilder.create().dark(darkMode).ios(true).selectedColor(accentColor).build();
-        HBox lowSpeakBox = new HBox(10, lowSpeakLabel, lowSpeakSwitch);
-        lowSpeakBox.setAlignment(Pos.CENTER);
-        Region lowRightSpacer = new Region();
-        if (OperatingSystem.MACOS != operatingSystem) {
-            lowSpeakBox.setVisible(false);
-            lowSpeakBox.setManaged(false);
-        }
-        HBox.setHgrow(lowLeftSpacer, Priority.ALWAYS);
-        HBox.setHgrow(lowSpeakBox, Priority.NEVER);
-        HBox.setHgrow(lowRightSpacer, Priority.ALWAYS);
-
-        HBox lowBox = new HBox(10, enableLowSoundSwitch, lowLabel, lowLeftSpacer, lowSpeakBox, lowRightSpacer, lowSoundLabel, lowSoundSwitch);
+        MacosLabel lowLabel      = createLabel("Low", 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.SOMETIMES);
+        HBox lowBox = new HBox(10, enableLowSoundSwitch, lowLabel);
         lowBox.setAlignment(Pos.CENTER_LEFT);
 
         // Acceptable low
         enableAcceptableLowSoundSwitch = MacosSwitchBuilder.create().dark(darkMode).ios(true).selectedColor(accentColor).build();
-        MacosLabel acceptableLowLabel      = createLabel(translator.get(I18nKeys.SETTINGS_ACCEPTABLE_LOW_VALUE_NOTIFICATION), 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.SOMETIMES);
-        MacosLabel acceptableLowSoundLabel = createLabel(translator.get(I18nKeys.SETTINGS_ACCEPTABLE_LOW_VALUE_NOTIFICATION_SOUND), 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_RIGHT, Priority.ALWAYS);
-        acceptableLowSoundLabel.setMaxWidth(Double.MAX_VALUE);
-        acceptableLowSoundSwitch = MacosSwitchBuilder.create().dark(darkMode).ios(true).selectedColor(accentColor).build();
-        HBox acceptableLowBox = new HBox(10, enableAcceptableLowSoundSwitch, acceptableLowLabel, acceptableLowSoundLabel, acceptableLowSoundSwitch);
+        MacosLabel acceptableLowLabel      = createLabel("Acceptable low", 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.SOMETIMES);
+        HBox acceptableLowBox = new HBox(10, enableAcceptableLowSoundSwitch, acceptableLowLabel);
         acceptableLowBox.setAlignment(Pos.CENTER_LEFT);
 
         // Acceptable high
         enableAcceptableHighSoundSwitch = MacosSwitchBuilder.create().dark(darkMode).ios(true).selectedColor(accentColor).build();
-        MacosLabel acceptableHighLabel = createLabel(translator.get(I18nKeys.SETTINGS_ACCEPTABLE_HIGH_VALUE_NOTIFICATION), 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.SOMETIMES);
-        MacosLabel acceptableHighSoundLabel = createLabel(translator.get(I18nKeys.SETTINGS_ACCEPTABLE_HIGH_VALUE_NOTIFICATION_SOUND), 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_RIGHT, Priority.ALWAYS);
-        acceptableHighSoundLabel.setMaxWidth(Double.MAX_VALUE);
-        acceptableHighSoundSwitch = MacosSwitchBuilder.create().dark(darkMode).ios(true).selectedColor(accentColor).build();
-        HBox acceptableHighBox = new HBox(10, enableAcceptableHighSoundSwitch, acceptableHighLabel, acceptableHighSoundLabel, acceptableHighSoundSwitch);
+        MacosLabel acceptableHighLabel = createLabel("Acceptable high", 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.SOMETIMES);
+        HBox acceptableHighBox = new HBox(10, enableAcceptableHighSoundSwitch, acceptableHighLabel);
         acceptableHighBox.setAlignment(Pos.CENTER_LEFT);
 
         // High
         enableHighSoundSwitch = MacosSwitchBuilder.create().dark(darkMode).ios(true).selectedColor(accentColor).build();
-        MacosLabel highLabel = createLabel(translator.get(I18nKeys.SETTINGS_HIGH_VALUE_NOTIFICATION), 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.SOMETIMES);
-        MacosLabel highSoundLabel = createLabel(translator.get(I18nKeys.SETTINGS_HIGH_VALUE_NOTIFICATION_SOUND), 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_RIGHT, Priority.ALWAYS);
-        highSoundLabel.setMaxWidth(Double.MAX_VALUE);
-        highSoundSwitch = MacosSwitchBuilder.create().dark(darkMode).ios(true).selectedColor(accentColor).build();
-        HBox highBox = new HBox(10, enableHighSoundSwitch, highLabel, highSoundLabel, highSoundSwitch);
+        MacosLabel highLabel = createLabel("High", 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.SOMETIMES);
+        HBox highBox = new HBox(10, enableHighSoundSwitch, highLabel);
         highBox.setAlignment(Pos.CENTER_LEFT);
 
-        // Too high
-        MacosLabel tooHighLabel = createLabel(translator.get(I18nKeys.SETTINGS_TOO_HIGH_VALUE_NOTIFICATION), 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.SOMETIMES);
-        MacosLabel tooHighSoundLabel = createLabel(translator.get(I18nKeys.SETTINGS_TOO_HIGH_VALUE_NOTIFICATION_SOUND), 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_RIGHT, Priority.ALWAYS);
-        tooHighSoundLabel.setMaxWidth(Double.MAX_VALUE);
-        tooHighSoundSwitch = MacosSwitchBuilder.create().dark(darkMode).ios(true).selectedColor(accentColor).build();
-        HBox tooHighBox = new HBox(10, tooHighLabel, tooHighSoundLabel, tooHighSoundSwitch);
+        MacosLabel tooHighLabel = createLabel("Too high", 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.SOMETIMES);
+        HBox tooHighBox = new HBox(10, tooHighLabel);
         tooHighBox.setAlignment(Pos.CENTER_LEFT);
 
 
@@ -1740,8 +1335,7 @@ public class Main extends Application {
         VBox.setMargin(s4, new Insets(5, 0, 5, 0));
 
 
-        // Too low interval
-        MacosLabel tooLowIntervalLabel = createLabel(translator.get(I18nKeys.SETTINGS_TOO_LOW_NOTIFICATION_INTERVAL) + "5 min", 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.SOMETIMES);
+        MacosLabel tooLowIntervalLabel = createLabel( "Too low interval: 5 min", 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.SOMETIMES);
 
         tooLowIntervalSlider = new MacosSlider();
         tooLowIntervalSlider.setDark(darkMode);
@@ -1752,10 +1346,9 @@ public class Main extends Application {
         tooLowIntervalSlider.setMinorTickCount(0);
         tooLowIntervalSlider.setMajorTickUnit(1);
         tooLowIntervalSlider.setBlockIncrement(1);
-        tooLowIntervalSlider.valueProperty().addListener((o, ov, nv) -> tooLowIntervalLabel.setText(translator.get(I18nKeys.SETTINGS_TOO_LOW_NOTIFICATION_INTERVAL) + String.format(Locale.US, "%.0f", tooLowIntervalSlider.getValue()) + " min"));
+        tooLowIntervalSlider.valueProperty().addListener((o, ov, nv) -> tooLowIntervalLabel.setText("Too low interval: " + String.format(Locale.US, "%.0f", tooLowIntervalSlider.getValue()) + " min"));
 
-        // Too high interval
-        MacosLabel tooHighIntervalLabel = createLabel(translator.get(I18nKeys.SETTINGS_TOO_HIGH_NOTIFICATION_INTERVAL) + "5 min", 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.SOMETIMES);
+        MacosLabel tooHighIntervalLabel = createLabel("Too high interval: 5 min", 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.SOMETIMES);
 
         tooHighIntervalSlider = new MacosSlider();
         tooHighIntervalSlider.setDark(darkMode);
@@ -1766,7 +1359,7 @@ public class Main extends Application {
         tooHighIntervalSlider.setMinorTickCount(0);
         tooHighIntervalSlider.setMajorTickUnit(5);
         tooHighIntervalSlider.setBlockIncrement(5);
-        tooHighIntervalSlider.valueProperty().addListener((o, ov, nv) -> tooHighIntervalLabel.setText(translator.get(I18nKeys.SETTINGS_TOO_HIGH_NOTIFICATION_INTERVAL) + String.format(Locale.US, "%.0f", tooHighIntervalSlider.getValue()) + " min"));
+        tooHighIntervalSlider.valueProperty().addListener((o, ov, nv) -> tooHighIntervalLabel.setText("Too high interval: " + String.format(Locale.US, "%.0f", tooHighIntervalSlider.getValue()) + " min"));
 
 
         MacosSeparator s5 = new MacosSeparator(Orientation.HORIZONTAL);
@@ -1774,11 +1367,11 @@ public class Main extends Application {
         VBox.setMargin(s5, new Insets(5, 0, 5, 0));
 
 
-        MacosLabel rangesLabel = new MacosLabel(translator.get(I18nKeys.SETTINGS_RANGES_TITLE));
+        MacosLabel rangesLabel = new MacosLabel("Ranges");
         rangesLabel.setDark(darkMode);
-        rangesLabel.setFont(Fonts.sfProTextBold(14));
+        rangesLabel.setFont(Fonts.configRoundedSemibold(14));
 
-        MacosLabel minAcceptableLabel = createLabel(new StringBuilder().append(translator.get(I18nKeys.SETTINGS_MIN_ACCEPTABLE)).append(String.format(Locale.US, format, (UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? Constants.DEFAULT_MIN_ACCEPTABLE : Helper.mgPerDeciliterToMmolPerLiter(Constants.DEFAULT_MIN_ACCEPTABLE)))).append(" ").append(currentUnit.UNIT.getUnitShort()).toString(), 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.SOMETIMES);
+        MacosLabel minAcceptableLabel = createLabel(new StringBuilder().append("Min acceptable ").append(String.format(Locale.US, format, (UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? Constants.DEFAULT_MIN_ACCEPTABLE : Helper.mgPerDeciliterToMmolPerLiter(Constants.DEFAULT_MIN_ACCEPTABLE)))).append(" ").append(currentUnit.UNIT.getUnitShort()).toString(), 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.SOMETIMES);
 
         minAcceptableSlider = new MacosSlider();
         minAcceptableSlider.setDark(darkMode);
@@ -1790,9 +1383,9 @@ public class Main extends Application {
         minAcceptableSlider.setMajorTickUnit(1);
         minAcceptableSlider.setBlockIncrement(1);
         minAcceptableSlider.setValue(UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? Constants.DEFAULT_MIN_ACCEPTABLE : Helper.mgPerDeciliterToMmolPerLiter(Constants.DEFAULT_MIN_ACCEPTABLE));
-        minAcceptableSlider.valueProperty().addListener((o, ov, nv) -> minAcceptableLabel.setText(new StringBuilder().append(translator.get(I18nKeys.SETTINGS_MIN_ACCEPTABLE)).append(String.format(Locale.US, format, minAcceptableSlider.getValue())).append(" ").append(currentUnit.UNIT.getUnitShort()).toString()));
+        minAcceptableSlider.valueProperty().addListener((o, ov, nv) -> minAcceptableLabel.setText(new StringBuilder().append("Min acceptable ").append(String.format(Locale.US, format, minAcceptableSlider.getValue())).append(" ").append(currentUnit.UNIT.getUnitShort()).toString()));
 
-        MacosLabel minNormalLabel = createLabel(new StringBuilder().append(translator.get(I18nKeys.SETTINGS_MIN_NORMAL)).append(String.format(Locale.US, format, (UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? Constants.DEFAULT_MIN_NORMAL : Helper.mgPerDeciliterToMmolPerLiter(Constants.DEFAULT_MIN_NORMAL)))).append(" ").append(currentUnit.UNIT.getUnitShort()).toString(), 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.SOMETIMES);
+        MacosLabel minNormalLabel = createLabel(new StringBuilder().append("Min normal ").append(String.format(Locale.US, format, (UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? Constants.DEFAULT_MIN_NORMAL : Helper.mgPerDeciliterToMmolPerLiter(Constants.DEFAULT_MIN_NORMAL)))).append(" ").append(currentUnit.UNIT.getUnitShort()).toString(), 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.SOMETIMES);
 
         minNormalSlider = new MacosSlider();
         minNormalSlider.setDark(darkMode);
@@ -1804,9 +1397,9 @@ public class Main extends Application {
         minNormalSlider.setMajorTickUnit(1);
         minNormalSlider.setBlockIncrement(1);
         minNormalSlider.setValue(UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? Constants.DEFAULT_MIN_NORMAL : Helper.mgPerDeciliterToMmolPerLiter(Constants.DEFAULT_MIN_NORMAL));
-        minNormalSlider.valueProperty().addListener((o, ov, nv) -> minNormalLabel.setText(new StringBuilder().append(translator.get(I18nKeys.SETTINGS_MIN_NORMAL)).append(String.format(Locale.US, format, minNormalSlider.getValue())).append(" ").append(currentUnit.UNIT.getUnitShort()).toString()));
+        minNormalSlider.valueProperty().addListener((o, ov, nv) -> minNormalLabel.setText(new StringBuilder().append("Min normal ").append(String.format(Locale.US, format, minNormalSlider.getValue())).append(" ").append(currentUnit.UNIT.getUnitShort()).toString()));
 
-        MacosLabel maxNormalLabel = createLabel(new StringBuilder().append(translator.get(I18nKeys.SETTINGS_MAX_NORMAL)).append(String.format(Locale.US, format, (UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? Constants.DEFAULT_MAX_NORMAL : Helper.mgPerDeciliterToMmolPerLiter(Constants.DEFAULT_MAX_NORMAL)))).append(" ").append(currentUnit.UNIT.getUnitShort()).toString(), 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.SOMETIMES);
+        MacosLabel maxNormalLabel = createLabel(new StringBuilder().append("Max normal ").append(String.format(Locale.US, format, (UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? Constants.DEFAULT_MAX_NORMAL : Helper.mgPerDeciliterToMmolPerLiter(Constants.DEFAULT_MAX_NORMAL)))).append(" ").append(currentUnit.UNIT.getUnitShort()).toString(), 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.SOMETIMES);
 
         maxNormalSlider = new MacosSlider();
         maxNormalSlider.setDark(darkMode);
@@ -1820,11 +1413,11 @@ public class Main extends Application {
         maxNormalSlider.setValue(UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? Constants.DEFAULT_MAX_NORMAL : Helper.mgPerDeciliterToMmolPerLiter(Constants.DEFAULT_MAX_NORMAL));
         maxNormalSlider.valueProperty().addListener((o, ov, nv) -> {
             maxNormalLabel.setText(new StringBuilder().append("Max normal: ").append(String.format(Locale.US, format, maxNormalSlider.getValue())).append(" ").append(currentUnit.UNIT.getUnitShort()).toString());
-            if (switchingUnits.get()) { return; }
+            if (switchingUnits) { return; }
             if (nv.doubleValue() > maxAcceptableSlider.getValue()) { maxAcceptableSlider.setValue(nv.doubleValue()); }
         });
 
-        MacosLabel maxAcceptableLabel = createLabel(new StringBuilder().append(translator.get(I18nKeys.SETTINGS_MAX_ACCEPTABLE)).append(String.format(Locale.US, format, (UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? Constants.DEFAULT_MAX_ACCEPTABLE : Helper.mgPerDeciliterToMmolPerLiter(Constants.DEFAULT_MAX_ACCEPTABLE)))).append(" ").append(currentUnit.UNIT.getUnitShort()).toString(), 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.SOMETIMES);
+        MacosLabel maxAcceptableLabel = createLabel(new StringBuilder().append("Max acceptable ").append(String.format(Locale.US, format, (UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? Constants.DEFAULT_MAX_ACCEPTABLE : Helper.mgPerDeciliterToMmolPerLiter(Constants.DEFAULT_MAX_ACCEPTABLE)))).append(" ").append(currentUnit.UNIT.getUnitShort()).toString(), 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.SOMETIMES);
 
         maxAcceptableSlider = new MacosSlider();
         maxAcceptableSlider.setDark(darkMode);
@@ -1837,14 +1430,13 @@ public class Main extends Application {
         maxAcceptableSlider.setBlockIncrement(5);
         maxAcceptableSlider.setValue(UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? Constants.DEFAULT_MAX_ACCEPTABLE : Helper.mgPerDeciliterToMmolPerLiter(Constants.DEFAULT_MAX_ACCEPTABLE));
         maxAcceptableSlider.valueProperty().addListener((o, ov, nv) -> {
-            maxAcceptableLabel.setText(new StringBuilder().append(translator.get(I18nKeys.SETTINGS_MAX_ACCEPTABLE)).append(String.format(Locale.US, format, maxAcceptableSlider.getValue())).append(" ").append(currentUnit.UNIT.getUnitShort()).toString());
-            if (switchingUnits.get()) { return; }
+            maxAcceptableLabel.setText(new StringBuilder().append("Max acceptable ").append(String.format(Locale.US, format, maxAcceptableSlider.getValue())).append(" ").append(currentUnit.UNIT.getUnitShort()).toString());
+            if (switchingUnits) { return; }
             if (nv.doubleValue() < maxNormalSlider.getValue()) { maxNormalSlider.setValue(nv.doubleValue()); }
         });
 
 
-        VBox settingsVBox = new VBox(5, nightscoutUrlBox, s1, unitBox, s2, deltaChartBox, s3,
-                                     voiceOutputBox, voiceOutputIntervalLabel, voiceOutputIntervalSlider,
+        VBox settingsVBox = new VBox(10, nightscoutUrlBox, s1, unitBox, s2, deltaChartBox, s3,
                                      notificationsLabel, tooLowBox, lowBox, acceptableLowBox, acceptableHighBox, highBox, tooHighBox, s4,
                                      tooLowIntervalLabel, tooLowIntervalSlider, tooHighIntervalLabel, tooHighIntervalSlider, s5,
                                      rangesLabel, minAcceptableLabel, minAcceptableSlider, minNormalLabel, minNormalSlider, maxNormalLabel, maxNormalSlider, maxAcceptableLabel, maxAcceptableSlider);
@@ -1869,9 +1461,86 @@ public class Main extends Application {
 
 
     // ******************** Time in Range Chart *******************************
+    private StackPane createTimeInRangePane() {
+        double pTooHigh = 0.2;
+        double pHigh    = 0.2;
+        double pNormal  = 0.2;
+        double pLow     = 0.2;
+        double pTooLow  = 0.2;
+
+        timeInRangeTitleLabel = createLabel("In target range", 24, true, false, Pos.CENTER);
+        timeInRangeTitleLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
+
+        timeInRangeTimeIntervalLabel = createLabel(currentInterval.getUiString(), 20, false, false, Pos.CENTER);
+        timeInRangeTimeIntervalLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
+
+        double columnSize  = 140;
+        timeInRangeTooHighRect = createTimeInRangeRectangle(pTooHigh, columnSize, Constants.RED);
+        timeInRangeHighRect    = createTimeInRangeRectangle(pHigh, columnSize, Constants.YELLOW);
+        timeInRangeNormalRect  = createTimeInRangeRectangle(pNormal, columnSize, Constants.GREEN);
+        timeInRangeLowRect     = createTimeInRangeRectangle(pLow, columnSize, Constants.ORANGE);
+        timeInRangeTooLowRect  = createTimeInRangeRectangle(pTooLow, columnSize, Constants.RED);
+        VBox rectBox = new VBox(timeInRangeTooHighRect, timeInRangeHighRect, timeInRangeNormalRect, timeInRangeLowRect, timeInRangeTooLowRect);
+
+        Color textFill = darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT;
+
+        timeInRangeTooHighValue     = createTimeInRangeLabel(String.format(Locale.US, "%.0f%% ", pTooHigh * 100), 20, textFill, false, Pos.CENTER_RIGHT);
+        timeInRangeTooHighValueText = createTimeInRangeLabel("Very high", 20, textFill, false, Pos.CENTER_LEFT);
+        HBox       tooHighText      = new HBox(10, timeInRangeTooHighValue, timeInRangeTooHighValueText);
+
+        timeInRangeHighValue        = createTimeInRangeLabel(String.format(Locale.US, "%.0f%% ", pHigh * 100), 20, textFill, false, Pos.CENTER_RIGHT);
+        timeInRangeHighValueText    = createTimeInRangeLabel("High", 20, textFill, false, Pos.CENTER_LEFT);
+        HBox       highText         = new HBox(10, timeInRangeHighValue, timeInRangeHighValueText);
+
+        timeInRangeNormalValue      = createTimeInRangeLabel(String.format(Locale.US, "%.0f%% ", pNormal * 100), 22, textFill, true, Pos.CENTER_RIGHT);
+        timeInRangeNormalValueText  = createTimeInRangeLabel("In target range", 22, textFill, true, Pos.CENTER_LEFT);
+        HBox       normalText       = new HBox(10, timeInRangeNormalValue, timeInRangeNormalValueText);
+
+        timeInRangeLowValue         = createTimeInRangeLabel(String.format(Locale.US, "%.0f%% ", pLow * 100), 20, textFill, false, Pos.CENTER_RIGHT);
+        timeInRangeLowValueText     = createTimeInRangeLabel("Low", 20, textFill, false, Pos.CENTER_LEFT);
+        HBox       lowText          = new HBox(10, timeInRangeLowValue, timeInRangeLowValueText);
+
+        timeInRangeTooLowValue      = createTimeInRangeLabel(String.format(Locale.US, "%.0f%% ", pTooLow * 100), 20, textFill, false, Pos.CENTER_RIGHT);
+        timeInRangeTooLowValueText  = createTimeInRangeLabel("Very low", 20, textFill, false, Pos.CENTER_LEFT);
+        HBox       tooLowText       = new HBox(10, timeInRangeTooLowValue, timeInRangeTooLowValueText);
+
+        VBox       textBox          = new VBox(5, tooHighText, highText, normalText, lowText, tooLowText);
+
+        HBox       inRangeBox       = new HBox(10, rectBox, textBox);
+        HBox.setMargin(rectBox, new Insets(0, 0, 0, 20));
+
+        MacosButton closeButton = new MacosButton("Close");
+        closeButton.setDark(darkMode);
+
+        VBox       content          = new VBox(20, timeInRangeTitleLabel, timeInRangeTimeIntervalLabel, inRangeBox, closeButton);
+        content.setAlignment(Pos.CENTER);
+        content.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, new CornerRadii(10), Insets.EMPTY)));
+
+        StackPane timeInRangePane = new StackPane(content);
+        timeInRangePane.getStylesheets().add(Main.class.getResource("glucostatus.css").toExternalForm());
+
+        timeInRangePane.setBackground(new Background(new BackgroundFill(darkMode ? Constants.DARK_BACKGROUND : Color.WHITE, new CornerRadii(10), Insets.EMPTY)));
+        timeInRangePane.setBorder(new Border(new BorderStroke(Color.rgb(78, 77, 76), BorderStrokeStyle.SOLID, new CornerRadii(10), new BorderWidths(1))));
+
+        closeButton.setOnAction(e -> {
+            timeInRangePane.setVisible(false);
+            timeInRangePane.setManaged(false);
+            vpane.setVisible(true);
+            vpane.setManaged(true);
+            dialogVisible.set(false);
+        });
+
+        return timeInRangePane;
+    }
+
     private void showTimeInRangeChart() {
         if (dialogVisible.get()) { return; }
         dialogVisible.set(true);
+        vpane.setVisible(false);
+        vpane.setManaged(false);
+        timeInRangePane.setManaged(true);
+        timeInRangePane.setVisible(true);
+
         double noOfValues = entries.size();
         double pTooHigh = (entries.stream().filter(entry -> entry.sgv() > Constants.DEFAULT_MAX_CRITICAL).count() / noOfValues);
         double pHigh    = (entries.stream().filter(entry -> entry.sgv() > PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MAX_NORMAL)).filter(entry -> entry.sgv() <= PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MAX_CRITICAL)).count() / noOfValues);
@@ -1879,112 +1548,37 @@ public class Main extends Application {
         double pLow     = (entries.stream().filter(entry -> entry.sgv() > Constants.DEFAULT_MIN_CRITICAL).filter(entry -> entry.sgv() <= PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MIN_NORMAL)).count() / noOfValues);
         double pTooLow  = (entries.stream().filter(entry -> entry.sgv() < Constants.DEFAULT_MIN_CRITICAL).count() / noOfValues);
 
-        MacosLabel titleLabel = createLabel(translator.get(I18nKeys.STATISTICS_TITLE), 24, true, false, Pos.CENTER);
         titleLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
+        
+        timeInRangeTitleLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
 
-        MacosLabel timeIntervalLabel = createLabel(currentInterval.getUiString(), 20, false, false, Pos.CENTER);
-        timeIntervalLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
+        timeInRangeTimeIntervalLabel.setText(currentInterval.getUiString());
+        timeInRangeTimeIntervalLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
 
-        double    columnSize  = 140;
-        Rectangle tooHighRect = createTimeInRangeRectangle(pTooHigh, columnSize, Constants.RED);
-        Rectangle highRect    = createTimeInRangeRectangle(pHigh, columnSize, Constants.YELLOW);
-        Rectangle normalRect  = createTimeInRangeRectangle(pNormal, columnSize, Constants.GREEN);
-        Rectangle lowRect     = createTimeInRangeRectangle(pLow, columnSize, Constants.ORANGE);
-        Rectangle tooLowRect  = createTimeInRangeRectangle(pTooLow, columnSize, Constants.RED);
-        VBox      rectBox     = new VBox(tooHighRect, highRect, normalRect, lowRect, tooLowRect);
+        timeInRangeTooHighRect.setHeight(pTooHigh * 140);
+        timeInRangeHighRect.setHeight(pHigh * 140);
+        timeInRangeNormalRect.setHeight(pNormal * 140);
+        timeInRangeLowRect.setHeight(pLow * 140);
+        timeInRangeTooLowRect.setHeight(pTooLow * 140);
 
-        Color textFill = darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT;
-
-        MacosLabel tooHighValue     = createTimeInRangeLabel(String.format(Locale.US, "%.0f%% ", pTooHigh * 100), 20, textFill, false, Pos.CENTER_RIGHT);
-        MacosLabel tooHighValueText = createTimeInRangeLabel(translator.get(I18nKeys.STATISTICS_TOO_HIGH), 20, textFill, false, Pos.CENTER_LEFT);
-        HBox       tooHighText      = new HBox(10, tooHighValue, tooHighValueText);
-
-        MacosLabel highValue        = createTimeInRangeLabel(String.format(Locale.US, "%.0f%% ", pHigh * 100), 20, textFill, false, Pos.CENTER_RIGHT);
-        MacosLabel highValueText    = createTimeInRangeLabel(translator.get(I18nKeys.STATISTICS_HIGH), 20, textFill, false, Pos.CENTER_LEFT);
-        HBox       highText         = new HBox(10, highValue, highValueText);
-
-        MacosLabel normalValue      = createTimeInRangeLabel(String.format(Locale.US, "%.0f%% ", pNormal * 100), 22, textFill, true, Pos.CENTER_RIGHT);
-        MacosLabel normalValueText  = createTimeInRangeLabel(translator.get(I18nKeys.STATISTICS_NORMAL), 22, textFill, true, Pos.CENTER_LEFT);
-        HBox       normalText       = new HBox(10, normalValue, normalValueText);
-
-        MacosLabel lowValue         = createTimeInRangeLabel(String.format(Locale.US, "%.0f%% ", pLow * 100), 20, textFill, false, Pos.CENTER_RIGHT);
-        MacosLabel lowValueText     = createTimeInRangeLabel(translator.get(I18nKeys.STATISTICS_LOW), 20, textFill, false, Pos.CENTER_LEFT);
-        HBox       lowText          = new HBox(10, lowValue, lowValueText);
-
-        MacosLabel tooLowValue      = createTimeInRangeLabel(String.format(Locale.US, "%.0f%% ", pTooLow * 100), 20, textFill, false, Pos.CENTER_RIGHT);
-        MacosLabel tooLowValueText  = createTimeInRangeLabel(translator.get(I18nKeys.STATISTICS_TOO_LOW), 20, textFill, false, Pos.CENTER_LEFT);
-        HBox       tooLowText       = new HBox(10, tooLowValue, tooLowValueText);
-
-        VBox       textBox          = new VBox(5, tooHighText, highText, normalText, lowText, tooLowText);
-
-        HBox       inRangeBox       = new HBox(10, rectBox, textBox);
-
-        VBox       content          = new VBox(20, titleLabel, timeIntervalLabel, inRangeBox);
-        content.setAlignment(Pos.CENTER);
-        content.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, new CornerRadii(10), Insets.EMPTY)));
-
-        Dialog dialog = new Dialog();
-        dialog.initOwner(stage);
-        dialog.setTitle("");
-        dialog.setHeaderText("");
-
-        DialogPane dialogPane = new DialogPane() {
-            @Override protected Node createButtonBar() {
-                ButtonBar buttonBar = (ButtonBar) super.createButtonBar();
-                buttonBar.getStyleClass().add("dialog-button-bar");
-                buttonBar.setButtonOrder(ButtonBar.BUTTON_ORDER_NONE);
-                return buttonBar;
-            }
-        };
-        dialogPane.getStylesheets().add(Main.class.getResource("glucostatus.css").toExternalForm());
-
-        dialogPane.setBackground(new Background(new BackgroundFill(darkMode ? Constants.DARK_BACKGROUND : Color.WHITE, new CornerRadii(10), Insets.EMPTY)));
-        dialogPane.setBorder(new Border(new BorderStroke(Color.rgb(78, 77, 76), BorderStrokeStyle.SOLID, new CornerRadii(10), new BorderWidths(1))));
-        dialogPane.setContent(content);
-        dialog.setDialogPane(dialogPane);
-
-        dialog.getDialogPane().getScene().setFill(Color.TRANSPARENT);
-        dialog.getDialogPane().setEffect(new DropShadow(BlurType.TWO_PASS_BOX, Color.rgb(0, 0, 0, 0.35), 10.0, 0.0, 0.0, 5));
-
-        dialog.setOnCloseRequest(e -> dialogVisible.set(false));
-        dialog.initStyle(StageStyle.TRANSPARENT);
-
-        MacosButton closeButton = new MacosButton(translator.get(I18nKeys.PATTERN_CLOSE_BUTTON));
-        closeButton.setDark(darkMode);
-        closeButton.setOnAction(e -> {
-            dialog.setResult(Boolean.TRUE);
-            dialog.close();
-        });
-        content.getChildren().add(closeButton);
-
-        Region spacer = new Region();
-        ButtonBar.setButtonData(spacer, ButtonBar.ButtonData.BIG_GAP);
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-        dialogPane.applyCss();
-        HBox hbox = (HBox) dialogPane.lookup(".container");
-        hbox.getChildren().add(spacer);
-
-        dialog.setOnShowing(e -> {
-            dialog.setX(stage.getX() + (stage.getWidth() - dialog.getDialogPane().getLayoutBounds().getWidth()) * 0.425);
-            dialog.setY(stage.getY() + (stage.getHeight() - dialog.getDialogPane().getLayoutBounds().getHeight()) * 0.425);
-        });
-        Stage dialogStage = (Stage) dialogPane.getScene().getWindow();
-        dialogStage.setAlwaysOnTop(true);
-        dialogStage.toFront();
-        dialog.showAndWait();
+        timeInRangeTooHighValue.setText(String.format(Locale.US, "%.0f%% ", pTooHigh * 100));
+        timeInRangeHighValue.setText(String.format(Locale.US, "%.0f%% ", pHigh * 100));
+        timeInRangeNormalValue.setText(String.format(Locale.US, "%.0f%% ", pNormal * 100));
+        timeInRangeLowValue.setText(String.format(Locale.US, "%.0f%% ", pLow * 100));
+        timeInRangeTooLowValue.setText(String.format(Locale.US, "%.0f%% ", pTooLow * 100));
     }
 
     private Rectangle createTimeInRangeRectangle(final double heightFactor, final double columnSize, final Color color) {
         Rectangle rect = new Rectangle(50, heightFactor * 100 < 1 ? 1 : heightFactor * columnSize, color);
         rect.setStroke(darkMode ? Constants.DARK_BACKGROUND : Constants.BRIGHT_BACKGROUND);
-        rect.setStrokeWidth(0.1);
+        rect.setStrokeWidth(0.5);
         return rect;
     }
 
     private MacosLabel createTimeInRangeLabel(final String text, final double size, final Paint color, final boolean bold, final Pos alignment) {
         MacosLabel label = new MacosLabel(text);
         label.setMinWidth(50);
-        label.setFont(bold ? Fonts.sfProTextBold(size) : Fonts.sfProTextRegular(size));
+        label.setFont(bold ? Fonts.configRoundedSemibold(size) : Fonts.configRoundedRegular(size));
         label.setTextFill(color);
         label.setAlignment(alignment);
         return label;
@@ -1992,17 +1586,58 @@ public class Main extends Application {
 
 
     // ******************** Pattern Chart *************************************
+    private StackPane createPatternChartPane() {
+        patternChartTitleLabel = createLabel("Pattern 24h", 24, true, false, Pos.CENTER);
+        patternChartTitleLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
+
+        patternChartHbac1Label = createLabel(String.format(Locale.US, "HbAc1 %.1f%% (last 30 days)", Helper.getHbA1c(allEntries, currentUnit)), 20, false, false, Pos.CENTER);
+        patternChartHbac1Label.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
+
+        patternChartZones = new ListView<>();
+        patternChartZones.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, CornerRadii.EMPTY, Insets.EMPTY)));
+        patternChartZones.setCellFactory(zoneListView -> new ZoneCell(darkMode));
+        patternChartZones.setPrefHeight(200);
+
+        patternChartCanvas = new Canvas(390, 300);
+
+        MacosButton closeButton = new MacosButton("Close");
+        closeButton.setDark(darkMode);
+
+        VBox content = new VBox(20, patternChartTitleLabel, patternChartHbac1Label, patternChartZones, patternChartCanvas, closeButton);
+        content.setAlignment(Pos.CENTER);
+        content.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, new CornerRadii(10), Insets.EMPTY)));
+
+        patternChartPane = new StackPane(content);
+        patternChartPane.getStylesheets().add(Main.class.getResource("glucostatus.css").toExternalForm());
+
+        patternChartPane.setBackground(new Background(new BackgroundFill(darkMode ? Constants.DARK_BACKGROUND : Color.WHITE, new CornerRadii(10), Insets.EMPTY)));
+        patternChartPane.setBorder(new Border(new BorderStroke(Color.rgb(78, 77, 76), BorderStrokeStyle.SOLID, new CornerRadii(10),new BorderWidths(1))));
+
+        closeButton.setOnAction(e -> {
+            patternChartPane.setVisible(false);
+            patternChartPane.setManaged(false);
+            vpane.setVisible(true);
+            vpane.setManaged(true);
+            dialogVisible.set(false);
+        });
+
+        return patternChartPane;
+    }
+
     private void showPatternChart() {
         if (dialogVisible.get()) { return; }
         dialogVisible.set(true);
+        vpane.setVisible(false);
+        vpane.setManaged(false);
+        patternChartPane.setManaged(true);
+        patternChartPane.setVisible(true);
 
-        MacosLabel titleLabel = createLabel(translator.get(I18nKeys.PATTERN_TITLE), 24, true, false, Pos.CENTER);
-        titleLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
+        patternChartTitleLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
 
-        MacosLabel hbac1Label = createLabel(String.format(Locale.US, "HbAc1 %.1f%% " + translator.get(I18nKeys.HBAC1_RANGE), Helper.getHbA1c(allEntries, currentUnit)), 20, false, false, Pos.CENTER);
-        hbac1Label.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
+        patternChartHbac1Label.setText(String.format(Locale.US, "HbAc1 %.1f%% (last 30 days)", Helper.getHbA1c(allEntries, currentUnit)));
+        patternChartHbac1Label.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
 
-        long             limit           = OffsetDateTime.now().toEpochSecond() - TimeInterval.LAST_168_HOURS.getSeconds();
+        long             limit           = Instant.now().getEpochSecond() - TimeInterval.LAST_168_HOURS.getSeconds();
         List<GlucoEntry> entriesLastWeek = allEntries.stream().filter(entry -> entry.datelong() > limit).collect(Collectors.toList());
 
         Map<LocalTime, DataPoint>        dataMap         = Statistics.analyze(entriesLastWeek);
@@ -2010,19 +1645,14 @@ public class Main extends Application {
         List<String>                     lowZones        = highAndLowZones.getA();
         List<String>                     highZones       = highAndLowZones.getB();
 
-        ListView<String> zones = new ListView<>();
-        zones.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, CornerRadii.EMPTY, Insets.EMPTY)));
-        zones.setCellFactory(zoneListView -> new ZoneCell(darkMode));
-        zones.setPrefHeight(200);
-        zones.getItems().addAll(lowZones);
-        zones.getItems().addAll(highZones);
+        patternChartZones.getItems().clear();
+        patternChartZones.getItems().addAll(lowZones);
+        patternChartZones.getItems().addAll(highZones);
 
+        GraphicsContext ctx = patternChartCanvas.getGraphicsContext2D();
 
-        Canvas          canvas = new Canvas(640, 300);
-        GraphicsContext ctx    = canvas.getGraphicsContext2D();
-
-        double width           = canvas.getWidth();
-        double height          = canvas.getHeight();
+        double width           = patternChartCanvas.getWidth();
+        double height          = patternChartCanvas.getHeight();
         double availableWidth  = (width - GRAPH_INSETS.getLeft() - GRAPH_INSETS.getRight());
         double availableHeight = (height - GRAPH_INSETS.getTop() - GRAPH_INSETS.getBottom());
 
@@ -2104,132 +1734,66 @@ public class Main extends Application {
             ctx.lineTo(x, y);
         });
         ctx.stroke();
-
-        VBox content = new VBox(20, titleLabel, hbac1Label, zones, canvas);
-        content.setAlignment(Pos.CENTER);
-        content.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, new CornerRadii(10), Insets.EMPTY)));
-
-        Dialog dialog = new Dialog();
-        dialog.setTitle("");
-        dialog.setHeaderText("");
-
-        DialogPane dialogPane = new DialogPane() {
-            @Override protected Node createButtonBar() {
-                ButtonBar buttonBar = (ButtonBar) super.createButtonBar();
-                buttonBar.getStyleClass().add("dialog-button-bar");
-                buttonBar.setButtonOrder(ButtonBar.BUTTON_ORDER_NONE);
-                return buttonBar;
-            }
-        };
-        dialogPane.getStylesheets().add(Main.class.getResource("glucostatus.css").toExternalForm());
-
-        dialogPane.setBackground(new Background(new BackgroundFill(darkMode ? Constants.DARK_BACKGROUND : Color.WHITE, new CornerRadii(10), Insets.EMPTY)));
-        dialogPane.setBorder(new Border(new BorderStroke(Color.rgb(78, 77, 76), BorderStrokeStyle.SOLID, new CornerRadii(10),new BorderWidths(1))));
-        dialogPane.setContent(content);
-        dialog.setDialogPane(dialogPane);
-
-        dialog.getDialogPane().getScene().setFill(Color.TRANSPARENT);
-        dialog.getDialogPane().setEffect(new DropShadow(BlurType.TWO_PASS_BOX, Color.rgb(0, 0, 0, 0.35), 10.0, 0.0, 0.0, 5));
-
-        MacosButton closeButton = new MacosButton(translator.get(I18nKeys.PATTERN_CLOSE_BUTTON));
-        closeButton.setDark(darkMode);
-        closeButton.setOnAction(e -> {
-            dialog.setResult(Boolean.TRUE);
-            dialog.close();
-        });
-        content.getChildren().add(closeButton);
-
-        dialog.setOnCloseRequest(e -> dialogVisible.set(false));
-        dialog.initStyle(StageStyle.TRANSPARENT);
-
-        Region spacer = new Region();
-        ButtonBar.setButtonData(spacer, ButtonBar.ButtonData.BIG_GAP);
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-        dialogPane.applyCss();
-        HBox hbox = (HBox) dialogPane.lookup(".container");
-        hbox.getChildren().add(spacer);
-
-        dialog.setOnShowing(e -> {
-            dialog.setX(stage.getX() + (stage.getWidth() - dialog.getDialogPane().getLayoutBounds().getWidth()) * 0.5);
-            dialog.setY(stage.getY() + (stage.getHeight() - dialog.getDialogPane().getLayoutBounds().getHeight()) * 0.1);
-        });
-        Stage dialogStage = (Stage) dialogPane.getScene().getWindow();
-        dialogStage.setAlwaysOnTop(true);
-        dialogStage.toFront();
-        dialog.showAndWait();
     }
 
 
     // ******************** Matrix Chart **************************************
-    private void showMatrixChart() {
-        if (dialogVisible.get()) { return; }
-        dialogVisible.set(true);
+    private StackPane createMatrixChartPane() {
+        matrixChartTitleLabel = createLabel("Last 30 days", 24, true, false, Pos.CENTER);
+        matrixChartTitleLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
 
-        MacosLabel titleLabel = createLabel(translator.get(I18nKeys.MATRIX_TITLE), 24, true, false, Pos.CENTER);
-        titleLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
+        matrixChartSubTitleLabel = createLabel("(daily average)", 16, false, false, Pos.CENTER);
+        matrixChartSubTitleLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
 
-        MacosLabel subTitleLabel = createLabel(translator.get(I18nKeys.MATRIX_SUBTITLE), 16, false, false, Pos.CENTER);
-        subTitleLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
+        matrixChartHbac1Label = createLabel(String.format(Locale.US, "HbAc1 %.1f%% (last 30 days)", Helper.getHbA1c(allEntries, currentUnit)), 20, false, false, Pos.CENTER);
+        matrixChartHbac1Label.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
 
-        MacosLabel hbac1Label = createLabel(String.format(Locale.US, "HbAc1 %.1f%% " + translator.get(I18nKeys.HBAC1_RANGE), Helper.getHbA1c(allEntries, currentUnit)), 20, false, false, Pos.CENTER);
-        hbac1Label.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
+        matrixChartThirtyDayView = new ThirtyDayView(allEntries, currentUnit);
+        matrixChartThirtyDayView.setDark(darkMode);
 
-        ThirtyDayView thirtyDayView = new ThirtyDayView(allEntries, currentUnit);
-        thirtyDayView.setDark(darkMode);
+        MacosButton closeButton = new MacosButton("Close");
+        closeButton.setDark(darkMode);
 
-        VBox content = new VBox(20, titleLabel, subTitleLabel, hbac1Label, thirtyDayView);
+        VBox content = new VBox(20, matrixChartTitleLabel, matrixChartSubTitleLabel, matrixChartHbac1Label, matrixChartThirtyDayView, closeButton);
         content.setAlignment(Pos.CENTER);
         content.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, new CornerRadii(10), Insets.EMPTY)));
 
-        Dialog dialog = new Dialog();
-        dialog.setTitle("");
-        dialog.setHeaderText("");
+        matrixChartPane = new StackPane(content);
+        matrixChartPane.getStylesheets().add(Main.class.getResource("glucostatus.css").toExternalForm());
 
-        DialogPane dialogPane = new DialogPane() {
-            @Override protected Node createButtonBar() {
-                ButtonBar buttonBar = (ButtonBar) super.createButtonBar();
-                buttonBar.getStyleClass().add("dialog-button-bar");
-                buttonBar.setButtonOrder(ButtonBar.BUTTON_ORDER_NONE);
-                return buttonBar;
-            }
-        };
-        dialogPane.getStylesheets().add(Main.class.getResource("glucostatus.css").toExternalForm());
+        matrixChartPane.setBackground(new Background(new BackgroundFill(darkMode ? Constants.DARK_BACKGROUND : Color.WHITE , new CornerRadii(10), Insets.EMPTY)));
+        matrixChartPane.setBorder(new Border(new BorderStroke(Color.rgb(78, 77, 76), BorderStrokeStyle.SOLID, new CornerRadii(10),new BorderWidths(1))));
 
-        dialogPane.setBackground(new Background(new BackgroundFill(darkMode ? Constants.DARK_BACKGROUND : Color.WHITE , new CornerRadii(10), Insets.EMPTY)));
-        dialogPane.setBorder(new Border(new BorderStroke(Color.rgb(78, 77, 76), BorderStrokeStyle.SOLID, new CornerRadii(10),new BorderWidths(1))));
-        dialogPane.setContent(content);
-        dialog.setDialogPane(dialogPane);
-
-        dialog.getDialogPane().getScene().setFill(Color.TRANSPARENT);
-        dialog.getDialogPane().setEffect(new DropShadow(BlurType.TWO_PASS_BOX, Color.rgb(0, 0, 0, 0.35), 10.0, 0.0, 0.0, 5));
-
-        dialog.setOnCloseRequest(e -> dialogVisible.set(false));
-        dialog.initStyle(StageStyle.TRANSPARENT);
-
-        MacosButton closeButton = new MacosButton(translator.get(I18nKeys.MATRIX_CLOSE_BUTTON));
-        closeButton.setDark(darkMode);
         closeButton.setOnAction(e -> {
-            dialog.setResult(Boolean.TRUE);
-            dialog.close();
+            matrixChartPane.setVisible(false);
+            matrixChartPane.setManaged(false);
+            vpane.setVisible(true);
+            vpane.setManaged(true);
+            dialogVisible.set(false);
         });
-        content.getChildren().add(closeButton);
 
-        Region spacer = new Region();
-        ButtonBar.setButtonData(spacer, ButtonBar.ButtonData.BIG_GAP);
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-        dialogPane.applyCss();
-        HBox hbox = (HBox) dialogPane.lookup(".container");
-        hbox.getChildren().add(spacer);
-
-        dialog.setOnShowing(e -> {
-            dialog.setX(stage.getX() + (stage.getWidth() - dialog.getDialogPane().getLayoutBounds().getWidth()) * 0.5);
-            dialog.setY(stage.getY() + (stage.getHeight() - dialog.getDialogPane().getLayoutBounds().getHeight()) * 0.1);
-        });
-        Stage dialogStage = (Stage) dialogPane.getScene().getWindow();
-        dialogStage.setAlwaysOnTop(true);
-        dialogStage.toFront();
-        dialog.showAndWait();
+        return matrixChartPane;
     }
+
+    private void showMatrixChart() {
+        if (dialogVisible.get()) { return; }
+        dialogVisible.set(true);
+        vpane.setVisible(false);
+        vpane.setManaged(false);
+        matrixChartPane.setManaged(true);
+        matrixChartPane.setVisible(true);
+
+        matrixChartTitleLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
+
+        matrixChartSubTitleLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
+
+        matrixChartHbac1Label.setText(String.format(Locale.US, "HbAc1 %.1f%% (last 30 days)", Helper.getHbA1c(allEntries, currentUnit)));
+        matrixChartHbac1Label.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
+
+        matrixChartThirtyDayView.setEntries(allEntries, currentUnit);
+        matrixChartThirtyDayView.setDark(darkMode);
+    }
+
 
 
     public static void main(String[] args) {

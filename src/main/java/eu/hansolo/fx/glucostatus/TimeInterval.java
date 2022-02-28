@@ -18,9 +18,6 @@
 
 package eu.hansolo.fx.glucostatus;
 
-import eu.hansolo.fx.glucostatus.i18n.I18nKeys;
-import eu.hansolo.fx.glucostatus.i18n.Translator;
-
 import java.time.format.DateTimeFormatter;
 
 
@@ -34,7 +31,6 @@ public enum TimeInterval {
     LAST_6_HOURS(72, 6, 21600, DateTimeFormatter.ofPattern("HH:mm")),
     LAST_3_HOURS(36, 3, 10800, DateTimeFormatter.ofPattern("HH:mm"));
 
-    private final Translator        translator = new Translator(I18nKeys.RESOURCE_NAME);
     private final int               noOfEntries;
     private final int               hours;
     private final long              seconds;
@@ -53,15 +49,15 @@ public enum TimeInterval {
     // ******************** Methods *******************************************
     public String getUiString() {
         switch(this) {
-            case LAST_720_HOURS -> { return translator.get(I18nKeys.TIME_RANGE_720_HOURS); }
-            case LAST_168_HOURS -> { return translator.get(I18nKeys.TIME_RANGE_168_HOURS); }
-            case LAST_72_HOURS  -> { return translator.get(I18nKeys.TIME_RANGE_72_HOURS);  }
-            case LAST_48_HOURS  -> { return translator.get(I18nKeys.TIME_RANGE_48_HOURS);  }
-            case LAST_24_HOURS  -> { return translator.get(I18nKeys.TIME_RANGE_24_HOURS);  }
-            case LAST_12_HOURS  -> { return translator.get(I18nKeys.TIME_RANGE_12_HOURS);  }
-            case LAST_6_HOURS   -> { return translator.get(I18nKeys.TIME_RANGE_6_HOURS);   }
-            case LAST_3_HOURS   -> { return translator.get(I18nKeys.TIME_RANGE_3_HOURS);   }
-            default             -> { return ""; }
+            case LAST_720_HOURS: { return "30 d"; }
+            case LAST_168_HOURS: { return "7 d"; }
+            case LAST_72_HOURS : { return "72 h";  }
+            case LAST_48_HOURS : { return "48 h";  }
+            case LAST_24_HOURS : { return "24 h";  }
+            case LAST_12_HOURS : { return "12 h";  }
+            case LAST_6_HOURS  : { return "6 h";   }
+            case LAST_3_HOURS  : { return "3 h";   }
+            default            : { return ""; }
         }
     }
 

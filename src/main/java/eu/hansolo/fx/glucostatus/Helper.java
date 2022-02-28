@@ -22,8 +22,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import eu.hansolo.fx.glucostatus.Records.DataPoint;
-import eu.hansolo.fx.glucostatus.Records.GlucoEntry;
 import eu.hansolo.fx.glucostatus.Statistics.StatisticCalculation;
 import eu.hansolo.fx.glucostatus.Statistics.StatisticRange;
 import eu.hansolo.toolbox.tuples.Pair;
@@ -95,23 +93,23 @@ public class Helper {
         final Gson      gson      = new Gson();
         final JsonArray jsonArray = gson.fromJson(jsonText, JsonArray.class);
         for (JsonElement jsonElement : jsonArray) {
-            JsonObject     json       = jsonElement.getAsJsonObject();
-            String         id         = json.get(FIELD_ID).getAsString();
-            double         sgv        = json.has(FIELD_SGV)         ? json.get(FIELD_SGV).getAsDouble()                      : 0;
-            long           datelong   = json.has(FIELD_DATE)        ? json.get(FIELD_DATE).getAsLong() / 1000                : 0;
+            JsonObject json       = jsonElement.getAsJsonObject();
+            String     id         = json.get(FIELD_ID).getAsString();
+            double     sgv        = json.has(FIELD_SGV)         ? json.get(FIELD_SGV).getAsDouble()                      : 0;
+            long       datelong   = json.has(FIELD_DATE)        ? json.get(FIELD_DATE).getAsLong() / 1000                : 0;
             OffsetDateTime date       = OffsetDateTime.ofInstant(Instant.ofEpochSecond(datelong), ZoneId.systemDefault());
-            String         dateString = json.has(FIELD_DATE_STRING) ? json.get(FIELD_DATE_STRING).getAsString()              : "";
-            Trend          trend      = json.has(FIELD_TREND)       ? Trend.getFromText(json.get(FIELD_TREND).getAsString()) : Trend.NONE;
-            String         direction  = json.has(FIELD_DIRECTION)   ? json.get(FIELD_DIRECTION).getAsString()                : "";
-            String         device     = json.has(FIELD_DEVICE)      ? json.get(FIELD_DEVICE).getAsString()                   : "";
-            String         type       = json.has(FIELD_TYPE)        ? json.get(FIELD_TYPE).getAsString()                     : "";
-            int            utcOffset  = json.has(FIELD_UTC_OFFSET)  ? json.get(FIELD_UTC_OFFSET).getAsInt()                  : 0;
-            int            noise      = json.has(FIELD_NOISE)       ? json.get(FIELD_NOISE).getAsInt()                       : 0;
-            double         filtered   = json.has(FIELD_FILTERED)    ? json.get(FIELD_FILTERED).getAsDouble()                 : 0;
-            double         unfiltered = json.has(FIELD_UNFILTERED)  ? json.get(FIELD_UNFILTERED).getAsDouble()               : 0;
-            int            rssi       = json.has(FIELD_RSSI)        ? json.get(FIELD_RSSI).getAsInt()                        : 0;
-            double         delta      = json.has(FIELD_DELTA)       ? json.get(FIELD_DELTA).getAsDouble()                    : 0;
-            String         sysTime    = json.has(FIELD_SYS_TIME)    ? json.get(FIELD_SYS_TIME).getAsString()                 : "";
+            String     dateString = json.has(FIELD_DATE_STRING) ? json.get(FIELD_DATE_STRING).getAsString()              : "";
+            Trend      trend      = json.has(FIELD_TREND)       ? Trend.getFromText(json.get(FIELD_TREND).getAsString()) : Trend.NONE;
+            String     direction  = json.has(FIELD_DIRECTION)   ? json.get(FIELD_DIRECTION).getAsString()                : "";
+            String     device     = json.has(FIELD_DEVICE)      ? json.get(FIELD_DEVICE).getAsString()                   : "";
+            String     type       = json.has(FIELD_TYPE)        ? json.get(FIELD_TYPE).getAsString()                     : "";
+            int        utcOffset  = json.has(FIELD_UTC_OFFSET)  ? json.get(FIELD_UTC_OFFSET).getAsInt()                  : 0;
+            int        noise      = json.has(FIELD_NOISE)       ? json.get(FIELD_NOISE).getAsInt()                       : 0;
+            double     filtered   = json.has(FIELD_FILTERED)    ? json.get(FIELD_FILTERED).getAsDouble()                 : 0;
+            double     unfiltered = json.has(FIELD_UNFILTERED)  ? json.get(FIELD_UNFILTERED).getAsDouble()               : 0;
+            int        rssi       = json.has(FIELD_RSSI)        ? json.get(FIELD_RSSI).getAsInt()                        : 0;
+            double     delta      = json.has(FIELD_DELTA)       ? json.get(FIELD_DELTA).getAsDouble()                    : 0;
+            String     sysTime    = json.has(FIELD_SYS_TIME)    ? json.get(FIELD_SYS_TIME).getAsString()                 : "";
             entries.add(new GlucoEntry(id, sgv, datelong, date, dateString, trend, direction, device, type, utcOffset, noise, filtered, unfiltered, rssi, delta, sysTime));
         }
         return entries;
@@ -158,14 +156,14 @@ public class Helper {
         double hba1c   = 0;
         if (!entries.isEmpty()) {
             switch(unitDefinition) {
-                case MILLIMOL_PER_LITER ->  {
+                case MILLIMOL_PER_LITER :
                     average = mgPerDeciliterToMmolPerLiter(entries.stream().map(entry -> entry.sgv()).reduce(0.0, Double::sum).doubleValue() / entries.size());
                     hba1c   = (2.59 + average) / 1.59;
-                }
-                default -> {
+                    break;
+                default:
                     average = entries.stream().map(entry -> entry.sgv()).reduce(0.0, Double::sum).doubleValue() / entries.size();
                     hba1c   = (46.7 + average) / 28.7;
-                }
+                    break;
             }
         }
         return hba1c;
@@ -177,7 +175,7 @@ public class Helper {
         List<Point>     minPoints          = new ArrayList<>();
         List<Point>     maxPoints          = new ArrayList<>();
         switch(range) {
-            case MIN_MAX -> {
+            case MIN_MAX:
                 // Collect all max values
                 for (LocalTime key : sortedKeys) {
                     double x = key.getHour() * 60.0 + key.getMinute();
@@ -190,8 +188,8 @@ public class Helper {
                     double y = dataMap.get(key).minValue();
                     minPoints.add(new Point(x, y));
                 }
-            }
-            case TEN_TO_NINETY -> {
+                break;
+            case TEN_TO_NINETY:
                 // Collect all max values
                 for (LocalTime key : sortedKeys) {
                     double x = key.getHour() * 60.0 + key.getMinute();
@@ -204,8 +202,8 @@ public class Helper {
                     double y = dataMap.get(key).percentile10();
                     minPoints.add(new Point(x, y));
                 }
-            }
-            case TWENTY_FIVE_TO_SEVENTY_FIVE -> {
+                break;
+            case TWENTY_FIVE_TO_SEVENTY_FIVE:
                 // Collect all max values
                 for (LocalTime key : sortedKeys) {
                     double x = key.getHour() * 60.0 + key.getMinute();
@@ -218,7 +216,7 @@ public class Helper {
                     double y = dataMap.get(key).percentile25();
                     minPoints.add(new Point(x, y));
                 }
-            }
+                break;
         }
         if (smoothed) {
             maxPoints = HelperFX.subdividePoints(maxPoints, 3);
@@ -231,20 +229,20 @@ public class Helper {
         List<LocalTime> sortedKeys = dataMap.keySet().stream().sorted().collect(Collectors.toList());
         List<Point>     avgPoints  = new LinkedList<>();
         switch(calculation) {
-            case AVERAGE -> {
+            case AVERAGE:
                 for (LocalTime key : sortedKeys) {
                     double x = key.getHour() * 60.0 + key.getMinute();
                     double y = dataMap.get(key).avgValue();
                     avgPoints.add(new Point(x, y));
                 }
-            }
-            case MEDIAN -> {
+                break;
+            case MEDIAN:
                 for (LocalTime key : sortedKeys) {
                     double x = key.getHour() * 60.0 + key.getMinute();
                     double y = dataMap.get(key).median();
                     avgPoints.add(new Point(x, y));
                 }
-            }
+                break;
         }
         if (smoothed) {
             avgPoints = HelperFX.subdividePoints(avgPoints, 3);
@@ -261,7 +259,7 @@ public class Helper {
 
         final Canvas          canvas = new Canvas(width, height);
         final GraphicsContext ctx    = canvas.getGraphicsContext2D();
-        ctx.setFont(Fonts.sfProRoundedRegular(fontSize));
+        ctx.setFont(Fonts.configRoundedRegular(fontSize));
         ctx.setTextAlign(TextAlignment.CENTER);
         ctx.setFill(color);
         ctx.fillText(text, x, y);

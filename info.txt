@@ -1,0 +1,5 @@
+ mvn -Pios gluonfx:build
+
+ mvn -Pios gluonfx:package
+
+ mvn -Pios gluonfx:install

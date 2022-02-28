@@ -55,7 +55,7 @@ public enum Status {
 
     public static final Status getByValue(final UnitDefinition unit, final double value) {
         switch(unit) {
-            case MILLIMOL_PER_LITER -> {
+            case MILLIMOL_PER_LITER:
                 if (value <= Helper.mgPerDeciliterToMmolPerLiter(PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MIN_CRITICAL))) {
                     return TOO_LOW;
                 } else if (Helper.mgPerDeciliterToMmolPerLiter(PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MIN_CRITICAL)) <= value && value < Helper.mgPerDeciliterToMmolPerLiter(PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MIN_ACCEPTABLE))) {
@@ -73,8 +73,7 @@ public enum Status {
                 } else {
                     return NONE;
                 }
-            }
-            default -> {
+            default:
                 if (value <= PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MIN_CRITICAL)) {
                     return TOO_LOW;
                 } else if (PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MIN_CRITICAL) <= value && value < PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MIN_ACCEPTABLE)) {
@@ -92,7 +91,6 @@ public enum Status {
                 } else {
                     return NONE;
                 }
-            }
         }
     }
 }

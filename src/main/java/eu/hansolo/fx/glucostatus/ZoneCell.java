@@ -33,7 +33,7 @@ public class ZoneCell extends ListCell<String> {
     public ZoneCell(final boolean darkMode) {
         zoneLabel = new Label();
         zoneLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
-        zoneLabel.setFont(Fonts.sfProTextRegular(12));
+        zoneLabel.setFont(Fonts.configRoundedRegular(12));
         zoneLabel.setAlignment(Pos.CENTER);
         zoneLabel.setTextAlignment(TextAlignment.CENTER);
         zoneLabel.setContentDisplay(ContentDisplay.CENTER);

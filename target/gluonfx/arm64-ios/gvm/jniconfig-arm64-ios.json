@@ -1,0 +1,625 @@
+[
+  {
+    "name" : "eu.hansolo.fx.glucostatus.Main"
+  }
+,
+  {
+    "name":"java.io.File",
+    "methods":[{"name":"<init>","parameterTypes":["java.lang.String"] }]
+  }
+,
+  {
+    "name" : "java.io.FileNotFoundException",
+    "methods":[{"name":"<init>","parameterTypes":["java.lang.String","java.lang.String"] }]
+  }
+,
+  {
+    "name" : "java.io.InputStream",
+    "methods" : [
+      {"name":"read","parameterTypes":["byte[]","int","int"] },
+      {"name":"skip","parameterTypes":["long"] }
+    ]
+  }
+,
+  {
+    "name" : "java.lang.Boolean",
+    "methods" : [
+      {"name":"booleanValue","parameterTypes":[] }
+    ]
+  }
+,
+  {
+    "name" : "java.lang.Class",
+    "methods" : [
+      {"name":"forName","parameterTypes":["java.lang.String", "boolean", "java.lang.ClassLoader"] },
+      {"name":"getCanonicalName","parameterTypes":[] },
+      {"name":"getFields","parameterTypes":[] },
+      {"name":"getMethods","parameterTypes":[] },
+      {"name":"getName","parameterTypes":[] },
+      {"name":"isArray","parameterTypes":[] }
+    ]
+  }
+,
+  {
+    "name" : "java.lang.ClassNotFoundException",
+    "methods":[{"name":"<init>","parameterTypes":["java.lang.String"] }]
+  }
+,
+  {
+    "name" : "java.lang.IllegalStateException"
+  }
+,
+  {
+    "name" : "java.lang.Integer",
+    "methods" : [
+      {"name":"<init>","parameterTypes":["int"] },
+      {"name":"intValue","parameterTypes":[] }
+    ]
+  }
+,
+  {
+    "name" : "java.lang.Iterable",
+    "methods" : [
+      {"name":"iterator","parameterTypes":[] }
+    ]
+  }
+,
+  {
+    "name" : "java.lang.Long",
+    "methods" : [
+      {"name":"longValue","parameterTypes":[] }
+    ]
+  }
+,
+  {
+    "name":"java.lang.Number"
+  }
+,
+  {
+    "name":"java.lang.Object",
+    "methods":[{"name":"getClass","parameterTypes":[] }]
+  }
+,
+  {
+    "name":"java.lang.reflect.Method",
+    "methods":[
+      {"name":"getModifiers","parameterTypes":[] },
+      {"name":"getName","parameterTypes":[] },
+      {"name":"getParameterTypes","parameterTypes":[] },
+      {"name":"getReturnType","parameterTypes":[] }
+    ]
+  }
+,
+  {
+    "name" : "java.lang.Runnable",
+    "methods" : [
+      {"name":"run","parameterTypes":[] }
+    ]
+  }
+,
+  {
+    "name" : "java.lang.String",
+    "methods" : [
+      {"name":"<init>","parameterTypes":["byte[]"] },
+      {"name":"<init>","parameterTypes":["byte[]","java.lang.String"] },
+      {"name":"concat","parameterTypes":["java.lang.String"] },
+      {"name":"getBytes","parameterTypes":["java.lang.String"] },
+      {"name":"toLowerCase","parameterTypes":["java.util.Locale"] },
+      {"name":"toUpperCase","parameterTypes":["java.util.Locale"] }
+    ]
+  }
+,
+  {
+    "name": "java.lang.String[]"
+  }
+,
+  {
+    "name" : "java.lang.Throwable",
+    "methods" : [
+      {"name":"getMessage","parameterTypes":[] }
+    ]
+  }
+,
+  {
+    "name" : "java.net.SocketTimeoutException"
+  }
+,
+  {
+    "name" : "java.nio.ByteBuffer",
+    "methods" : [
+      {"name":"array","parameterTypes":[] },
+      {"name":"wrap","parameterTypes":["byte[]"] }
+    ]
+  }
+,
+  {
+    "name" : "java.nio.charset.Charset"
+  }
+,
+  {
+    "name" : "java.util.ArrayList",
+    "methods" : [
+      {"name":"<init>","parameterTypes":[] },
+      {"name":"<init>","parameterTypes":["int"] },
+      {"name":"add","parameterTypes":["java.lang.Object"] },
+      {"name":"get","parameterTypes":["int"] }
+    ]
+  }
+,
+  {
+    "name" : "java.util.HashMap",
+    "methods" : [
+      {"name":"get","parameterTypes":["java.lang.Object"] },
+      {"name":"containsKey","parameterTypes":["java.lang.Object"] },
+      {"name":"keySet","parameterTypes":[] },
+      {"name":"put","parameterTypes":["java.lang.Object","java.lang.Object"] }
+    ]
+  }
+,
+  {
+    "name" : "java.util.HashSet",
+    "methods" : [
+      {"name":"<init>","parameterTypes":[] }
+    ]
+  }
+,
+  {
+    "name" : "java.util.Iterator",
+    "methods" : [
+      {"name":"hasNext","parameterTypes":[] },
+      {"name":"next","parameterTypes":[] }
+    ]
+  }
+,
+  {
+    "name" : "java.util.List",
+    "methods" : [
+      {"name":"add","parameterTypes":["java.lang.Object"] },
+      {"name":"get","parameterTypes":["int"] }
+    ]
+  }
+,
+  {
+    "name" : "java.util.Map",
+    "methods" : [
+      {"name":"get","parameterTypes":["java.lang.Object"] },
+      {"name":"containsKey","parameterTypes":["java.lang.Object"] },
+      {"name":"keySet","parameterTypes":[] }
+    ]
+  }
+,
+  {
+    "name" : "java.util.Set",
+    "methods" : [
+      {"name":"add","parameterTypes":["java.lang.Object"] },
+      {"name":"toArray","parameterTypes":["java.lang.Object[]"] },
+      {"name":"size","parameterTypes":[] }
+    ]
+  }
+,
+  {
+    "name":"java.io.FileDescriptor",
+    "fields":[{"name":"fd"}]
+  }
+,
+  {
+    "name":"java.net.AbstractPlainSocketImpl",
+    "fields":[
+      {"name":"closePending"},
+      {"name":"fdLock"},
+      {"name":"timeout"},
+      {"name":"trafficClass"}
+    ]
+  }
+,
+  {
+    "name":"java.net.Inet4Address",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  }
+,
+  {
+    "name":"java.net.Inet6Address",
+    "methods":[{"name":"<init>","parameterTypes":[] }],
+    "fields":[
+      {"name":"holder6"}
+    ]
+  }
+,
+  {
+    "name":"java.net.Inet6Address$Inet6AddressHolder",
+    "fields":[
+      {"name":"ipaddress"},
+      {"name":"scope_id"},
+      {"name":"scope_id_set"},
+      {"name":"scope_ifname"}
+    ]
+  }
+,
+  {
+    "name":"java.net.InetAddress",
+    "fields":[
+      {"name":"holder"},
+      {"name":"preferIPv6Address"}
+    ]
+  }
+,
+  {
+    "name":"java.net.InetAddress$InetAddressHolder",
+    "fields":[
+      {"name":"address"},
+      {"name":"family"},
+      {"name":"hostName"},
+      {"name":"originalHostName"}
+    ]
+  }
+,
+  {
+    "name":"java.net.InterfaceAddress",
+    "methods":[{"name":"<init>","parameterTypes":[] }],
+    "fields":[
+      {"name":"address"},
+      {"name":"broadcast"},
+      {"name":"maskLength"}
+    ]
+  }
+,
+  {
+    "name":"java.net.NetworkInterface",
+    "methods":[{"name":"<init>","parameterTypes":[] }],
+    "fields":[
+      {"name":"addrs"},
+      {"name":"bindings"},
+      {"name":"childs"},
+      {"name":"defaultIndex"},
+      {"name":"displayName"},
+      {"name":"index"},
+      {"name":"name"},
+      {"name":"parent"},
+      {"name":"virtual"}
+    ]
+  }
+,
+  {
+    "name":"java.net.SocketException"
+  }
+,
+  {
+    "name":"java.net.SocketImpl",
+    "fields":[
+      {"name":"address"},
+      {"name":"fd"},
+      {"name":"localport"},
+      {"name":"port"}
+    ]
+  }
+,
+  {
+    "name":"sun.nio.ch.FileChannelImpl",
+    "fields":[{"name":"fd"}]
+  }
+,
+  {
+    "name" : "com.gluonhq.attach.display.impl.IOSDisplayService",
+    "methods":[{"name":"notifyDisplay","parameterTypes":["java.lang.String"] }]
+  }
+,
+  {
+    "name" : "com.gluonhq.attach.lifecycle.impl.IOSLifecycleService",
+    "methods":[{"name":"setEvent","parameterTypes":["java.lang.String"] }]
+  }
+,
+  {
+    "name" : "com.gluonhq.attach.runtimeargs.impl.IOSRuntimeArgsService",
+    "methods":[{"name":"processRuntimeArgs","parameterTypes":["java.lang.String","java.lang.String"] }]
+  }
+,
+  {
+    "name" : "com.sun.glass.ui.ios.IosApplication",
+    "methods" : [
+      {"name":"setEventThread","parameterTypes":[] }
+    ]
+  }
+,
+  {
+    "name" : "com.sun.glass.ui.ios.IosCursor"
+  }
+,
+  {
+    "name" : "com.sun.glass.ui.ios.IosGestureSupport",
+    "methods" : [
+      {"name":"rotateGesturePerformed","parameterTypes":["com.sun.glass.ui.View","int","int","int","int","int","float"] },
+      {"name":"scrollGesturePerformed","parameterTypes":["com.sun.glass.ui.View","int","boolean","float","float","float","float","float","float"] },
+      {"name":"swipeGesturePerformed","parameterTypes":["com.sun.glass.ui.View","int","int","int","int","int","int"] },
+      {"name":"magnifyGesturePerformed","parameterTypes":["com.sun.glass.ui.View","int","int","int","int","int","float"] },
+      {"name":"gestureFinished","parameterTypes":["com.sun.glass.ui.View","int","int","int","int","int"] },
+      {"name":"notifyBeginTouchEvent","parameterTypes":["com.sun.glass.ui.View","int","int"] },
+      {"name":"notifyNextTouchEvent","parameterTypes":["com.sun.glass.ui.View","int","long","float","float"] },
+      {"name":"notifyEndTouchEvent","parameterTypes":["com.sun.glass.ui.View"] }
+    ]
+  }
+,
+  {
+    "name" : "com.sun.glass.ui.ios.IosMenuBarDelegate"
+  }
+,
+  {
+    "name" : "com.sun.glass.ui.ios.IosPixels"
+  }
+,
+  {
+    "name" : "com.sun.glass.ui.ios.IosView",
+    "methods": [{"name":"notifyUnicode","parameterTypes":["int","int","int","int"] }],
+    "fields" : [
+      {"name":"nativePtr" }
+    ]
+  }
+,
+  {
+    "name" : "com.sun.glass.ui.ios.IosWindow"
+  }
+,
+  {
+    "name" : "java.util.Vector",
+    "methods" : [
+      {"name":"addElement","parameterTypes":["java.lang.Object"] }
+    ]
+  }
+,
+  {
+    "name" : "java.lang.Thread",
+    "methods" : [
+      {"name":"currentThread","parameterTypes":[] },
+      {"name":"setContextClassLoader","parameterTypes":["java.lang.ClassLoader"] },
+      {"name":"getContextClassLoader","parameterTypes":[] }
+    ]
+  }
+,
+  {
+    "name" : "com.sun.javafx.font.coretext.CGAffineTransform",
+    "methods" : [
+      {"name":"<init>","parameterTypes":[] }
+    ],
+    "fields" : [
+      {"name":"a" },
+      {"name":"b" },
+      {"name":"c" },
+      {"name":"d" },
+      {"name":"tx" },
+      {"name":"ty" }
+    ]
+  }
+,
+  {
+    "name" : "com.sun.javafx.font.coretext.CGPoint",
+    "methods" : [
+      {"name":"<init>","parameterTypes":[] }
+    ],
+    "fields" : [
+      {"name":"x" },
+      {"name":"y" }
+    ]
+  }
+,
+  {
+    "name" : "com.sun.javafx.font.coretext.CGRect",
+    "methods" : [
+      {"name":"<init>","parameterTypes":[] }
+    ],
+    "fields" : [
+      {"name":"origin" },
+      {"name":"size" }
+    ]
+  }
+,
+  {
+    "name" : "com.sun.javafx.font.coretext.CGSize",
+    "methods" : [
+      {"name":"<init>","parameterTypes":[] }
+    ],
+    "fields" : [
+      {"name":"width" },
+      {"name":"height" }
+    ]
+  }
+,
+  {
+    "name" : "com.sun.javafx.iio.ios.IosImageLoader",
+    "methods" : [
+      {"name":"setInputParameters","parameterTypes":["int","int","int","int"] },
+      {"name":"updateProgress","parameterTypes":["float"] }
+    ]
+  }
+,
+  {
+    "name" : "com.sun.glass.ui.Application",
+    "methods" : [
+      {"name":"notifyWillFinishLaunching","parameterTypes":[] },
+      {"name":"notifyDidFinishLaunching","parameterTypes":[] },
+      {"name":"notifyWillBecomeActive","parameterTypes":[] },
+      {"name":"notifyDidBecomeActive","parameterTypes":[] },
+      {"name":"notifyWillResignActive","parameterTypes":[] },
+      {"name":"notifyDidResignActive","parameterTypes":[] },
+      {"name":"notifyDidReceiveMemoryWarning","parameterTypes":[] },
+      {"name":"notifyWillHide","parameterTypes":[] },
+      {"name":"notifyDidHide","parameterTypes":[] },
+      {"name":"notifyWillUnhide","parameterTypes":[] },
+      {"name":"notifyDidUnhide","parameterTypes":[] },
+      {"name":"notifyOpenFiles","parameterTypes":["java.lang.String[]"] },
+      {"name":"notifyThemeChanged","parameterTypes":["java.lang.String"] },
+      {"name":"notifyWillQuit","parameterTypes":[] },
+      {"name":"createPixels","parameterTypes":["int", "int", "int[]", "float", "float"] },
+      {"name":"getScaleFactor","parameterTypes":["int", "int", "int", "int"] },
+      {"name":"reportException","parameterTypes":["java.lang.Throwable"] },
+      {"name":"enterNestedEventLoop","parameterTypes":[] },
+      {"name":"leaveNestedEventLoop","parameterTypes":["java.lang.Object"] },
+      {"name":"GetApplication","parameterTypes":[] },
+      {"name":"getName","parameterTypes":[] },
+      {"name":"setName","parameterTypes":["java.lang.String"] }
+    ]
+  }
+,
+  {
+    "name" : "com.sun.glass.ui.Clipboard",
+    "methods" : [
+      {"name":"contentChanged","parameterTypes":[] }
+    ]
+  }
+,
+  {
+    "name" : "com.sun.glass.ui.Cursor",
+    "methods" : [
+      { "name" : "getNativeCursor", "parameterTypes" : [] },
+      { "name" : "getType", "parameterTypes" : [] }
+    ],
+    "fields" : [
+      {"name":"ptr" }
+    ]
+  }
+,
+  {
+    "name" : "com.sun.glass.ui.Menu",
+    "methods" : [
+      {"name":"notifyMenuOpening","parameterTypes":[] },
+      {"name":"notifyMenuClosed","parameterTypes":[] }
+    ]
+  }
+,
+  {
+    "name" : "com.sun.glass.ui.MenuItem$Callback",
+    "methods" : [
+      {"name":"action","parameterTypes":[] },
+      {"name":"validate","parameterTypes":[] }
+    ]
+  }
+,
+  {
+    "name" : "com.sun.glass.ui.Pixels",
+    "methods" : [
+      {"name":"attachData","parameterTypes":["long"] },
+      {"name":"<init>","parameterTypes":["int","int","java.nio.ByteBuffer"] }
+    ],
+    "fields" : [
+      {"name":"ints" },
+      {"name":"bytes" },
+      {"name":"width" },
+      {"name":"height" }
+    ]
+  }
+,
+  {
+    "name" : "com.sun.glass.ui.Screen",
+    "methods" : [
+      {"name":"<init>","parameterTypes":["long","int","int","int","int","int","int","int","int","int","int","int","int","int","int","int","float","float","float","float"] },
+      {"name":"notifySettingsChanged","parameterTypes":[] }
+    ]
+  }
+,
+  {
+    "name" : "com.sun.glass.ui.Size",
+    "methods" : [
+      {"name":"<init>","parameterTypes":[] },
+      {"name":"<init>","parameterTypes":["int","int"] }
+    ]
+  }
+,
+  {
+    "name" : "com.sun.glass.ui.View",
+    "methods" : [
+      {"name":"notifyView","parameterTypes":["int"] },
+      {"name":"notifyResize","parameterTypes":["int","int"] },
+      {"name":"notifyRepaint","parameterTypes":["int","int","int","int"] },
+      {"name":"notifyMenu","parameterTypes":["int","int","int","int","boolean"] },
+      {"name":"notifyMouse","parameterTypes":["int","int","int","int","int","int","int","boolean","boolean"] },
+      {"name":"notifyDragEnter","parameterTypes":["int","int","int","int","int"] },
+      {"name":"notifyDragOver","parameterTypes":["int","int","int","int","int"] },
+      {"name":"notifyDragLeave","parameterTypes":[] },
+      {"name":"notifyDragDrop","parameterTypes":["int","int","int","int","int"] },
+      {"name":"notifyDragEnd","parameterTypes":["int"] },
+      {"name":"notifyScroll","parameterTypes":["int","int","int","int","double","double","int","int","int","int","int","double","double"] },
+      {"name":"notifyKey","parameterTypes":["int","int","char[]","int"] },
+      {"name":"notifyInputMethod","parameterTypes":["java.lang.String","int[]","int[]","byte[]","int","int","int"] },
+      {"name":"notifyInputMethodCandidatePosRequest","parameterTypes":["int"] },
+      {"name":"getWidth","parameterTypes":[]},
+      {"name":"getHeight","parameterTypes":[]},
+      {"name":"getAccessible","parameterTypes":[] }
+    ],
+    "fields" : [
+      {"name":"ptr" },
+      {"name":"window" },
+      {"name":"width" },
+      {"name":"height" }
+    ]
+  }
+,
+  {
+    "name" : "com.sun.glass.ui.Window",
+    "methods" : [
+      {"name":"notifyMove","parameterTypes":["int","int"] },
+      {"name":"notifyResize","parameterTypes":["int","int","int"] },
+      {"name":"notifyScaleChanged","parameterTypes":["float","float","float","float"] },
+      {"name":"notifyClose","parameterTypes":[] },
+      {"name":"notifyFocus","parameterTypes":["int"] },
+      {"name":"notifyFocusUngrab","parameterTypes":[] },
+      {"name":"notifyFocusDisabled","parameterTypes":[] },
+      {"name":"notifyDestroy","parameterTypes":[] },
+      {"name":"notifyDelegatePtr","parameterTypes":["long"] },
+      {"name":"notifyMoveToAnotherScreen","parameterTypes":["com.sun.glass.ui.Screen"] },
+      {"name":"notifyLevelChanged","parameterTypes":["int"] },
+      {"name":"isEnabled","parameterTypes":[] }
+    ],
+    "fields" : [
+      {"name":"ptr" },
+      {"name":"view" },
+      {"name":"x" },
+      {"name":"y" },
+      {"name":"width" },
+      {"name":"height" }
+    ]
+  }
+,
+  {
+    "name" : "com.sun.javafx.geom.Path2D",
+    "methods" : [
+      {"name":"<init>","parameterTypes":["int","byte[]","int","float[]","int"] }
+    ]
+  }
+,
+  {
+    "name" : "com.sun.glass.ui.CommonDialogs",
+    "methods" : [
+      {"name":"createFileChooserResult","parameterTypes":["java.lang.String[]","com.sun.glass.ui.CommonDialogs$ExtensionFilter[]","int"] }
+    ]
+  }
+,
+  {
+    "name" : "com.sun.glass.ui.CommonDialogs$ExtensionFilter",
+    "methods" : [
+      {"name":"getDescription","parameterTypes":[] },
+      {"name":"extensionsToArray","parameterTypes":[] }
+    ]
+  }
+,
+  {
+    "name" : "com.sun.glass.ui.CommonDialogs$FileChooserResult",
+    "methods" : [
+      {"name":"<init>","parameterTypes":["java.util.List","com.sun.glass.ui.CommonDialogs$ExtensionFilter"] }
+    ]
+  }
+,
+  {
+    "name" : "com.sun.javafx.iio.jpeg.JPEGImageLoader",
+    "methods" : [
+      {"name":"<init>","parameterTypes":["java.io.InputStream"]},
+      {"name":"updateImageProgress","parameterTypes":["int"]},
+      {"name":"setInputAttributes","parameterTypes":["int", "int", "int", "int", "int", "byte[]"]},
+      {"name":"setOutputAttributes","parameterTypes":["int", "int"]}
+    ]
+  }
+,
+  {
+    "name" : "com.sun.javafx.iio.common.ImageLoaderImpl",
+    "methods" : [
+      {"name":"emitWarning","parameterTypes":["java.lang.String"]}
+    ]
+  }
+]

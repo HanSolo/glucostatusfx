@@ -22,15 +22,17 @@ import javafx.scene.paint.Color;
 
 import java.io.File;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 public class Constants {
-    public static final String            HOME_FOLDER          = new StringBuilder(System.getProperty("user.home")).append(File.separator).toString();
-    public static final String            URL_API              = "/api/v1/entries.json";
-    public static final String            URL_PARAM_COUNT_1    = "?count=1";
-    public static final long              TIMEOUT_IN_SECONDS   = 480;
-    public static final DateTimeFormatter DTF                  = DateTimeFormatter.ofPattern("dd/MM/YY HH:mm");
+    public static final String            HOME_FOLDER        = new StringBuilder(System.getProperty("user.home")).append(File.separator).toString();
+    public static final String            URL_API            = "/api/v1/entries.json";
+    public static final String            URL_PARAM_COUNT_1  = "?count=1";
+    public static final long              TIMEOUT_IN_SECONDS = 480;
+    public static final DateTimeFormatter DTF                = DateTimeFormatter.ofPattern("dd/MM/YY HH:mm");
     public static final String            ALARM_SOUND_FILENAME = "alarm.wav";
 
     public static final String FIELD_ID                                               = "_id";
@@ -54,6 +56,8 @@ public class Constants {
     public static final String PROPERTIES_SHOW_DELTA_CHART                            = "SHOW_DELTA_CHART";
     public static final String PROPERTIES_VOICE_OUTPUT                                = "VOICE_OUTPUT";
     public static final String PROPERTIES_VOICE_OUTPUT_INTERVAL                       = "VOICE_OUTPUT_INTERVAL";
+    public static final String PROPERTIES_TOO_LOW_INTERVAL                            = "TOO_LOW_INTERVAL";
+    public static final String PROPERTIES_TOO_HIGH_INTERVAL                           = "TOO_HIGH_INTERVAL";
     public static final String PROPERTIES_MIN_ACCEPTABLE_MIN                          = "MIN_ACCEPTABLE_MIN";
     public static final String PROPERTIES_MIN_ACCEPTABLE_MAX                          = "MIN_ACCEPTABLE_MAX";
     public static final String PROPERTIES_MIN_NORMAL_MIN                              = "MIN_NORMAL_MIN";
@@ -136,4 +140,40 @@ public class Constants {
 
     public static final List<String> yAxisLabelsMgPerDeciliter = List.of("40", "80", "120", "160", "200", "240", "280", "320", "360", "400");
     public static final List<String> yAxisLabelsMmolPerLiter   = List.of("2.2", "4.4", "6.7", "8.9", "11.1", "13.3", "15.5", "17.8", "20.0", "22.2");
+
+    public static final Map<String, String> DEFAULT_PROPERTIES = new HashMap<>() {{
+        put(Constants.PROPERTIES_NIGHTSCOUT_URL, "https://glucose-anton.herokuapp.com");
+        put(Constants.PROPERTIES_UNIT_MG, "TRUE");
+        put(Constants.PROPERTIES_SHOW_DELTA_CHART, "TRUE");
+        put(Constants.PROPERTIES_TOO_LOW_INTERVAL, "5");
+        put(Constants.PROPERTIES_TOO_HIGH_INTERVAL, "5");
+        put(Constants.PROPERTIES_MIN_ACCEPTABLE_MIN, "60.0");
+        put(Constants.PROPERTIES_MIN_ACCEPTABLE_MAX, "70.0");
+        put(Constants.PROPERTIES_MIN_NORMAL_MIN, "70.0");
+        put(Constants.PROPERTIES_MIN_NORMAL_MAX, "80.0");
+        put(Constants.PROPERTIES_MAX_NORMAL_MIN, "120.0");
+        put(Constants.PROPERTIES_MAX_NORMAL_MAX, "160.0");
+        put(Constants.PROPERTIES_MAX_ACCEPTABLE_MIN, "120.0");
+        put(Constants.PROPERTIES_MAX_ACCEPTABLE_MAX, "250.0");
+        put(Constants.PROPERTIES_MIN_VALUE, "0.0");
+        put(Constants.PROPERTIES_MAX_VALUE, "400.0");
+        put(Constants.PROPERTIES_MIN_CRITICAL, "55.0");
+        put(Constants.PROPERTIES_MIN_ACCEPTABLE, "65.0");
+        put(Constants.PROPERTIES_MIN_NORMAL, "70.0");
+        put(Constants.PROPERTIES_MAX_NORMAL, "140.0");
+        put(Constants.PROPERTIES_MAX_ACCEPTABLE, "180.0");
+        put(Constants.PROPERTIES_MAX_CRITICAL, "350.0");
+        put(Constants.PROPERTIES_SHOW_LOW_VALUE_NOTIFICATION, "TRUE");
+        put(Constants.PROPERTIES_SHOW_ACCEPTABLE_LOW_VALUE_NOTIFICATION, "TRUE");
+        put(Constants.PROPERTIES_SHOW_ACCEPTABLE_HIGH_VALUE_NOTIFICATION, "TRUE");
+        put(Constants.PROPERTIES_SHOW_HIGH_VALUE_NOTIFICATION, "TRUE");
+        put(Constants.PROPERTIES_PLAY_SOUND_FOR_TOO_LOW_NOTIFICATION, "TRUE");
+        put(Constants.PROPERTIES_PLAY_SOUND_FOR_LOW_NOTIFICATION, "TRUE");
+        put(Constants.PROPERTIES_PLAY_SOUND_FOR_ACCEPTABLE_LOW_NOTIFICATION, "TRUE");
+        put(Constants.PROPERTIES_PLAY_SOUND_FOR_ACCEPTABLE_HIGH_NOTIFICATION, "TRUE");
+        put(Constants.PROPERTIES_PLAY_SOUND_FOR_HIGH_NOTIFICATION, "TRUE");
+        put(Constants.PROPERTIES_PLAY_SOUND_FOR_TOO_HIGH_NOTIFICATION, "TRUE");
+        put(Constants.PROPERTIES_CRITICAL_MAX_NOTIFICATION_INTERVAL, "300");
+        put(Constants.PROPERTIES_CRITICAL_MIN_NOTIFICATION_INTERVAL, "300");
+    }};
 }

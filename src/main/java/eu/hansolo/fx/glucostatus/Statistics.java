@@ -18,12 +18,7 @@
 
 package eu.hansolo.fx.glucostatus;
 
-import eu.hansolo.fx.glucostatus.Records.DataPoint;
-import eu.hansolo.fx.glucostatus.Records.GlucoEntry;
-import eu.hansolo.fx.glucostatus.i18n.I18nKeys;
-import eu.hansolo.fx.glucostatus.i18n.Translator;
 import eu.hansolo.toolbox.tuples.Pair;
-import javafx.animation.Transition;
 
 import java.time.LocalTime;
 import java.time.ZoneId;
@@ -48,8 +43,7 @@ public class Statistics {
         MEDIAN
     }
 
-    public  static final DateTimeFormatter TF         = DateTimeFormatter.ofPattern("HH:mm");
-    private static final Translator        translator = new Translator(I18nKeys.RESOURCE_NAME);
+    public  static final DateTimeFormatter TF = DateTimeFormatter.ofPattern("HH:mm");
 
 
     public static Map<LocalTime, DataPoint> analyze(final List<GlucoEntry> entries) {
@@ -194,35 +188,35 @@ public class Statistics {
         var zoneText = "";
         if (lowZone) {
             if (morningStart && morningEnd) {             // Morning
-                zoneText = translator.get(I18nKeys.STATISTICS_LOW_ZONE) + translator.get(I18nKeys.STATISTICS_MORNING);
+                zoneText = "Low values in the morning";
             } else if (lunchtimeStart && lunchtimeEnd) {  // Lunchtime
-                zoneText = translator.get(I18nKeys.STATISTICS_LOW_ZONE) + translator.get(I18nKeys.STATISTICS_LUNCHTIME);
+                zoneText = "Low values during lunchtime";
             } else if (afterNoonStart && afterNoonEnd) {  // Afternoon
-                zoneText = translator.get(I18nKeys.STATISTICS_LOW_ZONE) + translator.get(I18nKeys.STATISTICS_AFTERNOON);
+                zoneText = "Low values in the afternnon";
             } else if (nightStart && nightEnd) {          // Night
-                zoneText = translator.get(I18nKeys.STATISTICS_LOW_ZONE) + translator.get(I18nKeys.STATISTICS_NIGHT);
+                zoneText = "Low values over night";
             } else if (nightStart && dayEnd) {            // Morning
-                zoneText = translator.get(I18nKeys.STATISTICS_LOW_ZONE) + translator.get(I18nKeys.STATISTICS_MORNING);
+                zoneText = "Low values in the morning";
             } else if (dayStart && dayEnd) {              // Day
-                zoneText = translator.get(I18nKeys.STATISTICS_LOW_ZONE) + translator.get(I18nKeys.STATISTICS_DAY);
+                zoneText = "Low values during daytime";
             } else if (dayStart && nightEnd) {            // Evening
-                zoneText = translator.get(I18nKeys.STATISTICS_LOW_ZONE) + translator.get(I18nKeys.STATISTICS_EVENING);
+                zoneText = "Low values in the evening";
             }
         } else {
             if (morningStart && morningEnd) {             // Morning
-                zoneText = translator.get(I18nKeys.STATISTICS_HIGH_ZONE) + translator.get(I18nKeys.STATISTICS_MORNING);
+                zoneText = "High values in the morning";
             } else if (lunchtimeStart && lunchtimeEnd) {  // Lunchtime
-                zoneText = translator.get(I18nKeys.STATISTICS_HIGH_ZONE) + translator.get(I18nKeys.STATISTICS_LUNCHTIME);
+                zoneText = "High values during lunch time";
             } else if (afterNoonStart && afterNoonEnd) {  // Afternoon
-                zoneText = translator.get(I18nKeys.STATISTICS_HIGH_ZONE) + translator.get(I18nKeys.STATISTICS_AFTERNOON);
+                zoneText = "High values in the afternoon";
             } else if (nightStart && nightEnd) {          // Night
-                zoneText = translator.get(I18nKeys.STATISTICS_HIGH_ZONE) + translator.get(I18nKeys.STATISTICS_NIGHT);
+                zoneText = "High values overnight";
             } else if (nightStart && dayEnd) {            // Morning
-                zoneText = translator.get(I18nKeys.STATISTICS_HIGH_ZONE) + translator.get(I18nKeys.STATISTICS_MORNING);
+                zoneText = "High values in the morning";
             } else if (dayStart && dayEnd) {              // Day
-                zoneText = translator.get(I18nKeys.STATISTICS_HIGH_ZONE) + translator.get(I18nKeys.STATISTICS_DAY);
+                zoneText = "High values during daytime";
             } else if (dayStart && nightEnd) {            // Evening
-                zoneText = translator.get(I18nKeys.STATISTICS_HIGH_ZONE) + translator.get(I18nKeys.STATISTICS_EVENING);
+                zoneText = "High values in the evening";
             }
         }
         return zoneText;
