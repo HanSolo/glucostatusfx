@@ -1037,12 +1037,21 @@ public class Main extends Application {
             minEntry = new GlucoEntry(firstEntry.id(), firstEntry.sgv(), chartStartEpoch, chartStartDate, firstEntry.dateString(), firstEntry.trend(), firstEntry.direction(),
                                       firstEntry.device(), firstEntry.type(), firstEntry.utcOffset(), firstEntry.noise(), firstEntry.filtered(), firstEntry.unfiltered(),
                                       firstEntry.rssi(), firstEntry.delta(), firstEntry.sysTime());
+        } else if (entries.get(0).datelong() > chartStartEpoch) {
+            GlucoEntry firstEntry = entries.get(0);
+            minEntry = new GlucoEntry(firstEntry.id(), firstEntry.sgv(), chartStartEpoch, chartStartDate, firstEntry.dateString(), firstEntry.trend(), firstEntry.direction(),
+                                      firstEntry.device(), firstEntry.type(), firstEntry.utcOffset(), firstEntry.noise(), firstEntry.filtered(), firstEntry.unfiltered(),
+                                      firstEntry.rssi(), firstEntry.delta(), firstEntry.sysTime());
         } else {
             minEntry = entries.get(0);
         }
 
         double        deltaTime        = OffsetDateTime.now().toEpochSecond() - minEntry.datelong();
-        if (deltaTime > currentInterval.getSeconds()) { deltaTime = OffsetDateTime.now().toEpochSecond() - OffsetDateTime.now().minusSeconds(currentInterval.getSeconds()).toEpochSecond(); }
+        if (deltaTime > currentInterval.getSeconds()) {
+            deltaTime = OffsetDateTime.now().toEpochSecond() - OffsetDateTime.now().minusSeconds(currentInterval.getSeconds()).toEpochSecond();
+        } else if (deltaTime < currentInterval.getSeconds()) {
+            deltaTime = OffsetDateTime.now().toEpochSecond() - OffsetDateTime.now().minusSeconds(currentInterval.getSeconds()).toEpochSecond();
+        }
 
         ZonedDateTime minDate          = Helper.getZonedDateTimeFromEpochSeconds(minEntry.datelong());
         double        stepX           = availableWidth / deltaTime;
