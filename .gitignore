@@ -1,0 +1,6 @@
+*.class
+*.log
+.DS_Store
+/target
+/.idea
+/classes

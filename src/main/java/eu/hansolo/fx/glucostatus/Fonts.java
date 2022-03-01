@@ -24,56 +24,35 @@ import javafx.scene.text.Font;
 public class Fonts {
 
     private static final String CONFIG_ROUNDED_REGULAR_NAME;
-    private static final String CONFIG_ROUNDED_MEDIUM_NAME;
     private static final String CONFIG_ROUNDED_SEMI_BOLD_NAME;
-    private static final String MESLO_NAME;
-
-    //private static final String SF_ROUNDED_REGULAR_NAME;
-    //private static final String SF_ROUNDED_SEMI_BOLD_NAME;
+    private static final String SF_ROUNDED_REGULAR_NAME;
     private static final String SF_ROUNDED_BOLD_NAME;
 
     private static       String configRoundedRegularName;
-    private static       String configRoundedMediumName;
     private static       String configRoundedSemiBoldName;
-    private static       String mesloName;
-
-    //private static       String sfRoundedRegularName;
-    //private static       String sfRoundedSemiBoldName;
+    private static       String sfRoundedRegularName;
     private static       String sfRoundedBoldName;
 
 
     static {
         try {
-
             configRoundedRegularName  = Font.loadFont(Fonts.class.getResourceAsStream("/eu/hansolo/fx/glucostatus/Config Rounded Regular.otf"), 10).getName();
-            configRoundedMediumName   = Font.loadFont(Fonts.class.getResourceAsStream("/eu/hansolo/fx/glucostatus/Config Rounded Medium.otf"), 10).getName();
             configRoundedSemiBoldName = Font.loadFont(Fonts.class.getResourceAsStream("/eu/hansolo/fx/glucostatus/Config Rounded Semibold.otf"), 10).getName();
-            mesloName                 = Font.loadFont(Fonts.class.getResourceAsStream("/eu/hansolo/fx/glucostatus/Meslo LG S DZ Bold for Powerline.ttf"), 10).getName();
-
-            //sfRoundedRegularName      = Font.loadFont(Fonts.class.getResourceAsStream("/eu/hansolo/fx/glucostatus/TestFontRegular.ttf"), 10).getName();
-            //sfRoundedSemiBoldName     = Font.loadFont(Fonts.class.getResourceAsStream("/eu/hansolo/fx/glucostatus/TestFontSemibold.ttf"), 10).getName();
+            sfRoundedRegularName      = Font.loadFont(Fonts.class.getResourceAsStream("/eu/hansolo/fx/glucostatus/Regular.ttf"), 10).getName();
             sfRoundedBoldName         = Font.loadFont(Fonts.class.getResourceAsStream("/eu/hansolo/fx/glucostatus/TestFont.ttf"), 10).getName();
         } catch (Exception exception) { }
 
         CONFIG_ROUNDED_REGULAR_NAME   = configRoundedRegularName;
-        CONFIG_ROUNDED_MEDIUM_NAME    = configRoundedMediumName;
         CONFIG_ROUNDED_SEMI_BOLD_NAME = configRoundedSemiBoldName;
-        MESLO_NAME                    = mesloName;
-
-        //SF_ROUNDED_REGULAR_NAME       = sfRoundedBoldName;
-        //SF_ROUNDED_SEMI_BOLD_NAME     = sfRoundedSemiBoldName;
+        SF_ROUNDED_REGULAR_NAME       = sfRoundedRegularName;
         SF_ROUNDED_BOLD_NAME          = sfRoundedBoldName;
     }
 
 
     // ******************** Methods *******************************************
-
     public static Font configRoundedRegular(final double size) { return new Font(CONFIG_ROUNDED_REGULAR_NAME, size); }
-    public static Font configRoundedMedium(final double size) { return new Font(CONFIG_ROUNDED_MEDIUM_NAME, size); }
     public static Font configRoundedSemibold(final double size) { return new Font(CONFIG_ROUNDED_SEMI_BOLD_NAME, size); }
-    public static Font meslo(final double size) { return new Font(MESLO_NAME, size); }
 
-    //public static Font sfRoundedRegular(final double size) { return new Font(SF_ROUNDED_REGULAR_NAME, size); }
-    //public static Font sfRoundedSemibold(final double size) { return new Font(SF_ROUNDED_SEMI_BOLD_NAME, size); }
+    public static Font sfRoundedRegular(final double size) { return new Font(SF_ROUNDED_REGULAR_NAME, size); }
     public static Font sfRoundedBold(final double size) { return new Font(SF_ROUNDED_BOLD_NAME, size); }
 }

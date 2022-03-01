@@ -487,12 +487,14 @@ public class Main extends Application {
             service.start();
         }
 
+        /*
         RuntimeArgsService.create().ifPresent(service -> {
             service.addListener("ALERT", value -> {
                 Alert alert = new Alert(AlertType.WARNING, value);
                 Platform.runLater(() -> alert.showAndWait());
             });
         });
+        */
     }
 
     @Override public void stop() {
@@ -949,14 +951,14 @@ public class Main extends Application {
             minEntry = entries.get(0);
         }
 
-        double        deltaTime        = OffsetDateTime.now().toEpochSecond() - minEntry.datelong();
+        double deltaTime = OffsetDateTime.now().toEpochSecond() - minEntry.datelong();
         if (deltaTime > currentInterval.getSeconds()) {
             deltaTime = OffsetDateTime.now().toEpochSecond() - OffsetDateTime.now().minusSeconds(currentInterval.getSeconds()).toEpochSecond();
         } else if (deltaTime < currentInterval.getSeconds()) {
             deltaTime = OffsetDateTime.now().toEpochSecond() - OffsetDateTime.now().minusSeconds(currentInterval.getSeconds()).toEpochSecond();
         }
 
-        ZonedDateTime minDate          = Helper.getZonedDateTimeFromEpochSeconds(minEntry.datelong());
+        ZonedDateTime minDate         = Helper.getZonedDateTimeFromEpochSeconds(minEntry.datelong());
         double        stepX           = availableWidth / deltaTime;
         double        stepY           = availableHeight / (Constants.DEFAULT_GLUCO_RANGE);
         int           hour            = minDate.getHour();
@@ -982,7 +984,6 @@ public class Main extends Application {
             double widthToNextFullHour = java.time.Duration.between(startTime, startTime.plusHours(1).truncatedTo(ChronoUnit.HOURS)).toSeconds() * stepX;
             double w                   = widthToNextFullHour + (10 - Constants.NIGHT_HOURS.indexOf(startHour) - 1) * oneHourStep;
             nights.add(new eu.hansolo.toolboxfx.geom.Rectangle(GRAPH_INSETS.getLeft(), GRAPH_INSETS.getTop(), w, availableHeight));
-            startsAtNight = true;
         }
 
         // Chart ends at night
@@ -1121,7 +1122,7 @@ public class Main extends Application {
 
         ctx.setLineWidth(2);
         ctx.beginPath();
-        ctx.moveTo(GRAPH_INSETS.getLeft() + startX + (entries.get(0).datelong() - minEntry.datelong()) * stepX, height - GRAPH_INSETS.getBottom() - entries.get(0).sgv() * stepY);
+        ctx.moveTo(GRAPH_INSETS.getLeft() + startX, height - GRAPH_INSETS.getBottom() - entries.get(0).sgv() * stepY);
         for (int i = 0 ; i < entries.size() ; i++) {
             GlucoEntry entry = entries.get(i);
             ctx.lineTo(GRAPH_INSETS.getLeft() + startX + (entry.datelong() - minEntry.datelong()) * stepX, (height - GRAPH_INSETS.getBottom()) - entry.sgv() * stepY);
@@ -1142,16 +1143,19 @@ public class Main extends Application {
         MacosLabel label = new MacosLabel(text);
         label.setDark(darkMode);
         if (rounded) {
-            label.setFont(bold ? Fonts.sfRoundedBold(size) : Fonts.configRoundedRegular(size));
+            //label.setFont(bold ? Fonts.sfRoundedBold(size) : Fonts.configRoundedRegular(size));
+            label.setFont(bold ? Fonts.sfRoundedBold(size) : Fonts.sfRoundedRegular(size));
         } else {
-            label.setFont(bold ? Fonts.configRoundedSemibold(size) : Fonts.configRoundedRegular(size));
+            //label.setFont(bold ? Fonts.configRoundedSemibold(size) : Fonts.configRoundedRegular(size));
+            label.setFont(bold ? Fonts.configRoundedSemibold(size) : Fonts.sfRoundedRegular(size));
         }
         label.setAlignment(alignment);
         return label;
     }
     private MacosLabel createLabel(final String text, final double size, final Paint color, final boolean bold, final Pos alignment, final Priority priority) {
         MacosLabel label = new MacosLabel(text);
-        label.setFont(bold ? Fonts.configRoundedSemibold(size) : Fonts.configRoundedRegular(size));
+        //label.setFont(bold ? Fonts.configRoundedSemibold(size) : Fonts.configRoundedRegular(size));
+        label.setFont(bold ? Fonts.configRoundedSemibold(size) : Fonts.sfRoundedRegular(size));
         label.setDark(darkMode);
         label.setAlignment(alignment);
         label.setPrefWidth(250);
