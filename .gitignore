@@ -1,6 +1,7 @@
+/target/
+/.idea/
+/classes/
 *.class
 *.log
 .DS_Store
-/target
-/.idea
-/classes
+
