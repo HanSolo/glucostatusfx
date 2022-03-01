@@ -1194,8 +1194,7 @@ public class Main extends Application {
         double        oneHourStep      = Constants.SECONDS_PER_HOUR * stepX;
         long          hourCounter      = 0;
 
-
-
+        
         // Collect nights
         ZonedDateTime startTime     = ZonedDateTime.ofInstant(Instant.ofEpochSecond(startX + minEntry.datelong()), ZoneId.systemDefault());
         ZonedDateTime endTime       = ZonedDateTime.ofInstant(Instant.ofEpochSecond(startX + minEntry.datelong() + currentInterval.getSeconds()), ZoneId.systemDefault());
@@ -1209,7 +1208,6 @@ public class Main extends Application {
             double widthToNextFullHour = java.time.Duration.between(startTime, startTime.plusHours(1).truncatedTo(ChronoUnit.HOURS)).toSeconds() * stepX;
             double w                   = widthToNextFullHour + (10 - Constants.NIGHT_HOURS.indexOf(startHour) - 1) * oneHourStep;
             nights.add(new eu.hansolo.toolboxfx.geom.Rectangle(GRAPH_INSETS.getLeft(), GRAPH_INSETS.getTop(), w, availableHeight));
-            startsAtNight = true;
         }
 
         // Chart ends at night
