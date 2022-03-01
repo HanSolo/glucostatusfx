@@ -1679,7 +1679,7 @@ public class Main extends Application {
         timeInRangeNormalRect  = createTimeInRangeRectangle(pNormal, columnSize, Constants.GREEN);
         timeInRangeLowRect     = createTimeInRangeRectangle(pLow, columnSize, Constants.ORANGE);
         timeInRangeTooLowRect  = createTimeInRangeRectangle(pTooLow, columnSize, Constants.RED);
-        VBox rectBox = new VBox(timeInRangeTooHighRect, timeInRangeHighRect, timeInRangeNormalRect, timeInRangeLowRect, timeInRangeTooLowRect);
+        VBox rectBox = new VBox(1, timeInRangeTooHighRect, timeInRangeHighRect, timeInRangeNormalRect, timeInRangeLowRect, timeInRangeTooLowRect);
 
         timeInRangeTooHighValue     = createTimeInRangeLabel(String.format(Locale.US, "%.0f%% ", pTooHigh * 100), 20, textFill, false, Pos.CENTER_RIGHT);
         timeInRangeTooHighValueText = createTimeInRangeLabel("Very high", 20, textFill, false, Pos.CENTER_LEFT);

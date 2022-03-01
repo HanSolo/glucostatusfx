@@ -8,7 +8,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.sandec.jpro:jpro-plugin-gradle:2021.2.4-SNAPSHOT'
+        classpath 'com.sandec.jpro:jpro-plugin-gradle:2022.1.0'
     }
 }
 
@@ -40,7 +40,7 @@ dependencies {
     implementation 'eu.hansolo:toolboxfx:17.0.23'
     implementation 'eu.hansolo:applefx:17.0.40'
     implementation 'com.google.code.gson:gson:2.9.0'
-    implementation "com.sandec.jpro:jpro-webapi:2021.2.4-SNAPSHOT"
+    implementation "com.sandec.jpro:jpro-webapi:2022.1.0"
 }
 
 javafx {
