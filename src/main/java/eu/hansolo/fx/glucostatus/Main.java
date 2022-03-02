@@ -1203,6 +1203,7 @@ public class Main extends Application {
         int           startHour     = startTime.getHour();
         int           endHour       = endTime.getHour();
         boolean       startsAtNight = false;
+        boolean       endsAtNight   = false;
         List<eu.hansolo.toolboxfx.geom.Rectangle> nights = new ArrayList<>();
 
         // Chart starts at night
@@ -1237,6 +1238,11 @@ public class Main extends Application {
                 }
             }
             lastHour = h;
+        }
+
+        if (nightStart) { // && (endTime.getMonthValue() > startTime.getMonthValue() ||
+                           //endTime.getDayOfMonth() > startTime.getDayOfMonth())) {
+            nights.add(new eu.hansolo.toolboxfx.geom.Rectangle(nightX, GRAPH_INSETS.getTop(), availableWidth - nightX + GRAPH_INSETS.getRight(), availableHeight));
         }
 
         // Draw nights
