@@ -1108,6 +1108,10 @@ public class Main extends Application {
             lastHour = h;
             }
 
+        if (nightStart) {
+            nights.add(new eu.hansolo.toolboxfx.geom.Rectangle(nightX, GRAPH_INSETS.getTop(), availableWidth - nightX + GRAPH_INSETS.getRight(), availableHeight));
+        }
+
         // Draw nights
         ctx.save();
         ctx.setFill(darkMode ? Color.rgb(255, 255, 255, 0.1) : Color.rgb(0, 0, 0, 0.1));
