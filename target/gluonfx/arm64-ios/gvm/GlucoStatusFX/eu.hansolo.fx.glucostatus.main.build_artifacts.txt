@@ -1,6 +1,0 @@
-[HEADER]
-graal_isolate.h
-eu.hansolo.fx.glucostatus.main.h
-graal_isolate_dynamic.h
-eu.hansolo.fx.glucostatus.main_dynamic.h
-
