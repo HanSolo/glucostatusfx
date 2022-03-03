@@ -1,7 +1,10 @@
-/target/
-/.idea/
+/target/*
+/.idea/*
 /classes/
 *.class
 *.log
 .DS_Store
 
+*.1
+*.jar
+*.ipa
