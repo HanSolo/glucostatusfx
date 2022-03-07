@@ -21,6 +21,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="GlucoStatusFX" />
+        <module name="glucostatusfx" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel target="17" />

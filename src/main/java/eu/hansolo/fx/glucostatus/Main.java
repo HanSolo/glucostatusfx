@@ -527,13 +527,29 @@ public class Main extends Application {
             prefPane.setVisible(true);
         });
 
-        matrixButton.setOnMousePressed(e -> showMatrixChart());
+        matrixButton.setOnMousePressed(e -> matrixButton.setOpacity(0.75));
+        matrixButton.setOnMouseReleased(e -> {
+            matrixButton.setOpacity(1.0);
+            showMatrixChart();
+        });
 
-        reloadButton.setOnMousePressed(e -> reloadAllEntries());
+        reloadButton.setOnMousePressed(e -> reloadButton.setOpacity(0.75));
+        reloadButton.setOnMouseReleased(e -> {
+            reloadButton.setOpacity(1.0);
+            reloadAllEntries();
+        });
 
-        timeInRangeChartButton.setOnMousePressed(e -> showTimeInRangeChart());
+        timeInRangeChartButton.setOnMousePressed(e -> timeInRangeChartButton.setOpacity(0.75));
+        timeInRangeChartButton.setOnMouseReleased(e -> {
+            timeInRangeChartButton.setOpacity(1.0);
+            showTimeInRangeChart();
+        });
 
-        patternChartButton.setOnMousePressed(e -> showPatternChart());
+        patternChartButton.setOnMousePressed(e -> patternChartButton.setOpacity(0.75));
+        patternChartButton.setOnMouseReleased(e -> {
+            patternChartButton.setOpacity(1.0);
+            showPatternChart();
+        });
 
         intervalToggleGroup.selectedToggleProperty().addListener((o, ov, nv) -> {
             if (null == ov || null == nv) { return; }
