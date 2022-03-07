@@ -1019,7 +1019,7 @@ public class Main extends Application {
 
         // Draw nights
         ctx.save();
-        ctx.setFill(darkMode ? Color.rgb(255, 255, 255, 0.1) : Color.rgb(0, 0, 0, 0.1));
+        ctx.setFill(darkMode ? Color.rgb(255, 255, 255, 0.15) : Color.rgb(0, 0, 0, 0.1));
         nights.forEach(night -> ctx.fillRect(night.getX(), night.getY(), night.width, night.getHeight()));
         ctx.restore();
 
@@ -1709,7 +1709,7 @@ public class Main extends Application {
         double chartStepX = availableWidth / 1440;
         ctx.setLineDashes();
         ctx.setStroke(darkMode ? Color.rgb(255, 255, 255, 0.5) : Color.rgb(0, 0, 0, 0.5));
-        ctx.setFill(darkMode ? Color.rgb(255, 255, 255, 0.1) : Color.rgb(0, 0, 0, 0.1));
+        ctx.setFill(darkMode ? Color.rgb(255, 255, 255, 0.15) : Color.rgb(0, 0, 0, 0.1));
         Pair<List<Point>, List<Point>> pair      = Helper.createValueRangePath(dataMap, StatisticRange.TEN_TO_NINETY, true);
         List<Point>                    maxPoints = pair.getA();
         List<Point> minPoints = pair.getB();
