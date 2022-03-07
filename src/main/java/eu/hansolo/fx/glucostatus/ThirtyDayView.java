@@ -21,11 +21,11 @@
  import eu.hansolo.toolbox.tuples.Pair;
  import eu.hansolo.toolbox.unit.UnitDefinition;
  import eu.hansolo.toolboxfx.geom.Rectangle;
+ import javafx.animation.PauseTransition;
  import javafx.beans.DefaultProperty;
  import javafx.beans.property.BooleanProperty;
  import javafx.beans.property.BooleanPropertyBase;
  import javafx.collections.ObservableList;
- import javafx.concurrent.Task;
  import javafx.css.PseudoClass;
  import javafx.geometry.Insets;
  import javafx.geometry.VPos;
@@ -36,6 +36,7 @@
  import javafx.scene.layout.Region;
  import javafx.scene.paint.Color;
  import javafx.scene.text.TextAlignment;
+ import javafx.util.Duration;
 
  import java.time.DayOfWeek;
  import java.time.Instant;
@@ -53,7 +54,6 @@
  import java.util.Optional;
  import java.util.Random;
  import java.util.concurrent.ConcurrentHashMap;
- import java.util.concurrent.TimeUnit;
  import java.util.stream.Collectors;
 
 
@@ -134,18 +134,12 @@
              Optional<Entry<LocalDate, Rectangle>> optEntry = boxes.entrySet().stream().filter(entry -> entry.getValue().contains(e.getX(), e.getY())).findFirst();
              selectedDate = optEntry.isPresent() ? optEntry.get().getKey() : null;
              redraw();
-
-             Task<Void> sleeper = new Task<>() {
-                 @Override protected Void call() {
-                     try { TimeUnit.MILLISECONDS.sleep(SLEEP_DURATION); } catch (InterruptedException e) { }
-                     return null;
-                 }
-             };
-             sleeper.setOnSucceeded(evt -> {
+             PauseTransition pause = new PauseTransition(Duration.millis(SLEEP_DURATION));
+             pause.setOnFinished(ev -> {
                  selectedDate = null;
                  redraw();
              });
-             new Thread(sleeper).start();
+             pause.play();
          });
      }
 
@@ -259,11 +253,10 @@
              for (int x = 0 ; x < 9 ; x++) {
                  double posX = x * boxWidth;
                  double posY = y * boxHeight;
-                 if (y == 0 && x > 0 && x < 8) {
-                     ctx.fillText(DayOfWeek.values()[x - 1].getDisplayName(TextStyle.NARROW_STANDALONE, Locale.getDefault()), posX + boxCenterX, posY + boxCenterY);
-                 }
                  if (x == 0 && y > 0) {
                      ctx.fillText(Integer.toString(startWeek + y), posX + boxCenterX, posY + boxCenterY);
+                 } else if (y == 0 && x > 0 && x < 8) {
+                     ctx.fillText(DayOfWeek.values()[x - 1].getDisplayName(TextStyle.NARROW_STANDALONE, Locale.getDefault()), posX + boxCenterX, posY + boxCenterY);
                  }
              }
          }
