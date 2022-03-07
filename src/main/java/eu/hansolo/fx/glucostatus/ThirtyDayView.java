@@ -270,7 +270,11 @@
              double  posX       = boxWidth + indexX * boxWidth;
              double  posY       = boxHeight + indexY * boxHeight;
              boolean showValue  = null != selectedDate && date.isEqual(selectedDate) && entries.containsKey(selectedDate);
-             Color   valueColor = entries.isEmpty() ? Constants.GRAY : Helper.getColorForValue2(unit, UnitDefinition.MILLIGRAM_PER_DECILITER == unit ? entries.get(date) : Helper.mgPerDeciliterToMmolPerLiter(entries.get(date)));
+
+             Double value = entries.get(date);
+             if (null == value) { value = 0.0; }
+
+             Color   valueColor = entries.isEmpty() ? Constants.GRAY : Helper.getColorForValue2(unit, UnitDefinition.MILLIGRAM_PER_DECILITER == unit ? value : Helper.mgPerDeciliterToMmolPerLiter(value));
              if (entries.containsKey(date)) {
                  if (showValue) {
                      ctx.setStroke(foregroundColor);
