@@ -262,7 +262,7 @@
          }
 
          int indexX = currentDate.getDayOfWeek().getValue() - 1;
-         int indexY = 4;
+         int indexY = 5;
          ctx.setFont(Fonts.configRoundedRegular(size * 0.065));
          for (int i = 0 ; i < 30 ; i++) {
              LocalDate date = currentDate.minusDays(i);
