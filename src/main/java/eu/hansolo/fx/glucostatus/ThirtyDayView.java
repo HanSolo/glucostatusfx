@@ -53,41 +53,41 @@
  import java.util.Map;
  import java.util.Map.Entry;
  import java.util.Optional;
- import java.util.Random;
  import java.util.concurrent.ConcurrentHashMap;
+ import java.util.concurrent.CopyOnWriteArrayList;
  import java.util.stream.Collectors;
 
 
  @DefaultProperty("children")
  public class ThirtyDayView extends Region {
-     private static final Random                                  RND               = new Random();
-     private static final double                                  PREFERRED_WIDTH   = 400;
-     private static final double                                  PREFERRED_HEIGHT  = 300;
-     private static final double                                  MINIMUM_WIDTH     = 50;
-     private static final double                                  MINIMUM_HEIGHT    = 50;
-     private static final double                                  MAXIMUM_WIDTH     = 4096;
-     private static final double                                  MAXIMUM_HEIGHT    = 4096;
-     private static final int                                     SLEEP_DURATION    = 3000;
-     private static final PseudoClass                             DARK_PSEUDO_CLASS = PseudoClass.getPseudoClass("dark");
-     private              boolean                                 _dark;
-     private              BooleanProperty                         dark;
-     private              String                                  userAgentStyleSheet;
-     private              double                                  boxWidth;
-     private              double                                  boxHeight;
-     private              double                                  boxCenterX;
-     private              double                                  boxCenterY;
-     private              double                                  boxRadius;
-     private              double                                  boxOffset;
-     private              double                                  doubleBoxOffset;
-     private              double                                  width;
-     private              double                                  height;
-     private              double                                  size;
-     private              Canvas                                  canvas;
-     private              GraphicsContext                         ctx;
-     private              UnitDefinition                          unit;
-     private              Map<LocalDate, Double>                  entries;
-     private              Map<LocalDate,Rectangle>                boxes;
-     private              LocalDate                               selectedDate;
+     private static final double                          PREFERRED_WIDTH   = 400;
+     private static final double                          PREFERRED_HEIGHT  = 300;
+     private static final double                          MINIMUM_WIDTH     = 50;
+     private static final double                          MINIMUM_HEIGHT    = 50;
+     private static final double                          MAXIMUM_WIDTH     = 4096;
+     private static final double                          MAXIMUM_HEIGHT    = 4096;
+     private static final int                             SLEEP_DURATION    = 3000;
+     private static final PseudoClass                     DARK_PSEUDO_CLASS = PseudoClass.getPseudoClass("dark");
+     private              boolean                         _dark;
+     private              BooleanProperty                 dark;
+     private              String                          userAgentStyleSheet;
+     private              double                          boxWidth;
+     private              double                          boxHeight;
+     private              double                          boxCenterX;
+     private              double                          boxCenterY;
+     private              double                          boxRadius;
+     private              double                          boxOffset;
+     private              double                          doubleBoxOffset;
+     private              double                          width;
+     private              double                          height;
+     private              double                          size;
+     private              Canvas                          canvas;
+     private              GraphicsContext                 ctx;
+     private              UnitDefinition                  unit;
+     private              Map<LocalDate, Double>          entries;
+     private              Map<LocalDate, Rectangle>       boxes;
+     private              Map<Rectangle, PauseTransition> transitionMap;
+     private              List<LocalDate>                 selectedDates;
 
 
      // ******************** Constructors **************************************
@@ -95,11 +95,12 @@
          this(List.of(), UnitDefinition.MILLIGRAM_PER_DECILITER);
      }
      public ThirtyDayView(final List<GlucoEntry> glucoEntries, final UnitDefinition unit) {
-         this._dark        = true; //eu.hansolo.applefx.tools.Helper.isDarkMode();
-         this.entries      = new ConcurrentHashMap<>(30);
-         this.unit         = unit;
-         this.boxes        = new ConcurrentHashMap<>();
-         this.selectedDate = null;
+         this._dark         = true; //eu.hansolo.applefx.tools.Helper.isDarkMode();
+         this.entries       = new ConcurrentHashMap<>(30);
+         this.unit          = unit;
+         this.boxes         = new ConcurrentHashMap<>();
+         this.transitionMap = new ConcurrentHashMap<>();
+         this.selectedDates = new CopyOnWriteArrayList<>();
          initGraphics();
          registerListeners();
 
@@ -133,14 +134,33 @@
          heightProperty().addListener(o -> resize());
          canvas.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
              Optional<Entry<LocalDate, Rectangle>> optEntry = boxes.entrySet().stream().filter(entry -> entry.getValue().contains(e.getX(), e.getY())).findFirst();
-             selectedDate = optEntry.isPresent() ? optEntry.get().getKey() : null;
+             Entry<LocalDate, Rectangle> dateBoxEntry;
+             if (optEntry.isPresent()) {
+                 dateBoxEntry   = optEntry.get();
+                 Rectangle box  = dateBoxEntry.getValue();
+                 LocalDate date = dateBoxEntry.getKey();
+                 if (transitionMap.containsKey(box)) {
+                     transitionMap.get(box).stop();
+                     transitionMap.remove(box);
+                     selectedDates.remove(date);
+                 } else {
+                     selectedDates.add(date);
+                     PauseTransition pause = new PauseTransition(Duration.millis(SLEEP_DURATION));
+                     pause.setOnFinished(ev -> {
+                         transitionMap.remove(box);
+                         selectedDates.remove(date);
+                         redraw();
+                     });
+                     transitionMap.put(box, pause);
+                 }
+             } else {
+                 dateBoxEntry = null;
+             }
              redraw();
-             PauseTransition pause = new PauseTransition(Duration.millis(SLEEP_DURATION));
-             pause.setOnFinished(ev -> {
-                 selectedDate = null;
-                 redraw();
-             });
-             pause.play();
+             if (dateBoxEntry == null) { return; }
+             if (transitionMap.containsKey(dateBoxEntry.getValue())) {
+                 transitionMap.get(dateBoxEntry.getValue()).play();
+             }
          });
      }
 
@@ -269,7 +289,7 @@
              LocalDate date = currentDate.minusDays(i);
              double  posX       = boxWidth + indexX * boxWidth;
              double  posY       = boxHeight + indexY * boxHeight;
-             boolean showValue  = null != selectedDate && date.isEqual(selectedDate) && entries.containsKey(selectedDate);
+             boolean showValue  = !selectedDates.isEmpty() && selectedDates.contains(date);
 
              Double value = entries.get(date);
              if (null == value) { value = 0.0; }
@@ -289,9 +309,9 @@
              if (showValue) {
                  ctx.setFill(isDark() ? valueColor : valueColor.darker());
                  if (UnitDefinition.MILLIGRAM_PER_DECILITER == unit) {
-                     ctx.fillText(String.format(Locale.US, "%.0f", this.entries.get(selectedDate)), posX + boxCenterX, posY + boxCenterY, boxWidth);
+                     ctx.fillText(String.format(Locale.US, "%.0f", this.entries.get(date)), posX + boxCenterX, posY + boxCenterY, boxWidth);
                  } else {
-                     ctx.fillText(String.format(Locale.US, "%.1f", Helper.mgPerDeciliterToMmolPerLiter(this.entries.get(selectedDate))), posX + boxCenterX, posY + boxCenterY, boxWidth);
+                     ctx.fillText(String.format(Locale.US, "%.1f", Helper.mgPerDeciliterToMmolPerLiter(this.entries.get(date))), posX + boxCenterX, posY + boxCenterY, boxWidth);
                  }
              } else {
                  ctx.setFill(foregroundColor);
