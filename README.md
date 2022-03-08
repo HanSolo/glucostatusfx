@@ -1,12 +1,18 @@
 ## GlucoStatusFX
 
+![banner](https://github.com/HanSolo/glucostatusfx/raw/main/src/main/resources/eu/hansolo/fx/glucostatus/icon128x128.png)
+
 <br>
 A glucose status monitor for Nightscout implemented in JavaFX.
 
 <br>
 <br>
 
-Donations are welcome at [Paypal](https://paypal.me/hans0l0)
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/HanSolo/glucostatusfx/ci)
+![latest tag](https://badgen.net/github/tag/HanSolo/glucostatusfx)
+![stars](https://badgen.net/github/stars/HanSolo/glucostatusfx)
+![GitHub all releases](https://img.shields.io/github/downloads/HanSolo/glucostatusfx/total)
+![license](https://badgen.net/github/license/HanSolo/discocli)
 
 ## Intro
 GlucoStatusFX is a JavaFX application that will sit in your menu bar and is visualizing
