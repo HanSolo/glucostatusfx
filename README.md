@@ -57,7 +57,7 @@ The max normal value can be defined in the range of 120-160 mg/dl.
 The max acceptable value can be defined in the range of 120-250 mg/dl.
 
 ## Overview
-![Main Screen](https://i.ibb.co/wQmZXJq/Gluco-Status-FX.png)
+![Main Screen](https://i.ibb.co/yWptWXC/Gluco-Status-FX-Main-Screen.png)
 
 ![Settings](https://i.ibb.co/BT53NY4/Monosnap-2022-01-14-16-25-06.png)
 
