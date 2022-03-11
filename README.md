@@ -56,6 +56,10 @@ The max normal value can be defined in the range of 120-160 mg/dl.
 <b>"Max acceptable":</b><br>
 The max acceptable value can be defined in the range of 120-250 mg/dl.
 
+
+## More info
+More info can be found on [this page](https://harmoniccode.blogspot.com/p/glucostatusfx.html)
+
 ## Overview
 ![Main Screen](https://i.ibb.co/yWptWXC/Gluco-Status-FX-Main-Screen.png)
 
