@@ -9,3 +9,10 @@
 *.jar
 *.ipa
 target/
+/target/classes/eu/hansolo/fx/glucostatus/notification/error.png
+/target/classes/eu/hansolo/fx/glucostatus/notification/info.png
+/target/classes/eu/hansolo/fx/glucostatus/notification/notification.css
+/target/classes/eu/hansolo/fx/glucostatus/notification/success.png
+/target/classes/eu/hansolo/fx/glucostatus/notification/warning.png
+/target/glucostatusfx-17.0.0.jar
+/target/maven-archiver/pom.properties
