@@ -18,7 +18,6 @@
 
  package eu.hansolo.fx.glucostatus;
 
- import com.jpro.webapi.WebAPI;
  import eu.hansolo.fx.glucostatus.Records.GlucoEntry;
  import eu.hansolo.toolbox.tuples.Pair;
  import eu.hansolo.toolbox.unit.UnitDefinition;
@@ -91,7 +90,6 @@
      private              Map<LocalDate, Rectangle>       boxes;
      private              Map<Rectangle, PauseTransition> transitionMap;
      private              List<LocalDate>                 selectedDates;
-     private              WebAPI                          webApi;
 
 
      // ******************** Constructors **************************************
@@ -99,8 +97,7 @@
          this(List.of(), UnitDefinition.MILLIGRAM_PER_DECILITER);
      }
      public ThirtyDayView(final List<GlucoEntry> glucoEntries, final UnitDefinition unit) {
-         this.webApi            = WebAPI.getWebAPI(getScene().getWindow());
-         this._dark             = webApi.isDarkMode();
+         this._dark             = true;
          this.avgPerDay         = new ConcurrentHashMap<>(32);
          this.timeInRangePerDay = new ConcurrentHashMap<>(32);
          this.unit              = unit;
