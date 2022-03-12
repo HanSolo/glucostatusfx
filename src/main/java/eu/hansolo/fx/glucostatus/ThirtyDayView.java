@@ -18,6 +18,7 @@
 
  package eu.hansolo.fx.glucostatus;
 
+ import com.jpro.webapi.WebAPI;
  import eu.hansolo.fx.glucostatus.Records.GlucoEntry;
  import eu.hansolo.toolbox.tuples.Pair;
  import eu.hansolo.toolbox.unit.UnitDefinition;
@@ -90,6 +91,7 @@
      private              Map<LocalDate, Rectangle>       boxes;
      private              Map<Rectangle, PauseTransition> transitionMap;
      private              List<LocalDate>                 selectedDates;
+     private              WebAPI                          webApi;
 
 
      // ******************** Constructors **************************************
@@ -97,7 +99,8 @@
          this(List.of(), UnitDefinition.MILLIGRAM_PER_DECILITER);
      }
      public ThirtyDayView(final List<GlucoEntry> glucoEntries, final UnitDefinition unit) {
-         this._dark             = true; //eu.hansolo.applefx.tools.Helper.isDarkMode();
+         this.webApi            = WebAPI.getWebAPI(getScene().getWindow());
+         this._dark             = webApi.isDarkMode();
          this.avgPerDay         = new ConcurrentHashMap<>(32);
          this.timeInRangePerDay = new ConcurrentHashMap<>(32);
          this.unit              = unit;
@@ -282,14 +285,15 @@
          double    verySmallFontSize = size * 0.04;
          double    smallFontSize     = size * 0.045;
          double    fontSize          = size * 0.065;
-         Font      verySmallFont     = Fonts.sfProRoundedBold(verySmallFontSize);
-         Font      smallFont         = Fonts.sfProRoundedBold(smallFontSize);
-         Font      font              = Fonts.sfProRoundedBold(fontSize);
+         Font      verySmallFont     = Fonts.sfProRoundedRegular(verySmallFontSize);
+         Font      smallFont         = Fonts.sfProRoundedRegular(smallFontSize);
+         Font      font              = Fonts.sfProRoundedRegular(fontSize);
+         Font      boldFont          = Fonts.sfProRoundedBold(fontSize);
 
          ctx.clearRect(0, 0, width, height);
          ctx.setStroke(foregroundColor);
          ctx.setFill(foregroundColor);
-         ctx.setFont(font);
+         ctx.setFont(boldFont);
          ctx.setTextAlign(TextAlignment.CENTER);
          ctx.setTextBaseline(VPos.CENTER);
          for (int y = 0 ; y < 7 ; y++) {
