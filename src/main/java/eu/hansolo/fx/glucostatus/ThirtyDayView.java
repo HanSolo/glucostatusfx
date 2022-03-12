@@ -282,14 +282,15 @@
          double    verySmallFontSize = size * 0.04;
          double    smallFontSize     = size * 0.045;
          double    fontSize          = size * 0.065;
-         Font      verySmallFont     = Fonts.sfProRoundedBold(verySmallFontSize);
-         Font      smallFont         = Fonts.sfProRoundedBold(smallFontSize);
-         Font      font              = Fonts.sfProRoundedBold(fontSize);
+         Font      verySmallFont     = Fonts.sfProRoundedRegular(verySmallFontSize);
+         Font      smallFont         = Fonts.sfProRoundedRegular(smallFontSize);
+         Font      font              = Fonts.sfProRoundedRegular(fontSize);
+         Font      boldFont          = Fonts.sfProRoundedBold(fontSize);
 
          ctx.clearRect(0, 0, width, height);
          ctx.setStroke(foregroundColor);
          ctx.setFill(foregroundColor);
-         ctx.setFont(font);
+         ctx.setFont(boldFont);
          ctx.setTextAlign(TextAlignment.CENTER);
          ctx.setTextBaseline(VPos.CENTER);
          for (int y = 0 ; y < 7 ; y++) {
