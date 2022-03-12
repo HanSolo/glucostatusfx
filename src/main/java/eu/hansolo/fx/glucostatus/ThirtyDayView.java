@@ -36,6 +36,7 @@
  import javafx.scene.input.MouseEvent;
  import javafx.scene.layout.Region;
  import javafx.scene.paint.Color;
+ import javafx.scene.text.Font;
  import javafx.scene.text.TextAlignment;
  import javafx.util.Duration;
 
@@ -84,7 +85,8 @@
      private              Canvas                          canvas;
      private              GraphicsContext                 ctx;
      private              UnitDefinition                  unit;
-     private              Map<LocalDate, Double>          entries;
+     private              Map<LocalDate, Double>          avgPerDay;
+     private              Map<LocalDate, Double>          timeInRangePerDay;
      private              Map<LocalDate, Rectangle>       boxes;
      private              Map<Rectangle, PauseTransition> transitionMap;
      private              List<LocalDate>                 selectedDates;
@@ -95,12 +97,13 @@
          this(List.of(), UnitDefinition.MILLIGRAM_PER_DECILITER);
      }
      public ThirtyDayView(final List<GlucoEntry> glucoEntries, final UnitDefinition unit) {
-         this._dark         = true; //eu.hansolo.applefx.tools.Helper.isDarkMode();
-         this.entries       = new ConcurrentHashMap<>(30);
-         this.unit          = unit;
-         this.boxes         = new ConcurrentHashMap<>();
-         this.transitionMap = new ConcurrentHashMap<>();
-         this.selectedDates = new CopyOnWriteArrayList<>();
+         this._dark             = eu.hansolo.applefx.tools.Helper.isDarkMode();
+         this.avgPerDay         = new ConcurrentHashMap<>(32);
+         this.timeInRangePerDay = new ConcurrentHashMap<>(32);
+         this.unit              = unit;
+         this.boxes             = new ConcurrentHashMap<>();
+         this.transitionMap     = new ConcurrentHashMap<>();
+         this.selectedDates     = new CopyOnWriteArrayList<>();
          initGraphics();
          registerListeners();
 
@@ -204,6 +207,7 @@
          ZonedDateTime    startDate       = currentDate.minusDays(30);
          long             startDateLong   = startDate.toEpochSecond();
          List<GlucoEntry> filteredEntries = entries.stream().filter(entry -> entry.datelong() >= startDateLong).collect(Collectors.toList());
+
          Map<LocalDate, Pair<Double,Double>> aggregatedEntries = new HashMap<>();
          filteredEntries.forEach(entry -> {
              LocalDate date = ZonedDateTime.ofInstant(Instant.ofEpochSecond(entry.datelong()), ZoneId.systemDefault()).toLocalDate();
@@ -217,9 +221,20 @@
              }
          });
 
-         this.entries.clear();
-         aggregatedEntries.entrySet().forEach(entry -> this.entries.put(entry.getKey(), (entry.getValue().getA() / entry.getValue().getB())));
+         // Time in Range per day for last 30 days
+         final double minNormal = PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MIN_NORMAL);
+         final double maxNormal = PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MAX_NORMAL);
+         this.timeInRangePerDay.clear();
+         aggregatedEntries.entrySet().forEach(entry -> {
+             final LocalDate        date              = entry.getKey();
+             final List<GlucoEntry> entriesPerDay     = filteredEntries.stream().filter(ntry -> LocalDate.ofInstant(Instant.ofEpochSecond(ntry.datelong()), ZoneId.systemDefault()).equals(date)).collect(Collectors.toList());
+             final int              noOfEntriesPerDay = entriesPerDay.size();
+             final double           pNormal           = (double) (entriesPerDay.stream().filter(e -> e.sgv() > minNormal).filter(e -> e.sgv() <= maxNormal).count()) / noOfEntriesPerDay;
+             this.timeInRangePerDay.put(date, pNormal);
+         });
 
+         this.avgPerDay.clear();
+         aggregatedEntries.entrySet().forEach(entry -> this.avgPerDay.put(entry.getKey(), (entry.getValue().getA() / entry.getValue().getB())));
          redraw();
      }
 
@@ -259,23 +274,32 @@
      private void redraw() {
          boxes.clear();
 
-         LocalDate currentDate     = LocalDate.now();
-         LocalDate startDate       = currentDate.minusDays(30);
-         int       startWeek       = startDate.get(WeekFields.ISO.weekOfYear());
-         Color     foregroundColor = isDark() ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT;
+         LocalDate currentDate       = LocalDate.now();
+         LocalDate startDate         = currentDate.minusDays(30);
+         int       startWeek         = startDate.get(WeekFields.ISO.weekOfYear());
+         int       endWeek           = currentDate.get(WeekFields.ISO.weekOfYear());
+         Color     foregroundColor   = isDark() ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT;
+         double    verySmallFontSize = size * 0.04;
+         double    smallFontSize     = size * 0.045;
+         double    fontSize          = size * 0.065;
+         Font      verySmallFont     = Fonts.sfProRoundedBold(verySmallFontSize);
+         Font      smallFont         = Fonts.sfProRoundedBold(smallFontSize);
+         Font      font              = Fonts.sfProRoundedBold(fontSize);
 
          ctx.clearRect(0, 0, width, height);
          ctx.setStroke(foregroundColor);
          ctx.setFill(foregroundColor);
-         ctx.setFont(Fonts.sfProRoundedBold(size * 0.065));
+         ctx.setFont(font);
          ctx.setTextAlign(TextAlignment.CENTER);
          ctx.setTextBaseline(VPos.CENTER);
-         for (int y = 0 ; y < 8 ; y++) {
-             for (int x = 0 ; x < 9 ; x++) {
+         for (int y = 0 ; y < 7 ; y++) {
+             for (int x = 0 ; x < 8 ; x++) {
                  double posX = x * boxWidth;
                  double posY = y * boxHeight;
-                 if (x == 0 && y > 0) {
-                     ctx.fillText(Integer.toString(startWeek + y), posX + boxCenterX, posY + boxCenterY);
+                 if (x == 0 && y == 0) {
+
+                 } else if (x == 0 && y > 0) {
+                     ctx.fillText(Integer.toString(startWeek + y - 1), posX + boxCenterX, posY + boxCenterY);
                  } else if (y == 0 && x > 0 && x < 8) {
                      ctx.fillText(DayOfWeek.values()[x - 1].getDisplayName(TextStyle.NARROW_STANDALONE, Locale.getDefault()), posX + boxCenterX, posY + boxCenterY);
                  }
@@ -283,19 +307,19 @@
          }
 
          int indexX = currentDate.getDayOfWeek().getValue() - 1;
-         int indexY = 5;
-         ctx.setFont(Fonts.sfProRoundedRegular(size * 0.065));
+         int indexY = endWeek - startWeek;
+         ctx.setFont(font);
          for (int i = 0 ; i < 30 ; i++) {
              LocalDate date = currentDate.minusDays(i);
              double  posX       = boxWidth + indexX * boxWidth;
              double  posY       = boxHeight + indexY * boxHeight;
              boolean showValue  = !selectedDates.isEmpty() && selectedDates.contains(date);
 
-             Double value = entries.get(date);
+             Double value = avgPerDay.get(date);
              if (null == value) { value = 0.0; }
 
-             Color   valueColor = entries.isEmpty() ? Constants.GRAY : Helper.getColorForValue2(unit, UnitDefinition.MILLIGRAM_PER_DECILITER == unit ? value : Helper.mgPerDeciliterToMmolPerLiter(value));
-             if (entries.containsKey(date)) {
+             Color   valueColor = avgPerDay.isEmpty() ? Constants.GRAY : Helper.getColorForValue2(unit, UnitDefinition.MILLIGRAM_PER_DECILITER == unit ? value : Helper.mgPerDeciliterToMmolPerLiter(value));
+             if (avgPerDay.containsKey(date)) {
                  if (showValue) {
                      ctx.setStroke(foregroundColor);
                      ctx.strokeRoundRect(posX + boxOffset, posY + boxOffset, boxWidth - doubleBoxOffset, boxHeight - doubleBoxOffset, boxRadius, boxRadius);
@@ -309,11 +333,18 @@
              if (showValue) {
                  ctx.setFill(isDark() ? valueColor : valueColor.darker());
                  if (UnitDefinition.MILLIGRAM_PER_DECILITER == unit) {
-                     ctx.fillText(String.format(Locale.US, "%.0f", this.entries.get(date)), posX + boxCenterX, posY + boxCenterY, boxWidth);
+                     ctx.setFont(smallFont);
+                     ctx.fillText(String.format(Locale.US, "%.0f", this.avgPerDay.get(date)), posX + boxCenterX, posY + boxCenterY - smallFontSize * 0.5, boxWidth);
+                     ctx.setFont(verySmallFont);
+                     ctx.fillText(String.format(Locale.US, "%.0f%% ", this.timeInRangePerDay.get(date) * 100), posX + boxCenterX, posY + boxCenterY + smallFontSize * 0.5, boxWidth);
                  } else {
-                     ctx.fillText(String.format(Locale.US, "%.1f", Helper.mgPerDeciliterToMmolPerLiter(this.entries.get(date))), posX + boxCenterX, posY + boxCenterY, boxWidth);
+                     ctx.setFont(smallFont);
+                     ctx.fillText(String.format(Locale.US, "%.1f", Helper.mgPerDeciliterToMmolPerLiter(this.avgPerDay.get(date))), posX + boxCenterX, posY + boxCenterY - smallFontSize * 0.5, boxWidth);
+                     ctx.setFont(verySmallFont);
+                     ctx.fillText(String.format(Locale.US, "%.0f%% ", this.timeInRangePerDay.get(date) * 100), posX + boxCenterX, posY + boxCenterY + smallFontSize * 0.5, boxWidth);
                  }
              } else {
+                 ctx.setFont(font);
                  ctx.setFill(foregroundColor);
                  ctx.fillText(Integer.toString(date.getDayOfMonth()), posX + boxCenterX, posY + boxCenterY);
              }
