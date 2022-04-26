@@ -143,14 +143,15 @@ import static eu.hansolo.toolbox.unit.UnitDefinition.MILLIMOL_PER_LITER;
 
 
 public class Main extends Application {
-    private static final Insets                     GRAPH_INSETS   = new Insets(5, 10, 5, 10);
-    private        final Image                      icon           = new Image(Main.class.getResourceAsStream("icon48x48.png"));
-    private        final Image                      stageIcon      = new Image(Main.class.getResourceAsStream("icon128x128.png"));
-    private        final Translator                 translator     = new Translator(I18nKeys.RESOURCE_NAME);
-    private              ZonedDateTime              lastUpdate     = ZonedDateTime.now().minusMinutes(6);
-    private              ZonedDateTime              lastFullUpdate = ZonedDateTime.now().minusMinutes(5);
-    private              AtomicBoolean              switchingUnits = new AtomicBoolean(false);
-    private              String                     nightscoutUrl  = "";
+    private static final Insets                     GRAPH_INSETS    = new Insets(5, 10, 5, 10);
+    private        final Image                      icon            = new Image(Main.class.getResourceAsStream("icon48x48.png"));
+    private        final Image                      stageIcon       = new Image(Main.class.getResourceAsStream("icon128x128.png"));
+    private        final Translator                 translator      = new Translator(I18nKeys.RESOURCE_NAME);
+    private              ZonedDateTime              lastUpdate      = ZonedDateTime.now().minusMinutes(6);
+    private              ZonedDateTime              lastFullUpdate  = ZonedDateTime.now().minusMinutes(5);
+    private              AtomicBoolean              switchingUnits  = new AtomicBoolean(false);
+    private              String                     nightscoutUrl   = "";
+    private              String                     nightscoutToken = "";
     private              MacosWindow                macosWindow;
     private              boolean                    trayIconSupported;
     private              OsArcMode                  sysinfo;
@@ -188,6 +189,7 @@ public class Main extends Application {
     private              StackPane                  pane;
     private              StackPane                  prefPane;
     private              MacosTextField             nightscoutUrlTextField;
+    private              MacosTextField             nightscoutTokenTextField;
     private              MacosSwitch                unitSwitch;
     private              MacosSwitch                deltaChartSwitch;
     private              MacosSwitch                voiceOutputSwitch;
@@ -260,6 +262,7 @@ public class Main extends Application {
     // ******************** Initialization ************************************
     @Override public void init() {
         nightscoutUrl     = PropertyManager.INSTANCE.getString(Constants.PROPERTIES_NIGHTSCOUT_URL);
+        nightscoutToken   = PropertyManager.INSTANCE.getString(Constants.PROPERTIES_NIGHTSCOUT_TOKEN, "");
         sysinfo           = eu.hansolo.jdktools.util.Helper.getOperaringSystemArchitectureOperatingMode();
         operatingSystem   = sysinfo.operatingSystem();
         architecture      = sysinfo.architecture();
@@ -758,7 +761,7 @@ public class Main extends Application {
     private void updateEntries() {
         if (null == nightscoutUrl || nightscoutUrl.isEmpty()) { return; }
         GlucoEntry           entryFound = null;
-        HttpResponse<String> response   = Helper.get(nightscoutUrl + Constants.URL_API + Constants.URL_PARAM_COUNT_1);
+        HttpResponse<String> response   = Helper.get(nightscoutUrl + Constants.URL_API + Constants.URL_PARAM_COUNT_1, nightscoutToken);
         if (null != response && null != response.body() && !response.body().isEmpty()) {
             List<GlucoEntry> entry = Helper.getGlucoEntries(response.body());
             entryFound = entry.isEmpty() ? null : entry.get(0);
@@ -973,6 +976,7 @@ public class Main extends Application {
 
     private void applySettingsToPreferences() {
         nightscoutUrlTextField.setText(PropertyManager.INSTANCE.getString(Constants.PROPERTIES_NIGHTSCOUT_URL));
+        nightscoutTokenTextField.setText(PropertyManager.INSTANCE.getString(Constants.PROPERTIES_NIGHTSCOUT_TOKEN));
         unitSwitch.setSelected(PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_UNIT_MG));
         deltaChartSwitch.setSelected(PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_SHOW_DELTA_CHART));
         voiceOutputSwitch.setSelected(PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_VOICE_OUTPUT, false));
@@ -999,6 +1003,7 @@ public class Main extends Application {
 
     private void savePreferencesToSettings() {
         PropertyManager.INSTANCE.setString(Constants.PROPERTIES_NIGHTSCOUT_URL, nightscoutUrlTextField.getText());
+        PropertyManager.INSTANCE.setString(Constants.PROPERTIES_NIGHTSCOUT_TOKEN, nightscoutTokenTextField.getText());
         PropertyManager.INSTANCE.setBoolean(Constants.PROPERTIES_UNIT_MG, unitSwitch.isSelected());
         PropertyManager.INSTANCE.setBoolean(Constants.PROPERTIES_SHOW_DELTA_CHART, deltaChartSwitch.isSelected());
         PropertyManager.INSTANCE.setBoolean(Constants.PROPERTIES_VOICE_OUTPUT, voiceOutputSwitch.isSelected());
@@ -1047,6 +1052,8 @@ public class Main extends Application {
             service.start();
         }
 
+        nightscoutToken = nightscoutTokenTextField.getText();
+
         updateSettings();
         updateUI();
     }
@@ -1075,6 +1082,10 @@ public class Main extends Application {
 
         currentEntry = entries.get(0);
         currentColor = null == currentEntry ? Constants.GRAY : Helper.getColorForValue(currentUnit, UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? currentEntry.sgv() : Helper.mgPerDeciliterToMmolPerLiter(currentEntry.sgv()));
+
+        Trend currentTrend     = currentEntry.trend();
+        Trend currentDirection = Trend.getFromText(currentEntry.direction());
+        Trend trend            = (Trend.NONE != currentDirection && currentTrend != currentDirection) ? currentDirection : currentTrend;
 
         deltas.clear();
         if (allEntries.size() > 13) {
@@ -1105,7 +1116,7 @@ public class Main extends Application {
 
         String format           = MILLIGRAM_PER_DECILITER == currentUnit ? "%.0f" : "%.1f";
         double currentValue     = UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? currentEntry.sgv() : Helper.mgPerDeciliterToMmolPerLiter(currentEntry.sgv());
-        String currentValueText = new StringBuilder().append(String.format(Locale.US, format, currentValue)).append(" ").append(currentEntry.trend().getSymbol()).toString();
+        String currentValueText = new StringBuilder().append(String.format(Locale.US, format, currentValue)).append(" ").append(trend.getSymbol()).toString();
 
         Instant lastTimestamp = Instant.ofEpochSecond(currentEntry.datelong());
         outdated = (OffsetDateTime.now().toEpochSecond() - lastTimestamp.getEpochSecond() > Constants.TIMEOUT_IN_SECONDS);
@@ -1557,6 +1568,18 @@ public class Main extends Application {
         HBox nightscoutUrlBox = new HBox(10, nightscoutUrlLabel, nightscoutUrlTextField);
         nightscoutUrlBox.setAlignment(Pos.CENTER);
 
+        MacosLabel nightscoutTokenLabel = new MacosLabel(translator.get(I18nKeys.SETTINGS_NIGHTSCOUT_TOKEN));
+        nightscoutTokenLabel.setDark(darkMode);
+        nightscoutTokenLabel.setFont(Fonts.sfProTextRegular(14));
+        nightscoutTokenTextField = new MacosTextField();
+        nightscoutTokenTextField.setDark(darkMode);
+        nightscoutTokenTextField.setFont(Fonts.sfProRoundedRegular(14));
+        nightscoutTokenTextField.setPrefWidth(TextField.USE_COMPUTED_SIZE);
+        nightscoutTokenTextField.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(nightscoutTokenTextField, Priority.ALWAYS);
+        HBox nightscoutTokenBox = new HBox(10, nightscoutTokenLabel, nightscoutTokenTextField);
+        nightscoutTokenBox.setAlignment(Pos.CENTER);
+
 
         MacosSeparator s1 = new MacosSeparator(Orientation.HORIZONTAL);
         s1.setDark(darkMode);
@@ -1873,7 +1896,7 @@ public class Main extends Application {
         });
 
 
-        VBox settingsVBox = new VBox(5, nightscoutUrlBox, s1, unitBox, s2, deltaChartBox, s3,
+        VBox settingsVBox = new VBox(5, nightscoutUrlBox, nightscoutTokenBox, s1, unitBox, s2, deltaChartBox, s3,
                                      voiceOutputBox, voiceOutputIntervalLabel, voiceOutputIntervalSlider,
                                      notificationsLabel, tooLowBox, lowBox, acceptableLowBox, acceptableHighBox, highBox, tooHighBox, s4,
                                      tooLowIntervalLabel, tooLowIntervalSlider, tooHighIntervalLabel, tooHighIntervalSlider, s5,

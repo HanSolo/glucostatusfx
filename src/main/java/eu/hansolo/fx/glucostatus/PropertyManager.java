@@ -116,6 +116,7 @@ public enum PropertyManager {
         final String propFilePath = new StringBuilder(Constants.HOME_FOLDER).append(GLUCO_STATUS_FX_PROPERTIES).toString();
         try (OutputStream output = new FileOutputStream(propFilePath)) {
             properties.put(Constants.PROPERTIES_NIGHTSCOUT_URL, "");
+            properties.put(Constants.PROPERTIES_NIGHTSCOUT_TOKEN, "");
             properties.put(Constants.PROPERTIES_UNIT_MG, "TRUE");
             properties.put(Constants.PROPERTIES_SHOW_DELTA_CHART, "TRUE");
             properties.put(Constants.PROPERTIES_VOICE_OUTPUT, "FALSE");
