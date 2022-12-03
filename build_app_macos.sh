@@ -19,8 +19,8 @@
 #
 
 JAVA_VERSION=17
-MAIN_JAR="GlucoStatusFX-17.0.18.jar"
-APP_VERSION=17.0.18
+MAIN_JAR="GlucoStatusFX-17.0.19.jar"
+APP_VERSION=17.0.19
 
 echo "java home: $JAVA_HOME"
 echo "project version: $PROJECT_VERSION"

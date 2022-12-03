@@ -12,29 +12,29 @@ jobs:
     runs-on: [ windows-latest ]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up JDK 17.0.2
         uses: foojayio/setup-java@disco
         with:
           java-version: 17.0.2
           architecture: x64
       - name: Build with Gradle
-        run: .\gradlew.bat assemble
+        run: ./gradlew.bat build
       - name: Create Distribution
         run: .\build_app_windows.bat
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: GlucoStatusFX Windows
-          path: '.\build\installer\GlucoStatusFX-17.0.18.msi'
-
-
+          path: |
+            build/installer
+            build/libs
 
   build-mac:
 
     runs-on: [ macos-latest ]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up JDK 17.0.2
         uses: foojayio/setup-java@disco
         with:
@@ -48,20 +48,19 @@ jobs:
         run: chmod +x ./build_app_macos.sh
       - name: Create Distribution
         run: ./build_app_macos.sh
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: GlucoStatusFX Mac
           path: |
-            ./build/installer/GlucoStatusFX-17.0.18.pkg
-            ./build/installer/GlucoStatusFX-17.0.18.pkg.sha256
-            ./build/libs/GlucoStatusFX-17.0.18.jar
+            build/installer
+            build/libs
 
   build-linux:
 
     runs-on: [ ubuntu-latest ]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up JDK 17.0.2
         uses: foojayio/setup-java@disco
         with:
@@ -75,12 +74,9 @@ jobs:
         run: chmod +x ./build_app_linux.sh
       - name: Create Distribution
         run: ./build_app_linux.sh
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: GlucoStatusFX Linux
           path: |
-            ./build/installer/glucostatusfx_17.0.18-1_amd64.deb
-            ./build/installer/glucostatusfx_17.0.18-1_amd64.deb.sha256
-            ./build/installer/glucostatusfx-17.0.18-1_x86_64.rpm
-            ./build/installer/glucostatusfx-17.0.18-1_x86_64.rpm.sha256
-            ./build/libs/GlucoStatusFX-17.0.18.jar
+            build/installer
+            build/libs
