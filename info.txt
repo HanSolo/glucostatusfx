@@ -1,3 +1,5 @@
+ export GRAALVM_HOME=/Library/Java/JavaVirtualMachines/gluon-graalvm/Contents/Home
+
  mvn -Pios gluonfx:build
 
  mvn -Pios gluonfx:package

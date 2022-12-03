@@ -501,8 +501,10 @@
     "fields" : [
       {"name":"ints" },
       {"name":"bytes" },
-      {"name":"width" },
-      {"name":"height" }
+      {"name":"height" },
+      {"name":"scalex" },
+      {"name":"scaley" },
+      {"name":"width" }
     ]
   }
 ,

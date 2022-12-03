@@ -6,7 +6,7 @@
 
     <groupId>eu.hansolo.fx</groupId>
     <artifactId>glucostatusfx</artifactId>
-    <version>17.0.0</version>
+    <version>17.0.1</version>
     <packaging>jar</packaging>
 
     <name>GlucoStatusFX</name>
@@ -16,9 +16,9 @@
         <maven.compiler.release>11</maven.compiler.release>
         <javafx.version>17.0.2</javafx.version>
         <javafx.plugin.version>0.0.8</javafx.plugin.version>
-        <gluonfx.plugin.version>1.0.12</gluonfx.plugin.version>
-        <charm.version>6.1.0</charm.version>
-        <attach.version>4.0.13</attach.version>
+        <gluonfx.plugin.version>1.0.16</gluonfx.plugin.version>
+        <charm.version>6.2.2</charm.version>
+        <attach.version>4.0.16</attach.version>
         <main.class>eu.hansolo.fx.glucostatus.Main</main.class>
     </properties>
 
@@ -93,22 +93,22 @@
         <dependency>
             <groupId>eu.hansolo</groupId>
             <artifactId>jdktools</artifactId>
-            <version>17.0.7</version>
+            <version>17.0.27</version>
         </dependency>
         <dependency>
             <groupId>eu.hansolo</groupId>
             <artifactId>toolbox</artifactId>
-            <version>17.0.14</version>
+            <version>17.0.33</version>
         </dependency>
         <dependency>
             <groupId>eu.hansolo</groupId>
             <artifactId>toolboxfx</artifactId>
-            <version>17.0.23</version>
+            <version>17.0.33</version>
         </dependency>
         <dependency>
             <groupId>eu.hansolo</groupId>
             <artifactId>applefx</artifactId>
-            <version>17.0.40</version>
+            <version>17.0.45</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>

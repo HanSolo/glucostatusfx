@@ -43,23 +43,23 @@
 	<key>DTPlatformName</key>
 	<string>iphoneos</string>
 	<key>DTSDKName</key>
-	<string>iphoneos15.2</string>
+	<string>iphoneos16.1</string>
 	<key>CFBundleSupportedPlatforms</key>
 	<array>
 		<string>iPhoneOS</string>
 	</array>
 	<key>DTPlatformVersion</key>
-	<string>15.2</string>
+	<string>16.1</string>
 	<key>DTPlatformBuild</key>
-	<string>19C51</string>
+	<string>20B71</string>
 	<key>DTSDKBuild</key>
-	<string>19C51</string>
+	<string>20B71</string>
 	<key>DTXcode</key>
-	<string>1320</string>
+	<string>1410</string>
 	<key>DTXcodeBuild</key>
-	<string>13C100</string>
+	<string>14B47b</string>
 	<key>BuildMachineOSBuild</key>
-	<string>21C5</string>
+	<string>20A241133</string>
 	<key>CFBundleIcons</key>
 	<dict>
 		<key>CFBundlePrimaryIcon</key>

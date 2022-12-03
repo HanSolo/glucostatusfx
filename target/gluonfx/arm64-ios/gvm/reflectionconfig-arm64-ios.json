@@ -146,17 +146,17 @@
   }
 ,
   {
-    "name":"com.gluonhq.impl.charm.glisten.control.skin.GlistenButtonSkin",
+    "name":"com.gluonhq.charm.glisten.control.skin.GlistenButtonSkin",
     "methods":[{"name":"<init>","parameterTypes":["javafx.scene.control.Button"] }]
   }
 ,
   {
-    "name":"com.gluonhq.impl.charm.glisten.control.skin.GlistenToggleButtonSkin",
+    "name":"com.gluonhq.charm.glisten.control.skin.GlistenToggleButtonSkin",
     "methods":[{"name":"<init>","parameterTypes":["javafx.scene.control.ToggleButton"] }]
   }
 ,
   {
-    "name":"com.gluonhq.impl.charm.glisten.control.skin.GlistenSwitchSkin",
+    "name":"com.gluonhq.charm.glisten.control.skin.GlistenSwitchSkin",
     "methods":[{"name":"<init>","parameterTypes":["javafx.scene.control.ToggleButton"] }]
   }
 ,

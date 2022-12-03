@@ -1,0 +1,2 @@
+JAVA_VERSION="17.0.5"
+MODULES="java.base java.datatransfer java.xml java.prefs java.desktop java.logging java.net.http java.transaction.xa java.sql jdk.crypto.ec jdk.jfr jdk.localedata jdk.unsupported jdk.unsupported.desktop"
