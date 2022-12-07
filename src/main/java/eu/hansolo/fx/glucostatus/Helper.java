@@ -32,14 +32,19 @@ import eu.hansolo.toolbox.unit.UnitDefinition;
 import eu.hansolo.toolboxfx.HelperFX;
 import eu.hansolo.toolboxfx.geom.Point;
 import javafx.embed.swing.SwingFXUtils;
+import javafx.geometry.VPos;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.image.Image;
 import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
+import javafx.scene.text.FontSmoothingType;
 import javafx.scene.text.TextAlignment;
 
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -253,18 +258,20 @@ public class Helper {
     }
 
     public static final BufferedImage createTextTrayIcon(final String text, final Color color) {
-        final int    width    = 64;
-        final int    height   = 18;
-        final double fontSize = 14;
-        final double x        = 32;
-        final double y        = 14;
+        final int    width    = 44;
+        final int    height   = 22;
+        final double x        = width / 2;
+        final double y        = height / 2;
+        final double fontSize = 0.6363636364 * height;
 
         final Canvas          canvas = new Canvas(width, height);
         final GraphicsContext ctx    = canvas.getGraphicsContext2D();
-        ctx.setFont(Fonts.sfProRoundedRegular(fontSize));
+        ctx.setFont(Fonts.sfProRoundedSemiBold(fontSize));
         ctx.setTextAlign(TextAlignment.CENTER);
+        ctx.setTextBaseline(VPos.CENTER);
+        ctx.setFontSmoothingType(FontSmoothingType.LCD);
         ctx.setFill(color);
-        ctx.fillText(text, x, y);
+        ctx.fillText(text, x, y, width);
 
         final WritableImage img = new WritableImage(width, height);
         final SnapshotParameters parameters = new SnapshotParameters();
@@ -272,6 +279,41 @@ public class Helper {
         canvas.snapshot(parameters, img);
 
         return SwingFXUtils.fromFXImage(img, null);
+    }
+
+    public static final Image createTextTrayIconFX(final int width, final int height, final String text, final Color color) {
+        final double fontSize = height * 0.85;
+        final double x        = width  / 2;
+        final double y        = height / 2;
+
+        final Canvas          canvas = new Canvas(width, height);
+        final GraphicsContext ctx    = canvas.getGraphicsContext2D();
+        ctx.setFont(Fonts.sfProRoundedBold(fontSize));
+        ctx.setTextAlign(TextAlignment.CENTER);
+        ctx.setTextBaseline(VPos.CENTER);
+        ctx.setFontSmoothingType(FontSmoothingType.GRAY);
+        ctx.setFill(color);
+        ctx.fillText(text, x, y);//, width);
+
+        final WritableImage img = new WritableImage(width, height);
+        final SnapshotParameters parameters = new SnapshotParameters();
+        parameters.setFill(Color.TRANSPARENT);
+        canvas.snapshot(parameters, img);
+
+        return img;
+    }
+
+    public static final void saveImage(final Image img, final String filename) {
+        final BufferedImage bImg = SwingFXUtils.fromFXImage(img, null);
+        saveImage(bImg, filename);
+    }
+    public static final void saveImage(final BufferedImage img, final String filename) {
+        final File outputFile = new File(filename);
+        try {
+            ImageIO.write(img, "png", outputFile);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 

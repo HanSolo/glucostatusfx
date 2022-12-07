@@ -476,6 +476,7 @@ public class Main extends Application {
         if (trayIconSupported) {
             switch (operatingSystem) {
                 case WINDOWS -> trayIcon = new FXTrayIcon(stage, getClass().getResource("icon48x48.png"));
+                //case MACOS   -> trayIcon = new FXTrayIcon(stage, Helper.createTextTrayIconFX(36, 18, "--", Color.WHITE));
                 case MACOS   -> trayIcon = new FXTrayIcon(stage, Helper.createTextTrayIcon("--", Color.WHITE));
                 case LINUX   -> trayIcon = new FXTrayIcon(stage, getClass().getResource("icon48x48.png"));
             }
@@ -1132,6 +1133,8 @@ public class Main extends Application {
             SwingUtilities.invokeLater(() -> Platform.runLater(() -> {
                 String text = currentValueText + (outdated ? "\u26A0" : "");
                 trayIcon.setGraphic(Helper.createTextTrayIcon(text, Color.WHITE));
+                //trayIcon.setGraphic(Helper.createTextTrayIconFX(36, 18, text, Color.WHITE), 36, 18);
+                //trayIcon.setGraphic(Helper.createTextTrayIconFX(88, 44, text, Color.WHITE), 88, 44);
                 trayIcon.setTrayIconTooltip(text);
             }));
         }

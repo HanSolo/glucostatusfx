@@ -16,7 +16,8 @@ module eu.hansolo.fx.glucostatus {
     requires transitive eu.hansolo.toolboxfx;
     requires transitive eu.hansolo.applefx;
     requires com.google.gson;
-    requires com.dustinredmond.fxtrayicon;
+    //requires com.dustinredmond.fxtrayicon;
+    requires FXTrayIcon;
 
     exports eu.hansolo.fx.glucostatus;
     exports eu.hansolo.fx.glucostatus.notification;
