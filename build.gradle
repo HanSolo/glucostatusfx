@@ -94,6 +94,21 @@ task Main(type: JavaExec) {
 }
 
 
+// create properties file including the version
+task createProperties(dependsOn: processResources) {
+    doLast {
+        new File("$buildDir//classes/java/main/eu/hansolo/fx/glucostatus/version.properties").withWriter { w ->
+            Properties p = new Properties()
+            p['version'] = project.version.toString()
+            p.store w, null
+        }
+    }
+}
+
+classes {
+    dependsOn createProperties
+}
+
 
 // Fix problems with loading resources
 sourceSets {

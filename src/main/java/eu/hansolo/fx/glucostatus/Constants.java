@@ -26,6 +26,8 @@ import java.util.List;
 
 
 public class Constants {
+    public static final String            RELEASES_URI                                = "https://github.com/HanSolo/glucostatusfx/releases/latest";
+    public static final String            TEST_CONNECTIVITY_URL                       = "https://github.com";
     public static final String            HOME_FOLDER                                 = new StringBuilder(System.getProperty("user.home")).append(File.separator).toString();
     public static final String            URL_API                                     = "/api/v1/entries.json";
     public static final String            URL_PARAM_COUNT_1                           = "?count=1";

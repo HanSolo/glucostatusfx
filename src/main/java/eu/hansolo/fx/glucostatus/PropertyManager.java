@@ -18,6 +18,8 @@
 
 package eu.hansolo.fx.glucostatus;
 
+import eu.hansolo.jdktools.versioning.VersionNumber;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -32,8 +34,11 @@ import java.util.Properties;
 public enum PropertyManager {
     INSTANCE;
 
+    public  static final String     VERSION_PROPERTIES         = "version.properties";
     public  static final String     GLUCO_STATUS_FX_PROPERTIES = "glucostatusfx.properties";
+    public  static final String     VERSION                    = "version";
     private              Properties properties;
+    private              Properties versionProperties;
 
 
     // ******************** Constructors **************************************
@@ -56,6 +61,14 @@ public enum PropertyManager {
         // If properties empty, fill with default values
         if (properties.isEmpty()) {
             createProperties(properties);
+        }
+
+        // Version number properties
+        versionProperties = new Properties();
+        try {
+            versionProperties.load(Main.class.getResourceAsStream(VERSION_PROPERTIES));
+        } catch (IOException ex) {
+            System.out.println("Error reading version properties file. " + ex);
         }
     }
 
@@ -108,6 +121,11 @@ public enum PropertyManager {
         } catch (IOException ex) {
             ex.printStackTrace();
         }
+    }
+
+
+    public VersionNumber getVersionNumber() {
+        return VersionNumber.fromText(versionProperties.getProperty(VERSION));
     }
 
 

@@ -316,6 +316,10 @@ public class Helper {
         }
     }
 
+    public static final CompletableFuture<HttpResponse<String>> checkForUpdateAsync() {
+        return getAsync(Constants.RELEASES_URI);
+    }
+
 
     // ******************** REST calls ****************************************
     private static HttpClient createHttpClient() {
@@ -359,7 +363,7 @@ public class Helper {
                                                .GET()
                                                .uri(URI.create(uri))
                                                .setHeader("Accept", "application/json")
-                                               .setHeader("User-Agent", "DiscoAPI")
+                                               .setHeader("User-Agent", "GlucoStatusFX")
                                                .timeout(Duration.ofSeconds(60))
                                                .build();
         return httpClientAsync.sendAsync(request, BodyHandlers.ofString());

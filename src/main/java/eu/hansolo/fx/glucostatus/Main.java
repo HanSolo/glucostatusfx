@@ -19,6 +19,8 @@
 package eu.hansolo.fx.glucostatus;
 
 import com.dustinredmond.fxtrayicon.FXTrayIcon;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import eu.hansolo.applefx.MacosButton;
 import eu.hansolo.applefx.MacosControl;
 import eu.hansolo.applefx.MacosLabel;
@@ -33,6 +35,7 @@ import eu.hansolo.applefx.MacosToggleButtonBar;
 import eu.hansolo.applefx.MacosToggleButtonBarSeparator;
 import eu.hansolo.applefx.MacosWindow;
 import eu.hansolo.applefx.MacosWindow.Style;
+import eu.hansolo.applefx.tools.MacosAccentColor;
 import eu.hansolo.applefx.tools.MacosSystemColor;
 import eu.hansolo.fx.glucostatus.Records.DataPoint;
 import eu.hansolo.fx.glucostatus.Records.GlucoEntry;
@@ -45,8 +48,11 @@ import eu.hansolo.fx.glucostatus.notification.NotificationBuilder;
 import eu.hansolo.fx.glucostatus.notification.Notifier;
 import eu.hansolo.fx.glucostatus.notification.NotifierBuilder;
 import eu.hansolo.jdktools.Architecture;
+import eu.hansolo.jdktools.OperatingMode;
 import eu.hansolo.jdktools.OperatingSystem;
 import eu.hansolo.jdktools.util.Helper.OsArcMode;
+import eu.hansolo.jdktools.util.OutputFormat;
+import eu.hansolo.jdktools.versioning.VersionNumber;
 import eu.hansolo.toolbox.tuples.Pair;
 import eu.hansolo.toolbox.unit.UnitDefinition;
 import eu.hansolo.toolboxfx.HelperFX;
@@ -75,6 +81,7 @@ import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.CustomMenuItem;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
+import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Menu;
@@ -119,7 +126,12 @@ import javafx.stage.StageStyle;
 import javafx.util.Duration;
 
 import javax.swing.*;
+import java.awt.*;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.net.http.HttpResponse;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -143,6 +155,7 @@ import static eu.hansolo.toolbox.unit.UnitDefinition.MILLIMOL_PER_LITER;
 
 
 public class Main extends Application {
+    private static final VersionNumber              VERSION         = PropertyManager.INSTANCE.getVersionNumber();
     private static final Insets                     GRAPH_INSETS    = new Insets(5, 10, 5, 10);
     private        final Image                      icon            = new Image(Main.class.getResourceAsStream("icon48x48.png"));
     private        final Image                      stageIcon       = new Image(Main.class.getResourceAsStream("icon128x128.png"));
@@ -257,10 +270,17 @@ public class Main extends Application {
     private              FXTrayIcon                 trayIcon;
     private              EventHandler<MouseEvent>   eventConsumer;
     private              DateTimeFormatter          dtf;
+    private              boolean                    isUpdateAvailable;
+    private              VersionNumber              latestVersion;
+    private              AtomicBoolean              online;
 
 
     // ******************** Initialization ************************************
     @Override public void init() {
+        isUpdateAvailable = false;
+        latestVersion     = VERSION;
+        online            = new AtomicBoolean(false);
+
         nightscoutUrl     = PropertyManager.INSTANCE.getString(Constants.PROPERTIES_NIGHTSCOUT_URL);
         nightscoutToken   = PropertyManager.INSTANCE.getString(Constants.PROPERTIES_NIGHTSCOUT_TOKEN, "");
         sysinfo           = eu.hansolo.jdktools.util.Helper.getOperaringSystemArchitectureOperatingMode();
@@ -617,7 +637,9 @@ public class Main extends Application {
                 @Override protected Task<Void> createTask() {
                     Task task = new Task() {
                         @Override protected Object call() {
+                            isOnline();
                             updateEntries();
+                            checkForLatestVersion();
                             return null;
                         }
                     };
@@ -666,6 +688,19 @@ public class Main extends Application {
         service.cancel();
         Platform.exit();
         System.exit(0);
+    }
+
+    private void isOnline() {
+        try {
+            if (!online.get()) {
+                URL           url        = new URL(Constants.TEST_CONNECTIVITY_URL);
+                URLConnection connection = url.openConnection();
+                connection.connect();
+                online.set(true);
+            }
+        } catch (IOException e) {
+            online.set(false);
+        }
     }
 
 
@@ -1404,6 +1439,22 @@ public class Main extends Application {
         }
     }
 
+    private void checkForLatestVersion() {
+        if (!online.get()) { return; }
+        Helper.checkForUpdateAsync().thenAccept(response -> {
+            if (null == response || null == response.body() || response.body().isEmpty()) {
+                isUpdateAvailable = false;
+            } else {
+                final Gson       gson       = new Gson();
+                final JsonObject jsonObject = gson.fromJson(response.body(), JsonObject.class);
+                if (jsonObject.has("tag_name")) {
+                    latestVersion     = VersionNumber.fromText(jsonObject.get("tag_name").getAsString());
+                    isUpdateAvailable = latestVersion.compareTo(Main.VERSION) > 0;
+                }
+            }
+        });
+    }
+
 
     // ******************** Factory methods ***********************************
     private Text createDeltaText(final String text, final boolean bold, final double size) {
@@ -1487,6 +1538,20 @@ public class Main extends Application {
         nameLabel.setFont(Fonts.sfProTextBold(14));
         nameLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
 
+        boolean rosetta2 = OperatingMode.EMULATED == sysinfo.operatingMode() && OperatingSystem.MACOS == sysinfo.operatingSystem();
+        String environment = new StringBuilder().append("(")
+                                                .append(sysinfo.operatingSystem().getUiString()).append(", ")
+                                                .append(sysinfo.architecture().getUiString())
+                                                .append(rosetta2 ? " (Rosetta2)" : "")
+                                                .append(")").toString();
+        Label environmentLabel = new Label(environment);
+        environmentLabel.setFont(Fonts.sfProTextRegular(12));
+        environmentLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
+
+        Label versionLabel = new Label(VERSION.toString(OutputFormat.REDUCED_COMPRESSED, true, false));
+        versionLabel.setFont(Fonts.sfProTextRegular(14));
+        versionLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
+
         MacosLabel descriptionLabel = new MacosLabel("\u00A9 Gerrit Grunwald 2022");
         descriptionLabel.setPrefWidth(Label.USE_COMPUTED_SIZE);
         descriptionLabel.setMaxWidth(Double.MAX_VALUE);
@@ -1494,6 +1559,43 @@ public class Main extends Application {
         descriptionLabel.setTextAlignment(TextAlignment.CENTER);
         descriptionLabel.setAlignment(Pos.CENTER);
         descriptionLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
+
+        Node updateNode;
+        if (isUpdateAvailable) {
+            Hyperlink updateLink = new Hyperlink();
+            updateLink.setFont(Fonts.sfProTextRegular(12));
+            updateLink.setText("New Version (" + latestVersion.toString(OutputFormat.REDUCED_COMPRESSED, true, false) + ") available");
+            updateLink.setOnAction(e -> {
+                if (Desktop.isDesktopSupported()) {
+                    try {
+                        Desktop.getDesktop().browse(new URI(Constants.RELEASES_URI));
+                    } catch (IOException | URISyntaxException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            });
+
+            if (OperatingSystem.MACOS == operatingSystem) {
+                if (darkMode) {
+                    updateLink.setTextFill(eu.hansolo.applefx.tools.Helper.getMacosAccentColor().getColorDark());
+                } else {
+                    updateLink.setTextFill(eu.hansolo.applefx.tools.Helper.getMacosAccentColor().getColorAqua());
+                }
+            } else {
+                updateLink.setTextFill(MacosAccentColor.BLUE.getColorAqua());
+            }
+            updateNode = updateLink;
+        } else {
+            Label updateLabel = new Label("Latest version installed");
+            updateLabel.setFont(Fonts.sfProTextRegular(12));
+
+            if (darkMode) {
+                updateLabel.setTextFill(Color.web("#dddddd"));
+            } else {
+                updateLabel.setTextFill(Color.web("#2a2a2a"));
+            }
+            updateNode = updateLabel;
+        }
 
         MacosButton closeButton = new MacosButton(translator.get(I18nKeys.ABOUT_ALERT_CLOSE_BUTTON));
         closeButton.setDark(darkMode);
@@ -1503,16 +1605,16 @@ public class Main extends Application {
         });
         VBox.setMargin(closeButton, new Insets(20, 0, 0, 0));
 
-        VBox aboutTextBox = new VBox(10, nameLabel, descriptionLabel, closeButton);
+        VBox aboutTextBox = new VBox(10, nameLabel, versionLabel, environmentLabel, updateNode, descriptionLabel, closeButton);
         aboutTextBox.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, CornerRadii.EMPTY, Insets.EMPTY)));
         aboutTextBox.setAlignment(Pos.CENTER);
 
         VBox aboutBox = new VBox(20, aboutImage, aboutTextBox);
         aboutBox.setAlignment(Pos.CENTER);
         aboutBox.setPadding(new Insets(20, 20, 20, 20));
-        aboutBox.setMinSize(260, 232);
-        aboutBox.setMaxSize(260, 232);
-        aboutBox.setPrefSize(260, 232);
+        aboutBox.setMinSize(260, 282);
+        aboutBox.setMaxSize(260, 282);
+        aboutBox.setPrefSize(260, 282);
         aboutBox.setBackground(new Background(new BackgroundFill(darkMode ? MacosSystemColor.BACKGROUND.dark() : MacosSystemColor.BACKGROUND.aqua(), new CornerRadii(10), Insets.EMPTY)));
 
 
@@ -1521,9 +1623,9 @@ public class Main extends Application {
         } else {
             StackPane glassPane = new StackPane(aboutBox);
             glassPane.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, CornerRadii.EMPTY, Insets.EMPTY)));
-            glassPane.setMinSize(260, 232);
-            glassPane.setMaxSize(260, 232);
-            glassPane.setPrefSize(260, 232);
+            glassPane.setMinSize(260, 282);
+            glassPane.setMaxSize(260, 282);
+            glassPane.setPrefSize(260, 282);
             glassPane.setEffect(new DropShadow(BlurType.TWO_PASS_BOX, Color.rgb(0, 0, 0, 0.35), 10.0, 0.0, 0.0, 5));
             aboutDialog.getDialogPane().setContent(glassPane);
         }
