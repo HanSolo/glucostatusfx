@@ -1,3 +1,5 @@
+import java.text.SimpleDateFormat
+
 buildscript {
     repositories {
         mavenCentral()
@@ -12,13 +14,15 @@ buildscript {
 }
 
 plugins {
-    id 'java-library'
+    id 'java'
     id 'application'
-    id 'com.google.osdetector' version '1.7.1'
+    id 'signing'
+    id 'com.google.osdetector'           version '1.7.1'
     id 'org.javamodularity.moduleplugin' version '1.8.12'
+    id 'net.nemerosa.versioning'         version '3.0.0'
 }
 
-ext.platform = osdetector.os == 'osx' ? osdetector.arch == 'aarch_64' ? 'mac-aarch64' : 'mac' : osdetector.os == 'windows' ? 'win' : osdetector.os == 'linux' ? osdetector.arch == 'aarch_64' ? 'linux-aarch64' : 'linux' : osdetector.os
+apply plugin: 'signing'
 
 normalization {
     runtimeClasspath {
@@ -26,16 +30,24 @@ normalization {
     }
 }
 
-application {
-    mainModule = 'eu.hansolo.fx.glucostatus'
-    mainClass  = 'eu.hansolo.fx.glucostatus.Launcher'
-}
-
 repositories {
     mavenCentral()
     flatDir {
         dirs 'libs'
     }
+}
+
+Date buildTimeAndDate = new Date()
+ext {
+    buildDate       = new SimpleDateFormat('yyyy-MM-dd').format(buildTimeAndDate)
+    buildTime       = new SimpleDateFormat('HH:mm:ss.SSSZ').format(buildTimeAndDate)
+    platform        = osdetector.os == 'osx' ? osdetector.arch == 'aarch_64' ? 'mac-aarch64' : 'mac' : osdetector.os == 'windows' ? 'win' : osdetector.os == 'linux' ? osdetector.arch == 'aarch_64' ? 'linux-aarch64' : 'linux' : osdetector.os
+    ciOssrhUsername = System.getenv('OSSRH_USERNAME')
+    ciOssrhPassword = System.getenv('OSSRH_PASSWORD')
+    ciGHUser        = System.getenv('GH_USER')
+    ciGHToken       = System.getenv('GH_TOKEN')
+    gpgkey          = System.getenv("GPG_PRIVATE_KEY")
+    gpgpassphrase   = System.getenv("PASSPHRASE")
 }
 
 dependencies {
@@ -54,7 +66,13 @@ dependencies {
     implementation 'com.dustinredmond.fxtrayicon:FXTrayIcon:3.1.2'
 }
 
-ext.moduleName = 'eu.hansolo.fx.glucostatus'
+application {
+    mainModule = 'eu.hansolo.fx.glucostatus'
+}
+
+mainClassName = 'eu.hansolo.fx.glucostatus.Launcher'
+description   = 'GlucostatusFX is a tool to visualize data coming from a nightscout server'
+
 
 jar {
     from {
@@ -67,25 +85,25 @@ jar {
     }
     manifest {
         attributes(
-                'Implementation-Title': 'GlucoStatusFX',
-                'Class-Path': 'glucostatusfx-17.0.17.jar',
-                'Main-Class': 'eu.hansolo.fx.glucostatus.Launcher'
+                'Built-By'              : System.properties['user.name'],
+                'Created-By'            : System.properties['java.version'] + " (" + System.properties['java.vendor'] + " " + System.properties['java.vm.version'] + ")",
+                'Build-Date'            : project.buildDate,
+                'Build-Time'            : project.buildTime,
+                'Build-Revision'        : versioning.info.commit,
+                'Specification-Title'   : project.name,
+                'Specification-Version' : project.version,
+                'Implementation-Title'  : project.name,
+                'Implementation-Version': project.version,
+                'Bundle-Name'           : project.name,
+                'Bundle-License'        : 'https://www.apache.org/licenses/LICENSE-2.0;description=Apache License Version 2.0;link=https://spdx.org/licenses/Apache-2.0.html',
+                'Bundle-Description'    : description,
+                'Bundle-SymbolicName'   : 'eu.hansolo.fx.glucostatus',
+                'Class-Path'            : '${project.name}-${project.version}.jar',
+                'Main-Class'            : 'eu.hansolo.fx.glucostatus.Launcher'
         )
     }
 }
 
-
-/*
-tasks.withType(JavaCompile) {
-    options.compilerArgs += "--enable-preview"
-}
-tasks.withType(Test) {
-    jvmArgs += "--enable-preview"
-}
-tasks.withType(JavaExec) {
-    jvmArgs += "--enable-preview"
-}
-*/
 
 // start app from gradle
 task Main(type: JavaExec) {
@@ -115,15 +133,16 @@ sourceSets {
     main {
         //output.setResourcesDir(java.outputDir)
         output.resourcesDir = file('build/classes/java/main')
-        java.destinationDirectory.set(file('build/classes/java/main'))
+        //java.destinationDirectory.set(file('build/classes/java/main'))
     }
 }
 
-processResources {
-    from(sourceSets.main.java.srcDirs) {
-        include '**/*.properties'
-    }
-}
+
+//processResources {
+//    from(sourceSets.main.java.srcDirs) {
+//        include '**/*.properties'
+//    }
+//}
 
 run {
     inputs.property("moduleName", moduleName)
@@ -135,3 +154,10 @@ run {
         classpath = files()
     }
 }
+
+/*
+signing {
+    useGpgCmd()
+    sign configurations.archives
+}
+*/

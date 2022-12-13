@@ -1314,7 +1314,6 @@ public class Main extends Application {
         nights.forEach(night -> ctx.fillRect(night.getX(), night.getY(), night.width, night.getHeight()));
         ctx.restore();
 
-
         // Draw vertical lines
         ctx.setFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
         ctx.setTextAlign(TextAlignment.CENTER);
