@@ -99,8 +99,8 @@ public class Helper {
             long       datelong   = json.has(FIELD_DATE)        ? json.get(FIELD_DATE).getAsLong() / 1000                : 0;
             OffsetDateTime date       = OffsetDateTime.ofInstant(Instant.ofEpochSecond(datelong), ZoneId.systemDefault());
             String     dateString = json.has(FIELD_DATE_STRING) ? json.get(FIELD_DATE_STRING).getAsString()              : "";
-            Trend      trend      = json.has(FIELD_TREND)       ? Trend.getFromText(json.get(FIELD_TREND).getAsString()) : Trend.NONE;
             String     direction  = json.has(FIELD_DIRECTION)   ? json.get(FIELD_DIRECTION).getAsString()                : "";
+            Trend      trend      = json.has(FIELD_TREND)       ? Trend.getFromText(direction)                           : Trend.NONE;
             String     device     = json.has(FIELD_DEVICE)      ? json.get(FIELD_DEVICE).getAsString()                   : "";
             String     type       = json.has(FIELD_TYPE)        ? json.get(FIELD_TYPE).getAsString()                     : "";
             int        utcOffset  = json.has(FIELD_UTC_OFFSET)  ? json.get(FIELD_UTC_OFFSET).getAsInt()                  : 0;
