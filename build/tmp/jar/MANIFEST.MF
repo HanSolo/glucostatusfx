@@ -1,5 +1,0 @@
-Manifest-Version: 1.0
-Implementation-Title: GlucoStatusFX
-Class-Path: glucostatusfx-17.0.17.jar
-Main-Class: eu.hansolo.fx.glucostatus.Launcher
-
