@@ -124,6 +124,7 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.1</version>
             </plugin>
+
             <plugin>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
@@ -149,12 +150,18 @@
                         <list>settings</list>
                         <list>statusbar</list>
                     </attachList>
+                    <graalvmHome>/Library/Java/JavaVirtualMachines/gluon-graalvm/Contents/Home</graalvmHome>
+                    <!--
+                    <javaStaticSdkVersion>17.0.5</javaStaticSdkVersion>
+                    <javafxStaticSdkVersion>17.0.2</javafxStaticSdkVersion>
+                    -->
                     <!--
                     <releaseConfiguration>
-                        <bundleVersion>1</bundleVersion>
+                        <bundleVersion>1.0</bundleVersion>
                         <bundleShortVersion>1.0</bundleShortVersion>
                         <providedSigningIdentity>iPhone Distribution: Gerrit Grunwald (L4A7549EHC)</providedSigningIdentity>
                         <providedProvisioningProfile>5a6c01db-62aa-4248-99ea-a16dde9675f8.mobileprovision</providedProvisioningProfile>
+                        <skipSigning>false</skipSigning>
                     </releaseConfiguration>
                 -->
                 </configuration>
