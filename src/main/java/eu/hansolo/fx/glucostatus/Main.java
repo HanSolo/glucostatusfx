@@ -190,6 +190,7 @@ public class Main extends Application {
     private              MacosLabel                 titleLabel;
     private              MacosLabel                 valueLabel;
     private              HBox                       last5DeltasLabel;
+    private              MacosLabel                 hba1cLabel;
     private              MacosLabel                 timestampLabel;
     private              MacosLabel                 rangeAverageLabel;
     private              Text                       unit;
@@ -395,9 +396,14 @@ public class Main extends Application {
         AnchorPane.setRightAnchor(last5DeltasLabel, 0d);
         AnchorPane.setLeftAnchor(last5DeltasLabel, 0d);
 
+        hba1cLabel = createLabel("-", 16, false, true, Pos.CENTER);
+        AnchorPane.setRightAnchor(hba1cLabel, 0d);
+        AnchorPane.setBottomAnchor(hba1cLabel, 90d);
+        AnchorPane.setLeftAnchor(hba1cLabel, 0d);
+
         timestampLabel = createLabel("-", 16, false, true, Pos.CENTER);
         AnchorPane.setRightAnchor(timestampLabel, 0d);
-        AnchorPane.setBottomAnchor(timestampLabel, 72d);
+        AnchorPane.setBottomAnchor(timestampLabel, 62d);
         AnchorPane.setLeftAnchor(timestampLabel, 0d);
 
         rangeAverageLabel = createLabel("-", 24, true, true, Pos.CENTER);
@@ -425,7 +431,7 @@ public class Main extends Application {
         AnchorPane.setRightAnchor(timeInRangeChartButton, 10d);
         AnchorPane.setBottomAnchor(timeInRangeChartButton, 20d);
 
-        mainPane = new AnchorPane(titleLabel, matrixButton, reloadButton, valueLabel, last5DeltasLabel, timestampLabel, rangeAverageLabel, patternChartButton, timeInRangeChartButton);
+        mainPane = new AnchorPane(titleLabel, matrixButton, reloadButton, valueLabel, last5DeltasLabel, hba1cLabel, timestampLabel, rangeAverageLabel, patternChartButton, timeInRangeChartButton);
         mainPane.setPrefSize(820, 295);
         mainPane.setMinHeight(295);
         mainPane.setBackground(new Background(new BackgroundFill(Constants.GRAY, CornerRadii.EMPTY, Insets.EMPTY)));
@@ -1191,6 +1197,7 @@ public class Main extends Application {
 
             mainPane.setBackground(new Background(new BackgroundFill(currentColor, CornerRadii.EMPTY, Insets.EMPTY)));
             valueLabel.setText(currentValueText);
+            hba1cLabel.setText(allEntries.size() > 29 ? String.format(Locale.US, "HbA1c %.1f%%", Helper.getHbA1c(allEntries, currentUnit)) : "-");
             //timestampLabel.setText(Constants.DTF.format(dateTime) + (outdated ? " \u26A0" : ""));
             timestampLabel.setText(dtf.format(dateTime) + (outdated ? " \u26A0" : ""));
             exclamationMark.setVisible(outdated);
@@ -2156,8 +2163,8 @@ public class Main extends Application {
         MacosLabel titleLabel = createLabel(translator.get(I18nKeys.PATTERN_TITLE), 24, true, false, Pos.CENTER);
         titleLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
 
-        MacosLabel hbac1Label = createLabel(String.format(Locale.US, "HbAc1 %.1f%% " + translator.get(I18nKeys.HBAC1_RANGE), Helper.getHbA1c(allEntries, currentUnit)), 20, false, false, Pos.CENTER);
-        hbac1Label.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
+        MacosLabel hba1cLabel = createLabel(String.format(Locale.US, "HbA1c %.1f%% " + translator.get(I18nKeys.HBA1C_RANGE), Helper.getHbA1c(allEntries, currentUnit)), 20, false, false, Pos.CENTER);
+        hba1cLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
 
         long             limit           = OffsetDateTime.now().toEpochSecond() - TimeInterval.LAST_168_HOURS.getSeconds();
         List<GlucoEntry> entriesLastWeek = allEntries.stream().filter(entry -> entry.datelong() > limit).collect(Collectors.toList());
@@ -2262,7 +2269,7 @@ public class Main extends Application {
         });
         ctx.stroke();
 
-        VBox content = new VBox(20, titleLabel, hbac1Label, zones, canvas);
+        VBox content = new VBox(20, titleLabel, hba1cLabel, zones, canvas);
         content.setAlignment(Pos.CENTER);
         content.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, new CornerRadii(10), Insets.EMPTY)));
 
@@ -2328,13 +2335,13 @@ public class Main extends Application {
         MacosLabel subTitleLabel = createLabel(translator.get(I18nKeys.MATRIX_SUBTITLE), 16, false, false, Pos.CENTER);
         subTitleLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
 
-        MacosLabel hbac1Label = createLabel(String.format(Locale.US, "HbAc1 %.1f%% " + translator.get(I18nKeys.HBAC1_RANGE), Helper.getHbA1c(allEntries, currentUnit)), 20, false, false, Pos.CENTER);
-        hbac1Label.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
+        MacosLabel hba1cLabel = createLabel(String.format(Locale.US, "HbA1c %.1f%% " + translator.get(I18nKeys.HBA1C_RANGE), Helper.getHbA1c(allEntries, currentUnit)), 20, false, false, Pos.CENTER);
+        hba1cLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
 
         ThirtyDayView thirtyDayView = new ThirtyDayView(allEntries, currentUnit);
         thirtyDayView.setDark(darkMode);
 
-        VBox content = new VBox(20, titleLabel, subTitleLabel, hbac1Label, thirtyDayView);
+        VBox content = new VBox(20, titleLabel, subTitleLabel, hba1cLabel, thirtyDayView);
         content.setAlignment(Pos.CENTER);
         content.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, new CornerRadii(10), Insets.EMPTY)));
 
