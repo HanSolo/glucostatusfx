@@ -62,7 +62,6 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
@@ -140,6 +139,7 @@ public class Main extends Application {
     private              MacosLabel                 titleLabel;
     private              MacosLabel                 valueLabel;
     private              TextFlow                   last5DeltasLabel;
+    private              MacosLabel                 hba1cLabel;
     private              MacosLabel                 timestampLabel;
     private              MacosLabel                 rangeAverageLabel;
     private              Text                       unit;
@@ -228,14 +228,14 @@ public class Main extends Application {
     // Pattern Chart Pane
     private              StackPane                  patternChartPane;
     private              MacosLabel                 patternChartTitleLabel;
-    private              MacosLabel                 patternChartHbac1Label;
+    private              MacosLabel                 patternChartHba1cLabel;
     private              ListView<String>           patternChartZones;
     private              Canvas                     patternChartCanvas;
     // Matrix Chart Pane
     private              StackPane                  matrixChartPane;
     private              MacosLabel                 matrixChartTitleLabel;
     private              MacosLabel                 matrixChartSubTitleLabel;
-    private              MacosLabel                 matrixChartHbac1Label;
+    private              MacosLabel                 matrixChartHba1cLabel;
     private              ThirtyDayView              matrixChartThirtyDayView;
 
 
@@ -335,10 +335,16 @@ public class Main extends Application {
         AnchorPane.setRightAnchor(last5DeltasLabel, 0d);
         AnchorPane.setLeftAnchor(last5DeltasLabel, 0d);
 
+        hba1cLabel = createLabel("-", 16, false, true, Pos.CENTER);
+        hba1cLabel.setTextFill(Constants.BRIGHT_TEXT);
+        AnchorPane.setRightAnchor(hba1cLabel, 0d);
+        AnchorPane.setBottomAnchor(hba1cLabel, 90d);
+        AnchorPane.setLeftAnchor(hba1cLabel, 0d);
+
         timestampLabel = createLabel("-", 16, false, true, Pos.CENTER);
         timestampLabel.setTextFill(Constants.BRIGHT_TEXT);
         AnchorPane.setRightAnchor(timestampLabel, 0d);
-        AnchorPane.setBottomAnchor(timestampLabel, 72d);
+        AnchorPane.setBottomAnchor(timestampLabel, 62d);
         AnchorPane.setLeftAnchor(timestampLabel, 0d);
 
         rangeAverageLabel = createLabel("-", 24, true, true, Pos.CENTER);
@@ -368,7 +374,7 @@ public class Main extends Application {
         AnchorPane.setRightAnchor(timeInRangeChartButton, 10d);
         AnchorPane.setBottomAnchor(timeInRangeChartButton, 20d);
 
-        mainPane = new AnchorPane(titleLabel, matrixButton, reloadButton, valueLabel, last5DeltasLabel, timestampLabel, rangeAverageLabel, patternChartButton, timeInRangeChartButton);
+        mainPane = new AnchorPane(titleLabel, matrixButton, reloadButton, valueLabel, last5DeltasLabel, hba1cLabel, timestampLabel, rangeAverageLabel, patternChartButton, timeInRangeChartButton);
         mainPane.setPrefSize(IPHONE_SCREEN.getWidth(), 285);
         mainPane.setMinHeight(285);
         mainPane.setBackground(new Background(new BackgroundFill(Constants.GRAY, CornerRadii.EMPTY, Insets.EMPTY)));
@@ -916,6 +922,7 @@ public class Main extends Application {
 
             mainPane.setBackground(new Background(new BackgroundFill(currentColor, CornerRadii.EMPTY, Insets.EMPTY)));
             valueLabel.setText(currentValueText);
+            hba1cLabel.setText(allEntries.size() > 29 ? String.format(Locale.US, "HbA1c %.1f%%", Helper.getHbA1c(allEntries, currentUnit)) : "-");
             timestampLabel.setText(Constants.DTF.format(dateTime) + (outdated ? " 􀇾" : ""));
             exclamationMark.setVisible(outdated);
             rangeAverageLabel.setText(currentInterval.getUiString() + " (ø" + String.format(Locale.US, format, avg) + ")");
@@ -1625,8 +1632,8 @@ public class Main extends Application {
         patternChartTitleLabel = createLabel("Pattern 24h", 24, true, false, Pos.CENTER);
         patternChartTitleLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
 
-        patternChartHbac1Label = createLabel(String.format(Locale.US, "HbAc1 %.1f%% (last 30 days)", Helper.getHbA1c(allEntries, currentUnit)), 20, false, false, Pos.CENTER);
-        patternChartHbac1Label.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
+        patternChartHba1cLabel = createLabel(String.format(Locale.US, "HbA1c %.1f%% (last 30 days)", Helper.getHbA1c(allEntries, currentUnit)), 20, false, false, Pos.CENTER);
+        patternChartHba1cLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
 
         patternChartZones = new ListView<>();
         patternChartZones.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, CornerRadii.EMPTY, Insets.EMPTY)));
@@ -1638,7 +1645,7 @@ public class Main extends Application {
         MacosButton closeButton = new MacosButton("Close");
         closeButton.setDark(darkMode);
 
-        VBox content = new VBox(20, patternChartTitleLabel, patternChartHbac1Label, patternChartZones, patternChartCanvas, closeButton);
+        VBox content = new VBox(20, patternChartTitleLabel, patternChartHba1cLabel, patternChartZones, patternChartCanvas, closeButton);
         content.setAlignment(Pos.CENTER);
         content.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, new CornerRadii(10), Insets.EMPTY)));
 
@@ -1669,8 +1676,8 @@ public class Main extends Application {
 
         patternChartTitleLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
 
-        patternChartHbac1Label.setText(String.format(Locale.US, "HbAc1 %.1f%% (last 30 days)", Helper.getHbA1c(allEntries, currentUnit)));
-        patternChartHbac1Label.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
+        patternChartHba1cLabel.setText(String.format(Locale.US, "HbA1c %.1f%% (last 30 days)", Helper.getHbA1c(allEntries, currentUnit)));
+        patternChartHba1cLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
 
         long             limit           = Instant.now().getEpochSecond() - TimeInterval.LAST_168_HOURS.getSeconds();
         List<GlucoEntry> entriesLastWeek = allEntries.stream().filter(entry -> entry.datelong() > limit).collect(Collectors.toList());
@@ -1780,8 +1787,8 @@ public class Main extends Application {
         matrixChartSubTitleLabel = createLabel("(daily average)", 16, false, false, Pos.CENTER);
         matrixChartSubTitleLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
 
-        matrixChartHbac1Label = createLabel(String.format(Locale.US, "HbAc1 %.1f%% (last 30 days)", Helper.getHbA1c(allEntries, currentUnit)), 20, false, false, Pos.CENTER);
-        matrixChartHbac1Label.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
+        matrixChartHba1cLabel = createLabel(String.format(Locale.US, "HbA1c %.1f%% (last 30 days)", Helper.getHbA1c(allEntries, currentUnit)), 20, false, false, Pos.CENTER);
+        matrixChartHba1cLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
 
         matrixChartThirtyDayView = new ThirtyDayView(allEntries, currentUnit);
         matrixChartThirtyDayView.setDark(darkMode);
@@ -1789,7 +1796,7 @@ public class Main extends Application {
         MacosButton closeButton = new MacosButton("Close");
         closeButton.setDark(darkMode);
 
-        VBox content = new VBox(20, matrixChartTitleLabel, matrixChartSubTitleLabel, matrixChartHbac1Label, matrixChartThirtyDayView, closeButton);
+        VBox content = new VBox(20, matrixChartTitleLabel, matrixChartSubTitleLabel, matrixChartHba1cLabel, matrixChartThirtyDayView, closeButton);
         content.setAlignment(Pos.CENTER);
         content.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, new CornerRadii(10), Insets.EMPTY)));
 
@@ -1822,8 +1829,8 @@ public class Main extends Application {
 
         matrixChartSubTitleLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
 
-        matrixChartHbac1Label.setText(String.format(Locale.US, "HbAc1 %.1f%% (last 30 days)", Helper.getHbA1c(allEntries, currentUnit)));
-        matrixChartHbac1Label.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
+        matrixChartHba1cLabel.setText(String.format(Locale.US, "HbA1c %.1f%% (last 30 days)", Helper.getHbA1c(allEntries, currentUnit)));
+        matrixChartHba1cLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
 
         matrixChartThirtyDayView.setEntries(allEntries, currentUnit);
         matrixChartThirtyDayView.setDark(darkMode);
