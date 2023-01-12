@@ -37,7 +37,7 @@
 		<integer>1</integer>
 	</array>
 	<key>MinimumOSVersion</key>
-	<string>11.0</string>
+	<string>16.0</string>
 	<key>UIRequiresFullScreen</key>
 	<string>YES</string>
 </dict>

@@ -1,3 +1,5 @@
+ Make sure you have an adhoc profile created to be able to install it
+
  export GRAALVM_HOME=/Library/Java/JavaVirtualMachines/gluon-graalvm/Contents/Home
 
  mvn -Pios gluonfx:build
