@@ -409,7 +409,7 @@ public class Main extends Application {
 
         vpane = new AnchorPane(buttonHBox, mainPane, chartPane);
         // Button Tool Bar
-        AnchorPane.setTopAnchor(buttonHBox, 20d);
+        AnchorPane.setTopAnchor(buttonHBox, 32d);
         AnchorPane.setRightAnchor(buttonHBox, 0d);
         AnchorPane.setLeftAnchor(buttonHBox, 0d);
         // Main Value
@@ -439,7 +439,8 @@ public class Main extends Application {
         matrixChartPane.setManaged(false);
 
         pane = new StackPane(vpane, glassOverlay, prefPane, timeInRangePane, patternChartPane, matrixChartPane);
-        pane.setBackground(new Background(new BackgroundFill(MacosSystemColor.BACKGROUND.dark(), CornerRadii.EMPTY, Insets.EMPTY)));
+        //pane.setBackground(new Background(new BackgroundFill(MacosSystemColor.BACKGROUND.dark(), CornerRadii.EMPTY, Insets.EMPTY)));
+        pane.setBackground(new Background(new BackgroundFill(Color.BLACK, CornerRadii.EMPTY, Insets.EMPTY)));
         StackPane.setMargin(vpane, new Insets(32, 0, 20, 0));
         StackPane.setMargin(prefPane, new Insets(32, 0, 20, 0));
 
