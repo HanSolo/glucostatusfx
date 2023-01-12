@@ -44,6 +44,7 @@
  import java.time.Instant;
  import java.time.LocalDate;
  import java.time.LocalTime;
+ import java.time.Year;
  import java.time.ZoneId;
  import java.time.ZonedDateTime;
  import java.time.format.TextStyle;
@@ -274,18 +275,21 @@
      private void redraw() {
          boxes.clear();
 
-         LocalDate currentDate       = LocalDate.now();
-         LocalDate startDate         = currentDate.minusDays(30);
-         int       startWeek         = startDate.get(WeekFields.ISO.weekOfYear());
-         int       endWeek           = currentDate.get(WeekFields.ISO.weekOfYear());
-         Color     foregroundColor   = isDark() ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT;
-         double    verySmallFontSize = size * 0.04;
-         double    smallFontSize     = size * 0.045;
-         double    fontSize          = size * 0.065;
-         Font      verySmallFont     = Fonts.sfProRoundedRegular(verySmallFontSize);
-         Font      smallFont         = Fonts.sfProRoundedRegular(smallFontSize);
-         Font      font              = Fonts.sfProRoundedRegular(fontSize);
-         Font      boldFont          = Fonts.sfProRoundedBold(fontSize);
+         LocalDate currentDate         = LocalDate.now();
+         LocalDate startDate           = currentDate.minusDays(30);
+         int       currentYear         = currentDate.getYear();
+         int       startYear           = startDate.getYear();
+         int       startWeek           = startDate.get(WeekFields.ISO.weekOfYear());
+         int       lastWeekOfStartYear = LocalDate.of(startYear, 12, 31).get(WeekFields.ISO.weekOfYear());
+         int       endWeek             = currentDate.get(WeekFields.ISO.weekOfYear());
+         Color     foregroundColor     = isDark() ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT;
+         double    verySmallFontSize   = size * 0.04;
+         double    smallFontSize       = size * 0.045;
+         double    fontSize            = size * 0.065;
+         Font      verySmallFont       = Fonts.sfProRoundedRegular(verySmallFontSize);
+         Font      smallFont           = Fonts.sfProRoundedRegular(smallFontSize);
+         Font      font                = Fonts.sfProRoundedRegular(fontSize);
+         Font      boldFont            = Fonts.sfProRoundedBold(fontSize);
 
          ctx.clearRect(0, 0, width, height);
          ctx.setStroke(foregroundColor);
@@ -300,7 +304,11 @@
                  if (x == 0 && y == 0) {
 
                  } else if (x == 0 && y > 0) {
-                     ctx.fillText(Integer.toString(startWeek + y - 1), posX + boxCenterX, posY + boxCenterY);
+                     int currentWeek = startWeek + y - 1;
+                     if (startYear < currentYear) {
+                         if (currentWeek > lastWeekOfStartYear) { currentWeek = currentWeek - lastWeekOfStartYear; }
+                     }
+                     ctx.fillText(Integer.toString(currentWeek), posX + boxCenterX, posY + boxCenterY);
                  } else if (y == 0 && x > 0 && x < 8) {
                      ctx.fillText(DayOfWeek.values()[x - 1].getDisplayName(TextStyle.NARROW_STANDALONE, Locale.getDefault()), posX + boxCenterX, posY + boxCenterY);
                  }
@@ -308,7 +316,8 @@
          }
 
          int indexX = currentDate.getDayOfWeek().getValue() - 1;
-         int indexY = endWeek - startWeek;
+         int indexY = endWeek > startWeek ? endWeek - startWeek : endWeek + 2;
+
          ctx.setFont(font);
          for (int i = 0 ; i < 30 ; i++) {
              LocalDate date = currentDate.minusDays(i);
