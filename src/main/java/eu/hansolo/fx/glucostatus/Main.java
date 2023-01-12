@@ -409,7 +409,7 @@ public class Main extends Application {
 
         vpane = new AnchorPane(buttonHBox, mainPane, chartPane);
         // Button Tool Bar
-        AnchorPane.setTopAnchor(buttonHBox, 10d);
+        AnchorPane.setTopAnchor(buttonHBox, 20d);
         AnchorPane.setRightAnchor(buttonHBox, 0d);
         AnchorPane.setLeftAnchor(buttonHBox, 0d);
         // Main Value
