@@ -959,7 +959,11 @@ public class Main extends Application {
         if (entries.isEmpty()) { return; }
         Collections.sort(entries, Comparator.comparingLong(GlucoEntry::datelong));
 
-        poincarePlot.setValues(currentUnit, entries.stream().map(entry -> entry.sgv()).toList());
+        List<Double> values = new ArrayList<>();
+        for (GlucoEntry entry : entries) {
+            values.add(entry.sgv());
+        }
+        poincarePlot.setValues(currentUnit, values);
 
         double  width           = canvas.getWidth();
         double  height          = canvas.getHeight();

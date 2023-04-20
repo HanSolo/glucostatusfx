@@ -135,10 +135,10 @@ public class PoincarePlot extends Region {
     }
 
     private void redraw() {
-        boolean darkMode = eu.hansolo.applefx.tools.Helper.isDarkMode();
+        boolean darkMode = true;
 
         ctx.clearRect(0, 0, width, height);
-        ctx.setFill(darkMode ? Color.rgb(30, 28, 26) : Color.rgb(234, 233, 233));
+        ctx.setFill(darkMode ? Constants.DARK_BACKGROUND : Constants.BRIGHT_BACKGROUND);
         ctx.fillRect(0, 0, width, height);
 
         ctx.setFont(ticklabelFont);

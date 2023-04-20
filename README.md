@@ -24,11 +24,23 @@ A list of the basic requirements can be found online in the [Gluon documentation
 
     mvn -Pios gluonfx:build gluonfx:package gluonfx:install gluonfx:nativerun
 
+
+### Install native iOS app on your iPhone (in developer mode)
+Build it:
+    mvn -Pios gluonfx:build
+
+Package it:
+    mvn -Pios gluonfx:package
+
+Deploy it:
+    mvn -Pios gluonfx:install
+
+
 ## Selected features
 
 This is a list of all the features that were selected when creating the sample:
 
-### JavaFX 17.0.2 Modules
+### JavaFX 17.0.6 Modules
 
  - javafx-base
  - javafx-graphics
