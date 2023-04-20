@@ -61,7 +61,7 @@ dependencies {
     implementation 'eu.hansolo:toolbox:17.0.33'
     implementation 'eu.hansolo:toolboxfx:17.0.33'
     implementation 'eu.hansolo:applefx:17.0.45'
-    implementation 'com.google.code.gson:gson:2.9.0'
+    implementation 'com.google.code.gson:gson:2.10.1'
     //implementation 'com.dustinredmond.fxtrayicon:FXTrayIcon:4.0.1'
     implementation 'com.dustinredmond.fxtrayicon:FXTrayIcon:3.1.2'
 }

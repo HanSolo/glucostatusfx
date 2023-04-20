@@ -229,6 +229,7 @@ public class Main extends Application {
     private              Canvas                     canvas;
     private              GraphicsContext            ctx;
     private              AnchorPane                 chartPane;
+    private              PoincarePlot               poincarePlot;
     private              boolean                    deltaChartVisible;
     private              ToggleGroup                intervalToggleGroup;
     private              MacosToggleButton          sevenDays;
@@ -443,17 +444,25 @@ public class Main extends Application {
         AnchorPane.setBottomAnchor(canvas, 5d);
         AnchorPane.setLeftAnchor(canvas, 5d);
 
+        poincarePlot = new PoincarePlot();
+        poincarePlot.setVisible(false);
+        AnchorPane.setTopAnchor(poincarePlot, 10d);
+        AnchorPane.setRightAnchor(poincarePlot, 5d);
+        AnchorPane.setBottomAnchor(poincarePlot, 5d);
+        AnchorPane.setLeftAnchor(poincarePlot, 5d);
+
         exclamationMark = new SVGPath();
         exclamationMark.setContent("M7.743,54.287l41.48,-0c1.613,-0 2.995,-0.346 4.147,-1.037c1.153,-0.692 2.046,-1.619 2.679,-2.783c0.634,-1.164 0.951,-2.483 0.951,-3.958c-0,-0.622 -0.092,-1.262 -0.277,-1.918c-0.184,-0.657 -0.449,-1.285 -0.795,-1.884l-20.774,-36.053c-0.737,-1.29 -1.705,-2.27 -2.904,-2.938c-1.198,-0.668 -2.454,-1.003 -3.767,-1.003c-1.314,0 -2.57,0.335 -3.768,1.003c-1.198,0.668 -2.155,1.648 -2.869,2.938l-20.774,36.053c-0.715,1.221 -1.072,2.489 -1.072,3.802c0,1.475 0.311,2.794 0.933,3.958c0.622,1.164 1.515,2.091 2.679,2.783c1.164,0.691 2.541,1.037 4.131,1.037Zm0.034,-4.874c-0.829,-0 -1.503,-0.294 -2.022,-0.882c-0.518,-0.587 -0.777,-1.261 -0.777,-2.022c-0,-0.207 0.023,-0.438 0.069,-0.691c0.046,-0.254 0.138,-0.496 0.276,-0.726l20.74,-36.087c0.254,-0.461 0.605,-0.807 1.054,-1.037c0.45,-0.231 0.905,-0.346 1.366,-0.346c0.484,-0 0.939,0.115 1.365,0.346c0.426,0.23 0.778,0.576 1.054,1.037l20.74,36.121c0.231,0.438 0.346,0.899 0.346,1.383c-0,0.761 -0.259,1.435 -0.778,2.022c-0.518,0.588 -1.204,0.882 -2.057,0.882l-41.376,-0Zm20.74,-4.494c0.83,0 1.562,-0.294 2.195,-0.881c0.634,-0.588 0.951,-1.308 0.951,-2.161c-0,-0.875 -0.311,-1.601 -0.933,-2.177c-0.623,-0.577 -1.36,-0.865 -2.213,-0.865c-0.875,0 -1.624,0.294 -2.247,0.882c-0.622,0.587 -0.933,1.308 -0.933,2.16c0,0.83 0.317,1.544 0.951,2.143c0.633,0.599 1.377,0.899 2.229,0.899Zm0,-9.056c1.521,-0 2.293,-0.795 2.316,-2.385l0.45,-14.173c0.023,-0.76 -0.237,-1.4 -0.778,-1.918c-0.542,-0.519 -1.216,-0.778 -2.022,-0.778c-0.83,0 -1.504,0.254 -2.022,0.761c-0.519,0.507 -0.767,1.14 -0.744,1.901l0.381,14.207c0.046,1.59 0.852,2.385 2.419,2.385Z");
         exclamationMark.setFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
         exclamationMark.setVisible(false);
         StackPane problemPane = new StackPane(exclamationMark);
+        problemPane.setMouseTransparent(true);
         AnchorPane.setTopAnchor(problemPane, 0d);
         AnchorPane.setRightAnchor(problemPane, 0d);
         AnchorPane.setBottomAnchor(problemPane, 0d);
         AnchorPane.setLeftAnchor(problemPane, 0d);
 
-        chartPane = new AnchorPane(canvas, problemPane);
+        chartPane = new AnchorPane(canvas, poincarePlot, problemPane);
         chartPane.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, new CornerRadii(10), Insets.EMPTY)));
         chartPane.setMinWidth(650);
         chartPane.setMinHeight(100);
@@ -798,6 +807,16 @@ public class Main extends Application {
 
         canvas.widthProperty().addListener(o -> drawChart());
         canvas.heightProperty().addListener(o -> drawChart());
+
+        canvas.setOnMousePressed(e -> {
+            canvas.setVisible(false);
+            poincarePlot.setVisible(true);
+            poincarePlot.loadSettings();
+        });
+        poincarePlot.setOnMousePressed(e -> {
+            poincarePlot.setVisible(false);
+            canvas.setVisible(true);
+        });
     }
 
     private void updateEntries() {
@@ -1214,6 +1233,9 @@ public class Main extends Application {
     private void drawChart() {
         if (entries.isEmpty()) { return; }
         Collections.sort(entries, Comparator.comparingLong(GlucoEntry::datelong));
+
+        poincarePlot.setValues(currentUnit, entries.stream().map(entry -> entry.sgv()).toList());
+
         double  width           = canvas.getWidth();
         double  height          = canvas.getHeight();
         double  availableWidth  = (width - GRAPH_INSETS.getLeft() - GRAPH_INSETS.getRight());

@@ -19,11 +19,14 @@
 package eu.hansolo.fx.glucostatus;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.stream.JsonReader;
 import eu.hansolo.fx.glucostatus.Records.DataPoint;
 import eu.hansolo.fx.glucostatus.Records.GlucoEntry;
+import eu.hansolo.fx.glucostatus.Records.GlucoEntryDto;
 import eu.hansolo.fx.glucostatus.Statistics.StatisticCalculation;
 import eu.hansolo.fx.glucostatus.Statistics.StatisticRange;
 import eu.hansolo.toolbox.tuples.Pair;
@@ -44,8 +47,10 @@ import javafx.scene.text.TextAlignment;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpClient.Redirect;
@@ -53,6 +58,7 @@ import java.net.http.HttpClient.Version;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalTime;
@@ -93,6 +99,20 @@ public class Helper {
     private static final Converter  MMOL_CONVERTER = new Converter(BLOOD_GLUCOSE, MILLIMOL_PER_LITER);
     private static       HttpClient httpClient;
     private static       HttpClient httpClientAsync;
+
+    public static final List<GlucoEntry> getEntries(final String jsonText) {
+        final List<GlucoEntry> entries = new ArrayList<>();
+        try(JsonReader jsonReader = new JsonReader(new InputStreamReader(new ByteArrayInputStream(jsonText.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8))) {
+            Gson gson = new GsonBuilder().create();
+            jsonReader.beginArray();
+            while (jsonReader.hasNext()){
+                GlucoEntryDto dto = gson.fromJson(jsonReader, GlucoEntryDto.class);
+                if (null != dto) { entries.add(dto.getGlucoEntry()); }
+            }
+            jsonReader.endArray();
+        }  catch (IOException e) {}
+        return entries;
+    }
 
     public static final List<GlucoEntry> getGlucoEntries(final String jsonText) {
         List<GlucoEntry> entries = new ArrayList<>();

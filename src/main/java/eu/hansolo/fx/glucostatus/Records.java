@@ -18,11 +18,35 @@
 
 package eu.hansolo.fx.glucostatus;
 
+import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.Objects;
+
+import static eu.hansolo.fx.glucostatus.Constants.FIELD_DATE;
+import static eu.hansolo.fx.glucostatus.Constants.FIELD_DATE_STRING;
+import static eu.hansolo.fx.glucostatus.Constants.FIELD_DELTA;
+import static eu.hansolo.fx.glucostatus.Constants.FIELD_DEVICE;
+import static eu.hansolo.fx.glucostatus.Constants.FIELD_DIRECTION;
+import static eu.hansolo.fx.glucostatus.Constants.FIELD_FILTERED;
+import static eu.hansolo.fx.glucostatus.Constants.FIELD_ID;
+import static eu.hansolo.fx.glucostatus.Constants.FIELD_NOISE;
+import static eu.hansolo.fx.glucostatus.Constants.FIELD_RSSI;
+import static eu.hansolo.fx.glucostatus.Constants.FIELD_SGV;
+import static eu.hansolo.fx.glucostatus.Constants.FIELD_SYS_TIME;
+import static eu.hansolo.fx.glucostatus.Constants.FIELD_TREND;
+import static eu.hansolo.fx.glucostatus.Constants.FIELD_TYPE;
+import static eu.hansolo.fx.glucostatus.Constants.FIELD_UNFILTERED;
+import static eu.hansolo.fx.glucostatus.Constants.FIELD_UTC_OFFSET;
 
 
 public class Records {
+
+    public record GlucoEntryDto(String _id, double sgv, long date, String dateString, int trend, String direction, String device, String type, int utcOffset, String sysTime) {
+        public GlucoEntry getGlucoEntry() {
+            return new GlucoEntry(this._id, this.sgv, this.date, OffsetDateTime.ofInstant(Instant.ofEpochSecond(this.date), ZoneId.systemDefault()), dateString, Trend.getFromText(Integer.toString(this.trend)), direction, device, type, this.utcOffset, 0, 0, 0, 0, 0, this.sysTime);
+        }
+    }
 
     public record GlucoEntry(String id, double sgv, long datelong, OffsetDateTime date, String dateString, Trend trend, String direction, String device, String type, int utcOffset, int noise, double filtered, double unfiltered, int rssi, double delta, String sysTime) implements Comparable<GlucoEntry> {
 
