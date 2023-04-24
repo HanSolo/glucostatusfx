@@ -148,8 +148,6 @@ public class PoincarePlot extends Region {
         ctx.setLineWidth(1);
         List<String> axisLabels = MILLIGRAM_PER_DECILITER == unit ? Constants.yAxisLabelsMgPerDeciliter : Constants.yAxisLabelsMmolPerLiter;
 
-
-
         ctx.setFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
         ctx.setTextAlign(TextAlignment.CENTER);
 

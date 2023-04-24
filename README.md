@@ -63,6 +63,8 @@ More info can be found on [this page](https://harmoniccode.blogspot.com/p/glucos
 ## Overview
 ![Main Screen](https://i.ibb.co/yWptWXC/Gluco-Status-FX-Main-Screen.png)
 
+![Main Screen Poincare](https://i.ibb.co/mXLwQJR/poincare.png)
+
 ![Settings](https://i.ibb.co/BT53NY4/Monosnap-2022-01-14-16-25-06.png)
 
 ![Pattern](https://i.ibb.co/6Rz4kZ6/Monosnap-2022-01-14-16-25-19.png)
