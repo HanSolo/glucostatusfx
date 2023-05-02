@@ -21,8 +21,10 @@ package eu.hansolo.fx.glucostatus;
 import javafx.scene.paint.Color;
 
 import java.io.File;
+import java.time.DayOfWeek;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 
 
 public class Constants {
@@ -102,6 +104,14 @@ public class Constants {
     public static final Color  BRIGHT_BACKGROUND                                      = Color.rgb(236, 235, 235);
     public static final Color  BRIGHT_TEXT                                            = Color.rgb(255, 246, 245);
     public static final Color  DARK_TEXT                                              = Color.rgb(20, 20, 20);
+
+    public static final Map<DayOfWeek, Color> DAY_COLOR_MAP                           = Map.of(DayOfWeek.MONDAY, Color.web("#2ccd48"),
+                                                                                               DayOfWeek.TUESDAY, Color.web("#00bba0"),
+                                                                                               DayOfWeek.WEDNESDAY, Color.web("#a2a200"),
+                                                                                               DayOfWeek.THURSDAY, Color.web("#ff8748"),
+                                                                                               DayOfWeek.FRIDAY, Color.web("#ea37b3"),
+                                                                                               DayOfWeek.SATURDAY, Color.web("#e14436"),
+                                                                                               DayOfWeek.SUNDAY, Color.web("#da2458"));
 
     public static final double DELTA_CHART_WIDTH                                      = 115;
     public static final double DELTA_CHART_HEIGHT                                     = 50;

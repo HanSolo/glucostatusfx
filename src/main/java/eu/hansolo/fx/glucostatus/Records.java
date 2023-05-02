@@ -20,6 +20,7 @@ package eu.hansolo.fx.glucostatus;
 
 import eu.hansolo.toolboxfx.geom.Rectangle;
 
+import java.time.DayOfWeek;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
@@ -79,4 +80,6 @@ public class Records {
     public record DataPoint(double minValue, double maxValue, double avgValue, double percentile10, double percentile25, double percentile75, double percentile90, double median){}
 
     public record ButtonShape(int daysToShow, Rectangle shape) {}
+
+    public record DayShape(DayOfWeek day, Rectangle shape) {}
 }

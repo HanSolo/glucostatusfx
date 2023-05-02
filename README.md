@@ -73,4 +73,4 @@ More info can be found on [this page](https://harmoniccode.blogspot.com/p/glucos
 
 ![Last 30 days](https://i.ibb.co/zbZxTps/Thirty-Days-View.png)
 
-![Overlay](https://i.ibb.co/nQKgTqz/overlay-dialog.png)
+![Overlay](https://i.ibb.co/XzfvDRZ/overlay-dialog.png)

@@ -1,8 +1,10 @@
 package eu.hansolo.fx.glucostatus;
 
 import eu.hansolo.fx.glucostatus.Records.ButtonShape;
+import eu.hansolo.fx.glucostatus.Records.DayShape;
 import eu.hansolo.fx.glucostatus.Records.GlucoEntry;
 import eu.hansolo.toolbox.unit.UnitDefinition;
+import eu.hansolo.toolboxfx.HelperFX;
 import eu.hansolo.toolboxfx.geom.Rectangle;
 import javafx.beans.DefaultProperty;
 import javafx.collections.ObservableList;
@@ -20,6 +22,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -27,6 +30,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import static eu.hansolo.toolbox.unit.UnitDefinition.MILLIGRAM_PER_DECILITER;
@@ -62,7 +66,9 @@ public class StackedLineChart extends Region {
     private              List<GlucoEntry>                 entries;
     private              Map<LocalDate, List<GlucoEntry>> entryMap;
     private              int                              daysToShow;
+    private              Map<DayOfWeek, Boolean>          selectedDays;
     private              List<ButtonShape>                buttonShapes;
+    private              List<DayShape>                   dayShapes;
     private              EventHandler<MouseEvent>         mouseHandler;
 
 
@@ -73,7 +79,9 @@ public class StackedLineChart extends Region {
         entries      = new ArrayList<>();
         entryMap     = new HashMap<>();
         daysToShow   = 14;
+        selectedDays = new ConcurrentHashMap<>();
         buttonShapes = new CopyOnWriteArrayList<>();
+        dayShapes    = new CopyOnWriteArrayList<>();
         mouseHandler = e -> {
             final EventType<? extends Event> type = e.getEventType();
             if (MouseEvent.MOUSE_PRESSED.equals(type)) {
@@ -86,8 +94,23 @@ public class StackedLineChart extends Region {
                         redraw();
                     }
                 });
+                dayShapes.forEach(dayShape -> {
+                    if (dayShape.shape().contains(x, y)) {
+                        this.selectedDays.put(dayShape.day(), !selectedDays.get(dayShape.day()));
+                        filter();
+                        redraw();
+                    }
+                });
             }
         };
+
+        selectedDays.put(DayOfWeek.MONDAY, true);
+        selectedDays.put(DayOfWeek.TUESDAY, true);
+        selectedDays.put(DayOfWeek.WEDNESDAY, true);
+        selectedDays.put(DayOfWeek.THURSDAY, true);
+        selectedDays.put(DayOfWeek.FRIDAY, true);
+        selectedDays.put(DayOfWeek.SATURDAY, true);
+        selectedDays.put(DayOfWeek.SUNDAY, true);
 
         initGraphics();
         registerListeners();
@@ -152,7 +175,10 @@ public class StackedLineChart extends Region {
             final LocalDate localDate = entry.date().toLocalDate();
             if (localDate.isAfter(startDate)) {
                 if (!entryMap.keySet().contains(localDate)) { entryMap.put(localDate, new ArrayList<>()); }
-                entryMap.get(localDate).add(entry);
+                final DayOfWeek day = localDate.getDayOfWeek();
+                if (selectedDays.get(day)) {
+                    entryMap.get(localDate).add(entry);
+                }
             }
         });
     }
@@ -222,8 +248,20 @@ public class StackedLineChart extends Region {
             ctx.fillText(Integer.toString(h), x, availableHeight - GRAPH_INSETS.getBottom() * 0.25);
         }
 
-        // Draw lines for each day
+        // Draw normal area
+        double minNormal    = (height - GRAPH_INSETS.getBottom()) - PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MIN_NORMAL) * stepY;
+        double maxNormal    = (height - GRAPH_INSETS.getBottom()) - PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MAX_NORMAL) * stepY;
+        double heightNormal = (PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MAX_NORMAL) - PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MIN_NORMAL)) * stepY;
         ctx.setLineDashes();
+        ctx.setFill(HelperFX.getColorWithOpacity(Constants.GREEN, 0.1));
+        ctx.setStroke(Constants.GREEN);
+        ctx.setLineWidth(1);
+        ctx.fillRect(3 * GRAPH_INSETS.getLeft(), maxNormal, availableWidth - 2 * GRAPH_INSETS.getRight(), heightNormal);
+        ctx.strokeLine( 3 * GRAPH_INSETS.getLeft(), minNormal, width - GRAPH_INSETS.getRight(), minNormal);
+        ctx.strokeLine(3 * GRAPH_INSETS.getLeft(), maxNormal, width - GRAPH_INSETS.getRight(), maxNormal);
+
+        // Draw lines for each day
+        //ctx.setLineDashes();
         double hourStepX = availableWidth / Constants.SECONDS_PER_DAY;
         entryMap.entrySet().stream().sorted(Map.Entry.comparingByKey()).forEach(mapEntry -> {
             List<GlucoEntry> entries = mapEntry.getValue();
@@ -231,12 +269,14 @@ public class StackedLineChart extends Region {
             double lastX = stepX;
             double lastY = 0;
             for (GlucoEntry entry : entries) {
-                final double value   = entry.sgv();
-                final double seconds = entry.date().getHour() * 3600.0 + entry.date().getMinute() * 60 + entry.date().getSecond();
-                final Color  color   = Helper.getColorForValue(unit, UnitDefinition.MILLIGRAM_PER_DECILITER == unit ? value : eu.hansolo.fx.glucostatus.Helper.mgPerDeciliterToMmolPerLiter(value));
-                final double x       = seconds * hourStepX + stepX;
-                final double y       = (max - value + min) * stepY;
-                ctx.setStroke(color);
+                final double    value   = entry.sgv();
+                final double    seconds = entry.date().getHour() * 3600.0 + entry.date().getMinute() * 60 + entry.date().getSecond();
+                //final Color     color   = Helper.getColorForValue(unit, UnitDefinition.MILLIGRAM_PER_DECILITER == unit ? value : eu.hansolo.fx.glucostatus.Helper.mgPerDeciliterToMmolPerLiter(value));
+                //ctx.setStroke(color);
+                final DayOfWeek day     = entry.date().getDayOfWeek();
+                ctx.setStroke(Constants.DAY_COLOR_MAP.get(day));
+                final double    x       = seconds * hourStepX + stepX;
+                final double    y       = (max - value + min) * stepY;
                 if (lastX != stepX) {
                     ctx.strokeLine(lastX, lastY, x, y);
                 }
@@ -245,8 +285,9 @@ public class StackedLineChart extends Region {
             }
         });
 
-        // Draw day selector
+        // Draw days to show selector
         buttonShapes.clear();
+        ctx.setLineDashes();
         ctx.setTextAlign(TextAlignment.CENTER);
         ctx.setTextBaseline(VPos.CENTER);
         ctx.setStroke(Color.GRAY);
@@ -271,5 +312,20 @@ public class StackedLineChart extends Region {
         ctx.setFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
         ctx.fillText("7 days", stepX + 210, 22, 60);
         buttonShapes.add(new ButtonShape(7, new Rectangle(stepX + 180, 10, 60, 24)));
+
+        // Draw day selector
+        dayShapes.clear();
+        for (int i = 0 ; i < 7 ; i++) {
+            final DayOfWeek day = DayOfWeek.values()[6 - i];
+            ctx.setFill(selectedDays.get(day) ? Color.GRAY : darkMode ? Constants.DARK_BACKGROUND : Constants.BRIGHT_BACKGROUND);
+            ctx.setStroke(Color.GRAY);
+            ctx.fillRoundRect(availableWidth - stepX * i - 24, 10, 24, 24, 10, 10);
+            ctx.strokeRoundRect(availableWidth - stepX * i - 24, 10, 24, 24, 10, 10);
+            ctx.setFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
+            ctx.fillText(day.name().substring(0, 1), availableWidth - stepX * i - 12, 22, 24);
+            ctx.setStroke(Constants.DAY_COLOR_MAP.get(day));
+            ctx.strokeLine(availableWidth - stepX * i - 20, 30, availableWidth - stepX * i - 4, 30);
+            dayShapes.add(new DayShape(day, new Rectangle(availableWidth - stepX * i - 24, 10, 24, 24)));
+        }
     }
 }
