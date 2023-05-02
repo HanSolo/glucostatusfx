@@ -61,7 +61,7 @@ The max acceptable value can be defined in the range of 120-250 mg/dl.
 More info can be found on [this page](https://harmoniccode.blogspot.com/p/glucostatusfx.html)
 
 ## Overview
-![Main Screen](https://i.ibb.co/yWptWXC/Gluco-Status-FX-Main-Screen.png)
+![Main Screen](https://i.ibb.co/31qDzym/main-window.png)
 
 ![Main Screen Poincare](https://i.ibb.co/mXLwQJR/poincare.png)
 
@@ -72,3 +72,5 @@ More info can be found on [this page](https://harmoniccode.blogspot.com/p/glucos
 ![Time in range](https://i.ibb.co/1Gmh6tx/Monosnap-2022-01-14-16-25-32.png)
 
 ![Last 30 days](https://i.ibb.co/zbZxTps/Thirty-Days-View.png)
+
+![Overlay](https://i.ibb.co/nQKgTqz/overlay-dialog.png)

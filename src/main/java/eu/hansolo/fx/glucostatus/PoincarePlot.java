@@ -35,8 +35,8 @@ public class PoincarePlot extends Region {
     private              double          height;
     private              double          availableWidth;
     private              double          availableHeight;
-    private              double          scaleX;
-    private              double          scaleY;
+    private              double          stepX;
+    private              double          stepY;
     private              double          symbolSize;
     private              double          halfSymbolSize;
     private              Canvas          canvas;
@@ -124,8 +124,8 @@ public class PoincarePlot extends Region {
 
             availableWidth  = (width - GRAPH_INSETS.getLeft() - GRAPH_INSETS.getRight());
             availableHeight = (height - GRAPH_INSETS.getTop() - GRAPH_INSETS.getBottom());
-            scaleX          = width  / range;
-            scaleY          = height / range;
+            stepX           = width / range;
+            stepY           = height / range;
             symbolSize      = clamp(MIN_SYMBOL_SIZE, MAX_SYMBOL_SIZE, size * 0.016);
             halfSymbolSize  = symbolSize * 0.5;
             ticklabelFont   = Fonts.sfProTextRegular(10);
@@ -138,11 +138,11 @@ public class PoincarePlot extends Region {
         boolean darkMode = eu.hansolo.applefx.tools.Helper.isDarkMode();
 
         ctx.clearRect(0, 0, width, height);
-        ctx.setFill(darkMode ? Color.rgb(30, 28, 26) : Color.rgb(234, 233, 233));
+        ctx.setFill(darkMode ? Constants.DARK_BACKGROUND : Constants.BRIGHT_BACKGROUND);
         ctx.fillRect(0, 0, width, height);
 
         ctx.setFont(ticklabelFont);
-        ctx.setFill(Constants.BRIGHT_TEXT);
+        ctx.setFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
         ctx.setStroke(darkMode ? Color.rgb(81, 80, 78) : Color.rgb(184, 183, 183));
         ctx.setLineDashes(3, 4);
         ctx.setLineWidth(1);
@@ -169,11 +169,12 @@ public class PoincarePlot extends Region {
             ctx.fillText(axisLabels.get(i), x, height - GRAPH_INSETS.getBottom() * 0.25);
         }
 
+        // Draw points
         for (int i = 0 ; i < values.size() - 2 ; i++) {
             final double value     = values.get(i);
             final double nextValue = values.get(i + 1);
-            final double x         = value * scaleX;
-            final double y         = (max - nextValue + min) * scaleY;
+            final double x         = value * stepX;
+            final double y         = (max - nextValue + min) * stepY;
             final Color fill       = Helper.getColorForValue(unit, UnitDefinition.MILLIGRAM_PER_DECILITER == unit ? value : Helper.mgPerDeciliterToMmolPerLiter(value));
 
             ctx.setFill(fill);

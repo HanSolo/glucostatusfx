@@ -64,6 +64,9 @@ public interface I18nKeys {
     String MATRIX_TITLE                                      = "matrix_title";
     String MATRIX_SUBTITLE                                   = "matrix_subtitle";
     String MATRIX_CLOSE_BUTTON                               = "matrix_close_button";
+    String STACKED_CHART_TITLE                               = "stacked_chart_title";
+    String STACKED_CHART_SUBTITLE                            = "stacked_chart_subtitle";
+    String STACKED_CHART_CLOSE_BUTTON                        = "stacked_chart_close_button";
     String STATISTICS_TITLE                                  = "statistic_title";
     String STATISTICS_TOO_HIGH                               = "statistic_too_high";
     String STATISTICS_HIGH                                   = "statistic_high";
