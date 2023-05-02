@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>eu.hansolo.fx</groupId>
   <artifactId>glucostatusfx</artifactId>
-  <version>17.0.1</version>
+  <version>17.0.31</version>
   <name>GlucoStatusFX</name>
   <properties>
     <maven.compiler.release>11</maven.compiler.release>
@@ -13,7 +13,7 @@
     <main.class>eu.hansolo.fx.glucostatus.Main</main.class>
     <gluonfx.plugin.version>1.0.16</gluonfx.plugin.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <javafx.version>17.0.2</javafx.version>
+    <javafx.version>17.0.6</javafx.version>
     <javafx.plugin.version>0.0.8</javafx.plugin.version>
   </properties>
   <dependencies>
@@ -42,11 +42,6 @@
       <artifactId>runtime-args</artifactId>
       <version>${attach.version}</version>
       <classifier>desktop</classifier>
-    </dependency>
-    <dependency>
-      <groupId>com.gluonhq.attach</groupId>
-      <artifactId>audio</artifactId>
-      <version>${attach.version}</version>
     </dependency>
     <dependency>
       <groupId>com.gluonhq.attach</groupId>
@@ -84,6 +79,17 @@
     <dependency>
       <groupId>com.gluonhq.attach</groupId>
       <artifactId>util</artifactId>
+      <version>${attach.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.gluonhq.attach</groupId>
+      <artifactId>storage</artifactId>
+      <version>${attach.version}</version>
+      <classifier>desktop</classifier>
+    </dependency>
+    <dependency>
+      <groupId>com.gluonhq.attach</groupId>
+      <artifactId>audio</artifactId>
       <version>${attach.version}</version>
     </dependency>
     <dependency>
@@ -139,6 +145,10 @@
         <configuration>
           <target>${gluonfx.target}</target>
           <mainClass>${main.class}</mainClass>
+          <resourcesList>
+            <list>.*\\.wav$</list>
+            <list>.*\\.mp3$</list>
+          </resourcesList>
           <attachList>
             <list>runtime-args</list>
             <list>audio</list>
@@ -148,6 +158,7 @@
             <list>local-notifications</list>
             <list>settings</list>
             <list>statusbar</list>
+            <list>storage</list>
           </attachList>
           <graalvmHome>/Library/Java/JavaVirtualMachines/gluon-graalvm/Contents/Home</graalvmHome>
         </configuration>

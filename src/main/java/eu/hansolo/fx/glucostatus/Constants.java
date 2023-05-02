@@ -21,6 +21,7 @@ package eu.hansolo.fx.glucostatus;
 import javafx.scene.paint.Color;
 
 import java.io.File;
+import java.time.DayOfWeek;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
@@ -104,6 +105,14 @@ public class Constants {
     public static final Color  BRIGHT_TEXT                                            = Color.rgb(255, 246, 245);
     public static final Color  DARK_TEXT                                              = Color.rgb(20, 20, 20);
 
+    public static final Map<DayOfWeek, Color> DAY_COLOR_MAP                           = Map.of(DayOfWeek.MONDAY, Color.web("#2ccd48"),
+                                                                                               DayOfWeek.TUESDAY, Color.web("#00bba0"),
+                                                                                               DayOfWeek.WEDNESDAY, Color.web("#a2a200"),
+                                                                                               DayOfWeek.THURSDAY, Color.web("#ff8748"),
+                                                                                               DayOfWeek.FRIDAY, Color.web("#ea37b3"),
+                                                                                               DayOfWeek.SATURDAY, Color.web("#e14436"),
+                                                                                               DayOfWeek.SUNDAY, Color.web("#da2458"));
+
     public static final double DELTA_CHART_WIDTH                                      = 115;
     public static final double DELTA_CHART_HEIGHT                                     = 50;
 
@@ -137,6 +146,7 @@ public class Constants {
     public static final Integer       NIGHT_START                                     = 20;
     public static final Integer       NIGHT_END                                       = 6;
     public static final List<Integer> NIGHT_HOURS                                     = List.of( NIGHT_START, 21, 22, 23, 00, 1, 2, 3, 4, 5, NIGHT_END );
+    public static final double        SECONDS_PER_DAY                                 = 43_200;
 
     public static final List<String> yAxisLabelsMgPerDeciliter = List.of("40", "80", "120", "160", "200", "240", "280", "320", "360", "400");
     public static final List<String> yAxisLabelsMmolPerLiter   = List.of("2.2", "4.4", "6.7", "8.9", "11.1", "13.3", "15.5", "17.8", "20.0", "22.2");

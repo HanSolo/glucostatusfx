@@ -135,6 +135,7 @@ public class Main extends Application {
     private              SVGPath                    timeInRangeChartButton;
     private              SVGPath                    patternChartButton;
     private              SVGPath                    matrixButton;
+    private              SVGPath                    stackedButton;
     private              SVGPath                    exclamationMark;
     private              MacosLabel                 titleLabel;
     private              MacosLabel                 valueLabel;
@@ -238,6 +239,12 @@ public class Main extends Application {
     private              MacosLabel                 matrixChartSubTitleLabel;
     private              MacosLabel                 matrixChartHba1cLabel;
     private              ThirtyDayView              matrixChartThirtyDayView;
+    // Stacked Chart Pane
+    private              StackPane                  stackedChartPane;
+    private              MacosLabel                 stackedChartTitleLabel;
+    private              MacosLabel                 stackedChartSubTitleLabel;
+    private              MacosLabel                 stackedChartHba1cLabel;
+    private              StackedLineChart           stackedLineChart;
 
 
     // ******************** Initialization ************************************
@@ -369,13 +376,20 @@ public class Main extends Application {
         AnchorPane.setTopAnchor(matrixButton, 10d);
         AnchorPane.setLeftAnchor(matrixButton, 10d);
 
+        stackedButton = new SVGPath();
+        stackedButton.setContent("M10.993,-0C17.067,-0 21.998,4.933 21.998,11.01C21.998,17.087 17.067,22.02 10.993,22.02C4.92,22.02 -0.011,17.087 -0.011,11.01C-0.011,4.933 4.92,-0 10.993,-0ZM6.31,6.598L6.31,6.296C6.31,5.916 6.001,5.607 5.621,5.607C5.241,5.607 4.932,5.916 4.932,6.296L4.932,15.359C4.932,15.739 5.241,16.047 5.621,16.047L16.329,16.047C16.709,16.047 17.017,15.739 17.017,15.359C17.017,14.979 16.709,14.67 16.329,14.67L6.386,14.67C6.386,14.67 6.353,14.67 6.329,14.646C6.309,14.625 6.31,14.589 6.31,14.589L6.31,13.919C6.329,13.907 6.347,13.894 6.365,13.88L9.267,11.565C9.267,11.565 12.126,13.86 12.156,13.884C12.301,13.999 12.501,14.044 12.688,14.019C12.815,14.005 12.938,13.959 13.036,13.882C13.062,13.861 16.355,11.223 16.355,11.223C16.594,11.033 16.593,10.725 16.354,10.535C16.115,10.345 15.728,10.345 15.489,10.536L12.597,12.843L9.702,10.534C9.628,10.475 9.54,10.434 9.446,10.412C9.237,10.36 8.999,10.401 8.833,10.533L6.31,12.546L6.31,10.945C6.329,10.933 6.347,10.92 6.365,10.906L9.267,8.591C9.267,8.591 12.126,10.886 12.156,10.91C12.301,11.025 12.501,11.07 12.688,11.045C12.815,11.031 12.938,10.985 13.036,10.908C13.062,10.887 16.355,8.249 16.355,8.249C16.594,8.059 16.593,7.751 16.354,7.561C16.115,7.371 15.728,7.371 15.489,7.562L12.597,9.869L9.702,7.56C9.628,7.501 9.54,7.46 9.446,7.437C9.237,7.386 8.999,7.427 8.833,7.559L6.31,9.572L6.31,7.971C6.329,7.959 6.347,7.946 6.365,7.932L9.267,5.617C9.267,5.617 12.126,7.911 12.156,7.936C12.301,8.051 12.501,8.096 12.688,8.071C12.815,8.057 12.938,8.011 13.036,7.934C13.062,7.913 16.355,5.275 16.355,5.275C16.594,5.085 16.593,4.776 16.354,4.587C16.115,4.397 15.728,4.397 15.489,4.587L12.597,6.895L9.702,4.586C9.628,4.527 9.54,4.486 9.446,4.463C9.237,4.412 8.999,4.453 8.833,4.585L6.31,6.598Z");
+        stackedButton.setFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
+        stackedButton.setOpacity(0.5);
+        AnchorPane.setTopAnchor(stackedButton, 10d);
+        AnchorPane.setLeftAnchor(stackedButton, 52d);
+
         timeInRangeChartButton = new SVGPath();
         timeInRangeChartButton.setContent("M10.993,22c1.508,0 2.924,-0.286 4.25,-0.859c1.326,-0.572 2.495,-1.367 3.508,-2.385c1.013,-1.018 1.807,-2.19 2.384,-3.517c0.577,-1.327 0.865,-2.74 0.865,-4.239c0,-1.499 -0.288,-2.912 -0.865,-4.239c-0.577,-1.327 -1.374,-2.499 -2.391,-3.517c-1.017,-1.018 -2.188,-1.813 -3.514,-2.385c-1.326,-0.573 -2.743,-0.859 -4.25,-0.859c-1.499,0 -2.911,0.286 -4.237,0.859c-1.326,0.572 -2.493,1.367 -3.501,2.385c-1.008,1.018 -1.8,2.19 -2.377,3.517c-0.577,1.327 -0.865,2.74 -0.865,4.239c-0,1.499 0.288,2.912 0.865,4.239c0.577,1.327 1.371,2.499 2.384,3.517c1.013,1.018 2.182,1.813 3.508,2.385c1.326,0.573 2.738,0.859 4.236,0.859Zm-5.421,-6.434c-0.282,0 -0.511,-0.081 -0.688,-0.245c-0.177,-0.164 -0.266,-0.382 -0.266,-0.654c-0,-0.255 0.089,-0.464 0.266,-0.627c0.177,-0.164 0.406,-0.246 0.688,-0.246l10.884,0c0.281,0 0.511,0.082 0.688,0.246c0.177,0.163 0.265,0.372 0.265,0.627c0,0.272 -0.088,0.49 -0.265,0.654c-0.177,0.164 -0.407,0.245 -0.688,0.245l-10.884,0Zm-0,-3.68c-0.282,-0 -0.511,-0.08 -0.688,-0.239c-0.177,-0.159 -0.266,-0.374 -0.266,-0.647c-0,-0.273 0.089,-0.488 0.266,-0.647c0.177,-0.159 0.406,-0.239 0.688,-0.239l10.884,0c0.281,0 0.511,0.08 0.688,0.239c0.177,0.159 0.265,0.374 0.265,0.647c0,0.273 -0.088,0.488 -0.265,0.647c-0.177,0.159 -0.407,0.239 -0.688,0.239l-10.884,-0Zm-0,-3.68c-0.282,-0 -0.511,-0.08 -0.688,-0.239c-0.177,-0.159 -0.266,-0.37 -0.266,-0.634c-0,-0.272 0.089,-0.49 0.266,-0.654c0.177,-0.164 0.406,-0.245 0.688,-0.245l10.884,-0c0.281,-0 0.511,0.081 0.688,0.245c0.177,0.164 0.265,0.382 0.265,0.654c0,0.264 -0.088,0.475 -0.265,0.634c-0.177,0.159 -0.407,0.239 -0.688,0.239l-10.884,-0Z");
         timeInRangeChartButton.setFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
         AnchorPane.setRightAnchor(timeInRangeChartButton, 10d);
         AnchorPane.setBottomAnchor(timeInRangeChartButton, 20d);
 
-        mainPane = new AnchorPane(titleLabel, matrixButton, reloadButton, valueLabel, last5DeltasLabel, hba1cLabel, timestampLabel, rangeAverageLabel, patternChartButton, timeInRangeChartButton);
+        mainPane = new AnchorPane(titleLabel, matrixButton, reloadButton, valueLabel, last5DeltasLabel, hba1cLabel, timestampLabel, rangeAverageLabel, patternChartButton, timeInRangeChartButton, stackedButton);
         mainPane.setPrefSize(IPHONE_SCREEN.getWidth(), 285);
         mainPane.setMinHeight(285);
         mainPane.setBackground(new Background(new BackgroundFill(Constants.GRAY, CornerRadii.EMPTY, Insets.EMPTY)));
@@ -393,6 +407,7 @@ public class Main extends Application {
         AnchorPane.setRightAnchor(poincarePlot, 5d);
         AnchorPane.setBottomAnchor(poincarePlot, 5d);
         AnchorPane.setLeftAnchor(poincarePlot, 5d);
+
 
         exclamationMark = new SVGPath();
         exclamationMark.setContent("M7.743,54.287l41.48,-0c1.613,-0 2.995,-0.346 4.147,-1.037c1.153,-0.692 2.046,-1.619 2.679,-2.783c0.634,-1.164 0.951,-2.483 0.951,-3.958c-0,-0.622 -0.092,-1.262 -0.277,-1.918c-0.184,-0.657 -0.449,-1.285 -0.795,-1.884l-20.774,-36.053c-0.737,-1.29 -1.705,-2.27 -2.904,-2.938c-1.198,-0.668 -2.454,-1.003 -3.767,-1.003c-1.314,0 -2.57,0.335 -3.768,1.003c-1.198,0.668 -2.155,1.648 -2.869,2.938l-20.774,36.053c-0.715,1.221 -1.072,2.489 -1.072,3.802c0,1.475 0.311,2.794 0.933,3.958c0.622,1.164 1.515,2.091 2.679,2.783c1.164,0.691 2.541,1.037 4.131,1.037Zm0.034,-4.874c-0.829,-0 -1.503,-0.294 -2.022,-0.882c-0.518,-0.587 -0.777,-1.261 -0.777,-2.022c-0,-0.207 0.023,-0.438 0.069,-0.691c0.046,-0.254 0.138,-0.496 0.276,-0.726l20.74,-36.087c0.254,-0.461 0.605,-0.807 1.054,-1.037c0.45,-0.231 0.905,-0.346 1.366,-0.346c0.484,-0 0.939,0.115 1.365,0.346c0.426,0.23 0.778,0.576 1.054,1.037l20.74,36.121c0.231,0.438 0.346,0.899 0.346,1.383c-0,0.761 -0.259,1.435 -0.778,2.022c-0.518,0.588 -1.204,0.882 -2.057,0.882l-41.376,-0Zm20.74,-4.494c0.83,0 1.562,-0.294 2.195,-0.881c0.634,-0.588 0.951,-1.308 0.951,-2.161c-0,-0.875 -0.311,-1.601 -0.933,-2.177c-0.623,-0.577 -1.36,-0.865 -2.213,-0.865c-0.875,0 -1.624,0.294 -2.247,0.882c-0.622,0.587 -0.933,1.308 -0.933,2.16c0,0.83 0.317,1.544 0.951,2.143c0.633,0.599 1.377,0.899 2.229,0.899Zm0,-9.056c1.521,-0 2.293,-0.795 2.316,-2.385l0.45,-14.173c0.023,-0.76 -0.237,-1.4 -0.778,-1.918c-0.542,-0.519 -1.216,-0.778 -2.022,-0.778c-0.83,0 -1.504,0.254 -2.022,0.761c-0.519,0.507 -0.767,1.14 -0.744,1.901l0.381,14.207c0.046,1.59 0.852,2.385 2.419,2.385Z");
@@ -447,7 +462,11 @@ public class Main extends Application {
         matrixChartPane.setVisible(false);
         matrixChartPane.setManaged(false);
 
-        pane = new StackPane(vpane, glassOverlay, prefPane, timeInRangePane, patternChartPane, matrixChartPane);
+        stackedChartPane = createStackedChartPane();
+        stackedChartPane.setVisible(false);
+        stackedChartPane.setManaged(false);
+
+        pane = new StackPane(vpane, glassOverlay, prefPane, timeInRangePane, patternChartPane, matrixChartPane, stackedChartPane);
         //pane.setBackground(new Background(new BackgroundFill(MacosSystemColor.BACKGROUND.dark(), CornerRadii.EMPTY, Insets.EMPTY)));
         pane.setBackground(new Background(new BackgroundFill(Color.BLACK, CornerRadii.EMPTY, Insets.EMPTY)));
         StackPane.setMargin(vpane, new Insets(32, 0, 20, 0));
@@ -484,6 +503,7 @@ public class Main extends Application {
                 Platform.runLater(() -> {
                     matrixButton.setOpacity(1.0);
                     patternChartButton.setOpacity(1.0);
+                    stackedButton.setOpacity(1.0);
                 });
                 lastFullUpdate = ZonedDateTime.now();
             });
@@ -547,6 +567,12 @@ public class Main extends Application {
         matrixButton.setOnMouseReleased(e -> {
             matrixButton.setOpacity(1.0);
             showMatrixChart();
+        });
+
+        stackedButton.setOnMousePressed(e -> stackedButton.setOpacity(0.75));
+        stackedButton.setOnMouseReleased(e -> {
+            stackedButton.setOpacity(1.0);
+            showStackedChart();
         });
 
         reloadButton.setOnMousePressed(e -> reloadButton.setOpacity(0.75));
@@ -647,16 +673,17 @@ public class Main extends Application {
         if (null != nightscoutUrl && !nightscoutUrl.isEmpty() && ZonedDateTime.now().toEpochSecond() - lastFullUpdate.toEpochSecond() > Constants.SECONDS_PER_MINUTE) {
             matrixButton.setOpacity(0.5);
             patternChartButton.setOpacity(0.5);
+            stackedButton.setOpacity(0.5);
             allEntries.clear();
             Helper.getEntriesFromLast30Days(nightscoutUrl + Constants.URL_API).thenAccept(l -> {
                 allEntries.addAll(l);
                 Platform.runLater(() -> {
                     matrixButton.setOpacity(1.0);
                     patternChartButton.setOpacity(1.0);
+                    stackedButton.setOpacity(1.0);
                 });
                 lastFullUpdate = ZonedDateTime.now();
             });
-
             drawChart();
         }
     }
@@ -1019,8 +1046,7 @@ public class Main extends Application {
         double        oneHourStep      = Constants.SECONDS_PER_HOUR * stepX;
         long          hourCounter      = 0;
 
-
-
+        
         // Collect nights
         ZonedDateTime startTime     = ZonedDateTime.ofInstant(Instant.ofEpochSecond(startX + minEntry.datelong()), ZoneId.systemDefault());
         ZonedDateTime endTime       = ZonedDateTime.ofInstant(Instant.ofEpochSecond(startX + minEntry.datelong() + currentInterval.getSeconds()), ZoneId.systemDefault());
@@ -1072,7 +1098,6 @@ public class Main extends Application {
         ctx.setFill(darkMode ? Color.rgb(255, 255, 255, 0.15) : Color.rgb(0, 0, 0, 0.1));
         nights.forEach(night -> ctx.fillRect(night.getX(), night.getY(), night.width, night.getHeight()));
         ctx.restore();
-
 
         // Draw vertical lines
         ctx.setFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
@@ -1864,6 +1889,61 @@ public class Main extends Application {
     }
 
 
+    // ******************** Overlay Chart **************************************
+    private StackPane createStackedChartPane() {
+        stackedChartTitleLabel = createLabel("Overlay", 24, true, false, Pos.CENTER);
+        stackedChartTitleLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
+
+        stackedChartSubTitleLabel = createLabel("7, 14 or 30 days", 16, false, false, Pos.CENTER);
+        stackedChartSubTitleLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
+
+        stackedChartHba1cLabel = createLabel(String.format(Locale.US, "HbA1c %.1f%% (last 30 days)", Helper.getHbA1c(allEntries, currentUnit)), 20, false, false, Pos.CENTER);
+        stackedChartHba1cLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
+
+        stackedLineChart = new StackedLineChart();
+        stackedLineChart.setEntries(currentUnit, allEntries);
+
+        MacosButton closeButton = new MacosButton("Close");
+        closeButton.setDark(darkMode);
+
+        VBox content = new VBox(20, stackedChartTitleLabel, stackedChartSubTitleLabel, stackedChartHba1cLabel, stackedLineChart, closeButton);
+        content.setAlignment(Pos.CENTER);
+        content.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, new CornerRadii(10), Insets.EMPTY)));
+
+        stackedChartPane = new StackPane(content);
+        stackedChartPane.getStylesheets().add(Main.class.getResource("glucostatus.css").toExternalForm());
+
+        stackedChartPane.setBackground(new Background(new BackgroundFill(darkMode ? Constants.DARK_BACKGROUND : Color.WHITE , new CornerRadii(10), Insets.EMPTY)));
+        stackedChartPane.setBorder(new Border(new BorderStroke(Color.rgb(78, 77, 76), BorderStrokeStyle.SOLID, new CornerRadii(10),new BorderWidths(1))));
+
+        closeButton.setOnAction(e -> {
+            stackedChartPane.setVisible(false);
+            stackedChartPane.setManaged(false);
+            vpane.setVisible(true);
+            vpane.setManaged(true);
+            dialogVisible.set(false);
+        });
+
+        return stackedChartPane;
+    }
+
+    private void showStackedChart() {
+        if (dialogVisible.get()) { return; }
+        dialogVisible.set(true);
+        vpane.setVisible(false);
+        vpane.setManaged(false);
+        stackedChartPane.setManaged(true);
+        stackedChartPane.setVisible(true);
+
+        stackedChartTitleLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
+
+        stackedChartSubTitleLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
+
+        stackedChartHba1cLabel.setText(String.format(Locale.US, "HbA1c %.1f%% (last 30 days)", Helper.getHbA1c(allEntries, currentUnit)));
+        stackedChartHba1cLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
+
+        stackedLineChart.setEntries(currentUnit, allEntries);
+    }
 
     public static void main(String[] args) {
         launch(args);

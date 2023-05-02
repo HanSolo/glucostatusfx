@@ -6,7 +6,7 @@
 
     <groupId>eu.hansolo.fx</groupId>
     <artifactId>glucostatusfx</artifactId>
-    <version>17.0.27</version>
+    <version>17.0.31</version>
     <packaging>jar</packaging>
 
     <name>GlucoStatusFX</name>

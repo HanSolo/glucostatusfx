@@ -23,6 +23,8 @@
         <module name="glucostatusfx" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel target="17" />
+    <bytecodeTargetLevel target="17">
+      <module name="GlucoStatusFX" target="17" />
+    </bytecodeTargetLevel>
   </component>
 </project>
