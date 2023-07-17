@@ -29,6 +29,7 @@ import eu.hansolo.fx.glucostatus.Records.GlucoEntry;
 import eu.hansolo.fx.glucostatus.Records.GlucoEntryDto;
 import eu.hansolo.fx.glucostatus.Statistics.StatisticCalculation;
 import eu.hansolo.fx.glucostatus.Statistics.StatisticRange;
+import eu.hansolo.jdktools.OperatingSystem;
 import eu.hansolo.toolbox.tuples.Pair;
 import eu.hansolo.toolbox.unit.Converter;
 import eu.hansolo.toolbox.unit.UnitDefinition;
@@ -270,15 +271,17 @@ public class Helper {
         return avgPoints;
     }
 
-    public static final BufferedImage createTextTrayIcon(final String text, final Color color) {
+    public static final BufferedImage createTextTrayIcon(final OperatingSystem operatingSystem, final String text, final Color color) {
         final int    width    = 44;
         final int    height   = 22;
         final double x        = width / 2;
         final double y        = height / 2;
-        final double fontSize = 0.6363636364 * height;
+        final double fontSize = OperatingSystem.LINUX == operatingSystem ? 8 : 0.6363636364 * height;
 
         final Canvas          canvas = new Canvas(width, height);
         final GraphicsContext ctx    = canvas.getGraphicsContext2D();
+        ctx.setFill(OperatingSystem.LINUX == operatingSystem ? Color.rgb(19, 19, 19) : Color.TRANSPARENT);
+        ctx.fillRect(0, 0, width, height);
         ctx.setFont(Fonts.sfProRoundedSemiBold(fontSize));
         ctx.setTextAlign(TextAlignment.CENTER);
         ctx.setTextBaseline(VPos.CENTER);
