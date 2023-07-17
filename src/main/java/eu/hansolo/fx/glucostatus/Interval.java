@@ -21,9 +21,10 @@ package eu.hansolo.fx.glucostatus;
 import java.time.format.DateTimeFormatter;
 
 
-public enum TimeInterval {
-    LAST_720_HOURS(8640, 720, 2592000, DateTimeFormatter.ofPattern("HH")),
-    LAST_168_HOURS(2016, 168, 604800, DateTimeFormatter.ofPattern("HH")),
+public enum Interval {
+    LAST_720_HOURS(8640, 720, 2_592_000, DateTimeFormatter.ofPattern("DD")),
+    LAST_336_HOURS(4032, 336, 1_209_000, DateTimeFormatter.ofPattern("DD")),
+    LAST_168_HOURS(2016, 168, 604800, DateTimeFormatter.ofPattern("DD")),
     LAST_72_HOURS(864, 72, 259200, DateTimeFormatter.ofPattern("HH")),
     LAST_48_HOURS(576, 48, 172800, DateTimeFormatter.ofPattern("HH")),
     LAST_24_HOURS(288, 24, 86400, DateTimeFormatter.ofPattern("HH")),
@@ -38,7 +39,7 @@ public enum TimeInterval {
 
 
     // ******************** Constructors **************************************
-    TimeInterval(final int noOfEntries, final int hours, final int seconds, final DateTimeFormatter formatter) {
+    Interval(final int noOfEntries, final int hours, final int seconds, final DateTimeFormatter formatter) {
         this.noOfEntries = noOfEntries;
         this.hours       = hours;
         this.seconds     = seconds;
@@ -49,8 +50,9 @@ public enum TimeInterval {
     // ******************** Methods *******************************************
     public String getUiString() {
         switch(this) {
-            case LAST_720_HOURS: { return "30 d"; }
-            case LAST_168_HOURS: { return "7 d"; }
+            case LAST_720_HOURS: { return "30 d";  }
+            case LAST_336_HOURS: { return "14 d";  }
+            case LAST_168_HOURS: { return "7 d";   }
             case LAST_72_HOURS : { return "72 h";  }
             case LAST_48_HOURS : { return "48 h";  }
             case LAST_24_HOURS : { return "24 h";  }

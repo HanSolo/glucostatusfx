@@ -104,13 +104,13 @@ public class StackedLineChart extends Region {
             }
         };
 
-        selectedDays.put(DayOfWeek.MONDAY, true);
-        selectedDays.put(DayOfWeek.TUESDAY, true);
-        selectedDays.put(DayOfWeek.WEDNESDAY, true);
-        selectedDays.put(DayOfWeek.THURSDAY, true);
-        selectedDays.put(DayOfWeek.FRIDAY, true);
-        selectedDays.put(DayOfWeek.SATURDAY, true);
-        selectedDays.put(DayOfWeek.SUNDAY, true);
+        selectedDays.put(DayOfWeek.MONDAY, false);
+        selectedDays.put(DayOfWeek.TUESDAY, false);
+        selectedDays.put(DayOfWeek.WEDNESDAY, false);
+        selectedDays.put(DayOfWeek.THURSDAY, false);
+        selectedDays.put(DayOfWeek.FRIDAY, false);
+        selectedDays.put(DayOfWeek.SATURDAY, false);
+        selectedDays.put(DayOfWeek.SUNDAY, false);
 
         initGraphics();
         registerListeners();

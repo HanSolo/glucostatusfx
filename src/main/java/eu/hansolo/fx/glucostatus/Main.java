@@ -201,9 +201,9 @@ public class Main extends Application {
     private              double                     deltaMin;
     private              double                     deltaMax;
     private              GlucoEntry                 currentEntry;
-    private              Color                      currentColor;
-    private              TimeInterval               currentInterval;
-    private              Font                       ticklabelFont;
+    private Color    currentColor;
+    private Interval currentInterval;
+    private Font     ticklabelFont;
     private              Font                       smallTicklabelFont;
     private              boolean                    slowlyRising;
     private              boolean                    slowlyFalling;
@@ -252,7 +252,7 @@ public class Main extends Application {
         nightscoutUrl     = PropertyManager.INSTANCE.getString(Constants.PROPERTIES_NIGHTSCOUT_URL);
         currentUnit       = MILLIGRAM_PER_DECILITER;
         outdated          = false;
-        currentInterval   = TimeInterval.LAST_24_HOURS;
+        currentInterval   = Interval.LAST_24_HOURS;
         allEntries        = FXCollections.observableArrayList();
         entries           = new ArrayList<>();
         deltas            = new ArrayList<>();
@@ -597,19 +597,19 @@ public class Main extends Application {
             if (null == ov || null == nv) { return; }
             if (ov.equals(nv)) { nv.setSelected(true); }
             if (nv.equals(sevenDays)) {
-                currentInterval = TimeInterval.LAST_168_HOURS;
+                currentInterval = Interval.LAST_168_HOURS;
             } else if (nv.equals(seventyTwoHours)) {
-                currentInterval = TimeInterval.LAST_72_HOURS;
+                currentInterval = Interval.LAST_72_HOURS;
             } else if (nv.equals(fourtyEightHours)) {
-                currentInterval = TimeInterval.LAST_48_HOURS;
+                currentInterval = Interval.LAST_48_HOURS;
             } else if (nv.equals(twentyFourHours)) {
-                currentInterval = TimeInterval.LAST_24_HOURS;
+                currentInterval = Interval.LAST_24_HOURS;
             } else if (nv.equals(twelveHours)) {
-                currentInterval = TimeInterval.LAST_12_HOURS;
+                currentInterval = Interval.LAST_12_HOURS;
             } else if (nv.equals(sixHours)) {
-                currentInterval = TimeInterval.LAST_6_HOURS;
+                currentInterval = Interval.LAST_6_HOURS;
             } else if (nv.equals(threeHours)) {
-                currentInterval = TimeInterval.LAST_3_HOURS;
+                currentInterval = Interval.LAST_3_HOURS;
             }
             updateUI();
         });
@@ -969,7 +969,7 @@ public class Main extends Application {
 
             mainPane.setBackground(new Background(new BackgroundFill(currentColor, CornerRadii.EMPTY, Insets.EMPTY)));
             valueLabel.setText(currentValueText);
-            hba1cLabel.setText(allEntries.size() > 29 ? String.format(Locale.US, "HbA1c %.1f%%", Helper.getHbA1c(allEntries, currentUnit)) : "-");
+            hba1cLabel.setText(allEntries.size() > 29 ? String.format(Locale.US, "HbA1c %.1f%%", Helper.calcHbA1c(allEntries)) : "-");
             timestampLabel.setText(Constants.DTF.format(dateTime) + (outdated ? " 􀇾" : ""));
             exclamationMark.setVisible(outdated);
             rangeAverageLabel.setText(currentInterval.getUiString() + " (ø" + String.format(Locale.US, format, avg) + ")");
@@ -1039,8 +1039,8 @@ public class Main extends Application {
         double        stepX           = availableWidth / deltaTime;
         double        stepY           = availableHeight / (Constants.DEFAULT_GLUCO_RANGE);
         int           hour            = minDate.getHour();
-        ZonedDateTime adjMinDate      = (hour == 23 && currentInterval != TimeInterval.LAST_12_HOURS) ? minDate.plusSeconds(TimeInterval.LAST_24_HOURS.getSeconds()) : minDate;
-        ZonedDateTime firstFullHour   = (hour == 23 && currentInterval != TimeInterval.LAST_12_HOURS) ? ZonedDateTime.of(adjMinDate.plusDays(1).toLocalDate(), LocalTime.MIDNIGHT, ZoneId.systemDefault()) : adjMinDate;
+        ZonedDateTime adjMinDate      = (hour == 23 && currentInterval != Interval.LAST_12_HOURS) ? minDate.plusSeconds(Interval.LAST_24_HOURS.getSeconds()) : minDate;
+        ZonedDateTime firstFullHour   = (hour == 23 && currentInterval != Interval.LAST_12_HOURS) ? ZonedDateTime.of(adjMinDate.plusDays(1).toLocalDate(), LocalTime.MIDNIGHT, ZoneId.systemDefault()) : adjMinDate;
         long          startX          = firstFullHour.toEpochSecond() - minEntry.datelong();
         int           lastHour         = -1;
         double        oneHourStep      = Constants.SECONDS_PER_HOUR * stepX;
@@ -1106,8 +1106,8 @@ public class Main extends Application {
         switch(currentInterval) {
             case LAST_168_HOURS:
             case LAST_720_HOURS:
-            case LAST_72_HOURS: interval = TimeInterval.LAST_6_HOURS.getHours(); break;
-            case LAST_48_HOURS: interval = TimeInterval.LAST_3_HOURS.getHours(); break;
+            case LAST_72_HOURS: interval = Interval.LAST_6_HOURS.getHours(); break;
+            case LAST_48_HOURS: interval = Interval.LAST_3_HOURS.getHours(); break;
             default           : interval = 1; break;
         }
         hourCounter = 0;
@@ -1684,7 +1684,7 @@ public class Main extends Application {
         patternChartTitleLabel = createLabel("Pattern 24h", 24, true, false, Pos.CENTER);
         patternChartTitleLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
 
-        patternChartHba1cLabel = createLabel(String.format(Locale.US, "HbA1c %.1f%% (last 30 days)", Helper.getHbA1c(allEntries, currentUnit)), 20, false, false, Pos.CENTER);
+        patternChartHba1cLabel = createLabel(String.format(Locale.US, "HbA1c %.1f%% (last 30 days)", Helper.calcHbA1c(allEntries)), 20, false, false, Pos.CENTER);
         patternChartHba1cLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
 
         patternChartZones = new ListView<>();
@@ -1728,10 +1728,10 @@ public class Main extends Application {
 
         patternChartTitleLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
 
-        patternChartHba1cLabel.setText(String.format(Locale.US, "HbA1c %.1f%% (last 30 days)", Helper.getHbA1c(allEntries, currentUnit)));
+        patternChartHba1cLabel.setText(String.format(Locale.US, "HbA1c %.1f%% (last 30 days)", Helper.calcHbA1c(allEntries)));
         patternChartHba1cLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
 
-        long             limit           = Instant.now().getEpochSecond() - TimeInterval.LAST_168_HOURS.getSeconds();
+        long             limit           = Instant.now().getEpochSecond() - Interval.LAST_168_HOURS.getSeconds();
         List<GlucoEntry> entriesLastWeek = allEntries.stream().filter(entry -> entry.datelong() > limit).collect(Collectors.toList());
 
         Map<LocalTime, DataPoint>        dataMap         = Statistics.analyze(entriesLastWeek);
@@ -1839,7 +1839,7 @@ public class Main extends Application {
         matrixChartSubTitleLabel = createLabel("(daily average)", 16, false, false, Pos.CENTER);
         matrixChartSubTitleLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
 
-        matrixChartHba1cLabel = createLabel(String.format(Locale.US, "HbA1c %.1f%% (last 30 days)", Helper.getHbA1c(allEntries, currentUnit)), 20, false, false, Pos.CENTER);
+        matrixChartHba1cLabel = createLabel(String.format(Locale.US, "HbA1c %.1f%% (last 30 days)", Helper.calcHbA1c(allEntries)), 20, false, false, Pos.CENTER);
         matrixChartHba1cLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
 
         matrixChartThirtyDayView = new ThirtyDayView(allEntries, currentUnit);
@@ -1881,7 +1881,7 @@ public class Main extends Application {
 
         matrixChartSubTitleLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
 
-        matrixChartHba1cLabel.setText(String.format(Locale.US, "HbA1c %.1f%% (last 30 days)", Helper.getHbA1c(allEntries, currentUnit)));
+        matrixChartHba1cLabel.setText(String.format(Locale.US, "HbA1c %.1f%% (last 30 days)", Helper.calcHbA1c(allEntries)));
         matrixChartHba1cLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
 
         matrixChartThirtyDayView.setEntries(allEntries, currentUnit);
@@ -1897,7 +1897,7 @@ public class Main extends Application {
         stackedChartSubTitleLabel = createLabel("7, 14 or 30 days", 16, false, false, Pos.CENTER);
         stackedChartSubTitleLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
 
-        stackedChartHba1cLabel = createLabel(String.format(Locale.US, "HbA1c %.1f%% (last 30 days)", Helper.getHbA1c(allEntries, currentUnit)), 20, false, false, Pos.CENTER);
+        stackedChartHba1cLabel = createLabel(String.format(Locale.US, "HbA1c %.1f%% (last 30 days)", Helper.calcHbA1c(allEntries)), 20, false, false, Pos.CENTER);
         stackedChartHba1cLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
 
         stackedLineChart = new StackedLineChart();
@@ -1939,7 +1939,7 @@ public class Main extends Application {
 
         stackedChartSubTitleLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
 
-        stackedChartHba1cLabel.setText(String.format(Locale.US, "HbA1c %.1f%% (last 30 days)", Helper.getHbA1c(allEntries, currentUnit)));
+        stackedChartHba1cLabel.setText(String.format(Locale.US, "HbA1c %.1f%% (last 30 days)", Helper.calcHbA1c(allEntries)));
         stackedChartHba1cLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
 
         stackedLineChart.setEntries(currentUnit, allEntries);

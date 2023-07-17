@@ -25,6 +25,7 @@
     </annotationProcessing>
     <bytecodeTargetLevel target="17">
       <module name="GlucoStatusFX" target="17" />
+      <module name="IntelliJ_Projects.GlucoStatusFX" target="17" />
     </bytecodeTargetLevel>
   </component>
 </project>
