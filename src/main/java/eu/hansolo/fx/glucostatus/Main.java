@@ -1065,7 +1065,7 @@ public class Main extends Application {
 
         if (msg.isEmpty()) { return; }
 
-        String body = new StringBuilder().append(msg).append(" (").append(String.format(Locale.US, format, currentEntry.sgv())).append(" ").append(currentEntry.trend().getSymbol()).append(")").toString();
+        String body = new StringBuilder().append(msg).append(" (").append(String.format(Locale.US, format, currentEntry.sgv())).append(" ").append(trend.getSymbol()).append(")").toString();
         Notification notification = NotificationBuilder.create().title(translator.get(I18nKeys.NOTIFICATION_TITLE)).message(body).image(icon).build();
 
         if (playSound) { notificationSound.play(); }
