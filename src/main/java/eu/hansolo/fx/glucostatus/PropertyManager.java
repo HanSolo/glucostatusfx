@@ -169,6 +169,7 @@ public enum PropertyManager {
             properties.put(Constants.PROPERTIES_PLAY_SOUND_FOR_TOO_HIGH_NOTIFICATION, "TRUE");
             properties.put(Constants.PROPERTIES_CRITICAL_MAX_NOTIFICATION_INTERVAL, "5");
             properties.put(Constants.PROPERTIES_CRITICAL_MIN_NOTIFICATION_INTERVAL, "5");
+            properties.put(Constants.PROPERTIES_DARK_MODE, "TRUE");
 
             properties.store(output, null);
         } catch (IOException ex) {

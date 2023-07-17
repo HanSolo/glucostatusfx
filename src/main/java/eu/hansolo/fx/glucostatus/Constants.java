@@ -89,6 +89,7 @@ public class Constants {
     public static final String PROPERTIES_PLAY_SOUND_FOR_TOO_HIGH_NOTIFICATION        = "PLAY_SOUND_FOR_TOO_HIGH_NOTIFICATION";
     public static final String PROPERTIES_CRITICAL_MAX_NOTIFICATION_INTERVAL          = "CRITICAL_MAX_NOTIFICATION_INTERVAL";
     public static final String PROPERTIES_CRITICAL_MIN_NOTIFICATION_INTERVAL          = "CRITICAL_MIN_NOTIFICATION_INTERVAL";
+    public static final String PROPERTIES_DARK_MODE                                   = "DARK_MODE";
 
 
     public static final Color  GRAY                                                   = Color.color(0.5, 0.5, 0.5);

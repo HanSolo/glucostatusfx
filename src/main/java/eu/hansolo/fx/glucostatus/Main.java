@@ -294,7 +294,7 @@ public class Main extends Application {
         sysinfo           = eu.hansolo.jdktools.util.Helper.getOperaringSystemArchitectureOperatingMode();
         operatingSystem   = sysinfo.operatingSystem();
         architecture      = sysinfo.architecture();
-        darkMode          = eu.hansolo.applefx.tools.Helper.isDarkMode();
+        darkMode          = OperatingSystem.MACOS == operatingSystem ? eu.hansolo.applefx.tools.Helper.isDarkMode() : PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_DARK_MODE, true);
         accentColor       = eu.hansolo.applefx.tools.Helper.getMacosAccentColorAsColor();
         currentUnit       = MILLIGRAM_PER_DECILITER;
         outdated          = false;
