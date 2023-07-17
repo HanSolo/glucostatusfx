@@ -276,14 +276,14 @@ public class Helper {
         final int    height   = 22;
         final double x        = width / 2;
         final double y        = height / 2;
-        final double fontSize = OperatingSystem.LINUX == operatingSystem ? 8 : 0.6363636364 * height;
+        final double fontSize = OperatingSystem.MACOS != operatingSystem ? 8 : 0.6363636364 * height;
 
         final Canvas          canvas = new Canvas(width, height);
         final GraphicsContext ctx    = canvas.getGraphicsContext2D();
         ctx.setFill(OperatingSystem.LINUX == operatingSystem ? Color.rgb(19, 19, 19) : Color.TRANSPARENT);
         ctx.fillRect(0, 0, width, height);
         ctx.setFont(Fonts.sfProRoundedSemiBold(fontSize));
-        ctx.setTextAlign(OperatingSystem.LINUX == operatingSystem ? TextAlignment.RIGHT : TextAlignment.CENTER);
+        ctx.setTextAlign(OperatingSystem.MACOS != operatingSystem ? TextAlignment.RIGHT : TextAlignment.CENTER);
         ctx.setTextBaseline(VPos.CENTER);
         ctx.setFontSmoothingType(FontSmoothingType.LCD);
         ctx.setFill(color);

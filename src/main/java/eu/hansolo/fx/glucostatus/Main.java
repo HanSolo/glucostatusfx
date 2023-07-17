@@ -531,14 +531,8 @@ public class Main extends Application {
         this.trayIconSupported = FXTrayIcon.isSupported();
 
         if (trayIconSupported) {
-            switch (operatingSystem) {
-                case WINDOWS -> trayIcon = new FXTrayIcon(stage, getClass().getResource("icon48x48.png"));
-                //case MACOS   -> trayIcon = new FXTrayIcon(stage, Helper.createTextTrayIconFX(36, 18, "--", Color.WHITE));
-                case MACOS   -> trayIcon = new FXTrayIcon(stage, Helper.createTextTrayIcon(operatingSystem, "--", Color.WHITE));
-                //case LINUX   -> trayIcon = new FXTrayIcon(stage, getClass().getResource("icon48x48.png"));
-                case LINUX   -> trayIcon = new FXTrayIcon(stage, Helper.createTextTrayIcon(operatingSystem, "--", Color.WHITE));
-            }
-
+            trayIcon = new FXTrayIcon(stage, Helper.createTextTrayIcon(operatingSystem, "--", Color.WHITE));
+            
             trayIcon.setTrayIconTooltip(translator.get(I18nKeys.APP_NAME));
             trayIcon.addExitItem(false);
             trayIcon.setApplicationTitle(translator.get(I18nKeys.APP_NAME));
