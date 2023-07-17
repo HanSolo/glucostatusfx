@@ -32,7 +32,9 @@ public interface I18nKeys {
     String DATE_TIME_FORMAT                                  = "date_time_format";
     String DATE_FORMAT                                       = "date_format";
     String TIME_FORMAT                                       = "time_format";
+    String TIME_NAME_2160_HOURS                              = "time_name_2160_hours";
     String TIME_NAME_720_HOURS                               = "time_name_720_hours";
+    String TIME_NAME_336_HOURS                               = "time_name_336_hours";
     String TIME_NAME_168_HOURS                               = "time_name_168_hours";
     String TIME_NAME_72_HOURS                                = "time_name_72_hours";
     String TIME_NAME_48_HOURS                                = "time_name_48_hours";
@@ -40,7 +42,9 @@ public interface I18nKeys {
     String TIME_NAME_12_HOURS                                = "time_name_12_hours";
     String TIME_NAME_6_HOURS                                 = "time_name_6_hours";
     String TIME_NAME_3_HOURS                                 = "time_name_3_hours";
+    String TIME_RANGE_2160_HOURS                             = "time_range_2160_hours";
     String TIME_RANGE_720_HOURS                              = "time_range_720_hours";
+    String TIME_RANGE_336_HOURS                              = "time_range_336_hours";
     String TIME_RANGE_168_HOURS                              = "time_range_168_hours";
     String TIME_RANGE_72_HOURS                               = "time_range_72_hours";
     String TIME_RANGE_48_HOURS                               = "time_range_48_hours";

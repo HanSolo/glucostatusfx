@@ -148,10 +148,11 @@ public class Helper {
 
     public static final Color getColorForValue2(final UnitDefinition unit, final double value) { return Status.getByValue(unit, value).getColor2(); }
 
-    public static final CompletableFuture<List<GlucoEntry>> getEntriesFromLast30Days(final String nightscoutUrl) {
-        final long   from = (Instant.now().getEpochSecond() - TimeInterval.LAST_720_HOURS.getSeconds()) * 1000;
-        final long   to   = (Instant.now().getEpochSecond()) * 1000;
-        final String url  = nightscoutUrl + "?find[date][$gte]=" + from + "&find[date][$lte]=" + to + "&count=" + TimeInterval.LAST_720_HOURS.getNoOfEntries();
+    public static final CompletableFuture<List<GlucoEntry>> getEntriesFromInterval(final Interval interval, final String nightscoutUrl) {
+        final long   now  = Instant.now().getEpochSecond();
+        final long   from = (now - interval.getSeconds()) * 1000;
+        final long   to   = now * 1000;
+        final String url  = nightscoutUrl + "?find[date][$gte]=" + from + "&find[date][$lte]=" + to + "&count=" + interval.getNoOfEntries();
         CompletableFuture<List<GlucoEntry>> cf = getAsync(url).thenApply(r -> {
             if (null == r || null == r.body() || r.body().isEmpty()) {
                 return new ArrayList<>();
@@ -178,20 +179,12 @@ public class Helper {
         return ZonedDateTime.ofInstant(Instant.ofEpochSecond(epochSeconds), ZoneId.systemDefault());
     }
 
-    public static double getHbA1c(final List<GlucoEntry> entries, final UnitDefinition unitDefinition) {
+    public static final double calcHbA1c(final List<GlucoEntry> entries) {
         double average = 0;
         double hba1c   = 0;
         if (!entries.isEmpty()) {
-            switch(unitDefinition) {
-                case MILLIMOL_PER_LITER ->  {
-                    average = mgPerDeciliterToMmolPerLiter(entries.stream().map(entry -> entry.sgv()).reduce(0.0, Double::sum).doubleValue() / entries.size());
-                    hba1c   = (2.59 + average) / 1.59;
-                }
-                default -> {
-                    average = entries.stream().map(entry -> entry.sgv()).reduce(0.0, Double::sum).doubleValue() / entries.size();
-                    hba1c   = (46.7 + average) / 28.7;
-                }
-            }
+            average = entries.stream().map(entry -> entry.sgv()).reduce(0.0, Double::sum).doubleValue() / entries.size();
+            hba1c   = (average + 100) / 36.66666;
         }
         return hba1c;
     }

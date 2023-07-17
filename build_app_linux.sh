@@ -117,6 +117,7 @@ arch_name="$(uname -m)"
 
 if [ "${arch_name}" = "aarch64" ]; then
     sha256sum "build/installer/glucostatusfx_$APP_VERSION-1_arm64.deb" > "build/installer/glucostatusfx_$APP_VERSION-1_arm64.deb.sha256"
+    sha256sum "build/installer/glucostatusfx_$APP_VERSION-1.aarch64.rpm" > "build/installer/glucostatusfx_$APP_VERSION-1.aarch64.rpm.sha256"
 else
     sha256sum "build/installer/glucostatusfx_${APP_VERSION}-1_amd64.deb" > "build/installer/glucostatusfx_${APP_VERSION}-1_amd64.deb.sha256"
     sha256sum "build/installer/glucostatusfx-${APP_VERSION}-1.x86_64.rpm" > "build/installer/glucostatusfx-${APP_VERSION}-1.x86_64.rpm.sha256"

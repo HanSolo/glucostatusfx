@@ -104,13 +104,13 @@ public class StackedLineChart extends Region {
             }
         };
 
-        selectedDays.put(DayOfWeek.MONDAY, true);
-        selectedDays.put(DayOfWeek.TUESDAY, true);
-        selectedDays.put(DayOfWeek.WEDNESDAY, true);
-        selectedDays.put(DayOfWeek.THURSDAY, true);
-        selectedDays.put(DayOfWeek.FRIDAY, true);
-        selectedDays.put(DayOfWeek.SATURDAY, true);
-        selectedDays.put(DayOfWeek.SUNDAY, true);
+        selectedDays.put(DayOfWeek.MONDAY, false);
+        selectedDays.put(DayOfWeek.TUESDAY, false);
+        selectedDays.put(DayOfWeek.WEDNESDAY, false);
+        selectedDays.put(DayOfWeek.THURSDAY, false);
+        selectedDays.put(DayOfWeek.FRIDAY, false);
+        selectedDays.put(DayOfWeek.SATURDAY, false);
+        selectedDays.put(DayOfWeek.SUNDAY, false);
 
         initGraphics();
         registerListeners();
@@ -292,26 +292,33 @@ public class StackedLineChart extends Region {
         ctx.setTextBaseline(VPos.CENTER);
         ctx.setStroke(Color.GRAY);
 
-        ctx.setFill(daysToShow == 30 ? Color.GRAY : darkMode ? Constants.DARK_BACKGROUND : Constants.BRIGHT_BACKGROUND);
+        ctx.setFill(daysToShow == 90 ? Color.GRAY : darkMode ? Constants.DARK_BACKGROUND : Constants.BRIGHT_BACKGROUND);
         ctx.fillRoundRect(stepX + 20, 10, 60, 24, 10, 10);
         ctx.strokeRoundRect(stepX + 20, 10, 60, 24, 10, 10);
         ctx.setFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
-        ctx.fillText("30 days", stepX + 50, 22, 60);
-        buttonShapes.add(new ButtonShape(30, new Rectangle(stepX + 20, 10, 60, 24)));
+        ctx.fillText(Interval.LAST_2160_HOURS.getUiString(), stepX + 50, 22, 60);
+        buttonShapes.add(new ButtonShape(90, new Rectangle(stepX + 20, 10, 60, 24)));
 
-        ctx.setFill(daysToShow == 14 ? Color.GRAY : darkMode ? Constants.DARK_BACKGROUND : Constants.BRIGHT_BACKGROUND);
+        ctx.setFill(daysToShow == 30 ? Color.GRAY : darkMode ? Constants.DARK_BACKGROUND : Constants.BRIGHT_BACKGROUND);
         ctx.fillRoundRect(stepX + 100, 10, 60, 24, 10, 10);
         ctx.strokeRoundRect(stepX + 100, 10, 60, 24, 10, 10);
         ctx.setFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
-        ctx.fillText("14 days", stepX + 130, 22, 60);
-        buttonShapes.add(new ButtonShape(14, new Rectangle(stepX + 100, 10, 60, 24)));
+        ctx.fillText(Interval.LAST_720_HOURS.getUiString(), stepX + 130, 22, 60);
+        buttonShapes.add(new ButtonShape(30, new Rectangle(stepX + 100, 10, 60, 24)));
 
-        ctx.setFill(daysToShow == 7 ? Color.GRAY : darkMode ? Constants.DARK_BACKGROUND : Constants.BRIGHT_BACKGROUND);
+        ctx.setFill(daysToShow == 14 ? Color.GRAY : darkMode ? Constants.DARK_BACKGROUND : Constants.BRIGHT_BACKGROUND);
         ctx.fillRoundRect(stepX + 180, 10, 60, 24, 10, 10);
         ctx.strokeRoundRect(stepX + 180, 10, 60, 24, 10, 10);
         ctx.setFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
-        ctx.fillText("7 days", stepX + 210, 22, 60);
-        buttonShapes.add(new ButtonShape(7, new Rectangle(stepX + 180, 10, 60, 24)));
+        ctx.fillText(Interval.LAST_336_HOURS.getUiString(), stepX + 210, 22, 60);
+        buttonShapes.add(new ButtonShape(14, new Rectangle(stepX + 180, 10, 60, 24)));
+
+        ctx.setFill(daysToShow == 7 ? Color.GRAY : darkMode ? Constants.DARK_BACKGROUND : Constants.BRIGHT_BACKGROUND);
+        ctx.fillRoundRect(stepX + 260, 10, 60, 24, 10, 10);
+        ctx.strokeRoundRect(stepX + 260, 10, 60, 24, 10, 10);
+        ctx.setFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
+        ctx.fillText(Interval.LAST_168_HOURS.getUiString(), stepX + 290, 22, 60);
+        buttonShapes.add(new ButtonShape(7, new Rectangle(stepX + 260, 10, 60, 24)));
 
         // Draw day selector
         dayShapes.clear();
