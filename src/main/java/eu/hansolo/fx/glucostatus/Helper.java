@@ -351,7 +351,7 @@ public class Helper {
                                          .GET()
                                          .uri(URI.create(uri))
                                          .setHeader("Accept", "application/json")
-                                         .setHeader("User-Agent", "DiscoAPI")
+                                         .setHeader("User-Agent", "GlucoStatusFX")
                                          .setHeader("API-SECRET", token)
                                          .timeout(Duration.ofSeconds(60))
                                          .build();
