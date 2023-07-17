@@ -172,7 +172,7 @@ public class Main extends Application {
     private              OsArcMode                  sysinfo;
     private              OperatingSystem            operatingSystem;
     private              Architecture               architecture;
-    private              boolean                    darkMode;
+    private static       boolean                    darkMode;
     private              Color                      accentColor;
     private              ZonedDateTime              lastNotification;
     private              ZonedDateTime              lastSpeak;
@@ -713,7 +713,8 @@ public class Main extends Application {
             eu.hansolo.applefx.tools.Helper.getAllNodes(prefPane).stream().filter(node -> node instanceof MacosControl).forEach(node -> ((MacosControl) node).setDark(darkMode));
         });
 
-        if (OperatingSystem.MACOS != operatingSystem) {
+        if (OperatingSystem.LINUX == operatingSystem) {
+            macosWindow.setDark(darkMode);
             Color color = darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT;
             settingsIcon.setFill(color);
             titleLabel.setDark(darkMode);
@@ -1302,7 +1303,7 @@ public class Main extends Application {
         double  height          = canvas.getHeight();
         double  availableWidth  = (width - GRAPH_INSETS.getLeft() - GRAPH_INSETS.getRight());
         double  availableHeight = (height - GRAPH_INSETS.getTop() - GRAPH_INSETS.getBottom());
-        boolean darkMode        = eu.hansolo.applefx.tools.Helper.isDarkMode();
+        //boolean darkMode        = eu.hansolo.applefx.tools.Helper.isDarkMode();
 
         ctx.clearRect(0, 0, width, height);
         ctx.setFill(darkMode ? Color.rgb(30, 28, 26) : Color.rgb(234, 233, 233));
@@ -2483,7 +2484,6 @@ public class Main extends Application {
     // ******************** Stacked Line Chart ********************************
     private void showStackedLineChart() {
         if (dialogVisible.get()) { return; }
-        dialogVisible.set(true);
 
         MacosLabel titleLabel = createLabel(translator.get(I18nKeys.STACKED_CHART_TITLE), 24, true, false, Pos.CENTER);
         titleLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
@@ -2549,6 +2549,8 @@ public class Main extends Application {
         Stage dialogStage = (Stage) dialogPane.getScene().getWindow();
         dialogStage.setAlwaysOnTop(true);
         dialogStage.toFront();
+
+        dialogVisible.set(true);
         dialog.showAndWait();
     }
 
