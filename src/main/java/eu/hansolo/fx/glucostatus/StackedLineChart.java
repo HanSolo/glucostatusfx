@@ -63,6 +63,7 @@ public class StackedLineChart extends Region {
     private              double                           max;
     private              double                           range;
     private              UnitDefinition                   unit;
+    private              boolean                          darkMode;
     private              List<GlucoEntry>                 entries;
     private              Map<LocalDate, List<GlucoEntry>> entryMap;
     private              int                              daysToShow;
@@ -76,6 +77,7 @@ public class StackedLineChart extends Region {
     public StackedLineChart() {
         loadSettings();
 
+        darkMode     = true;
         entries      = new ArrayList<>();
         entryMap     = new HashMap<>();
         daysToShow   = 14;
@@ -157,6 +159,11 @@ public class StackedLineChart extends Region {
         unit  = PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_UNIT_MG) ? UnitDefinition.MILLIGRAM_PER_DECILITER : UnitDefinition.MILLIMOL_PER_LITER;
     }
 
+    public void setDarkMode(final boolean darkMode) {
+        this.darkMode = darkMode;
+        redraw();
+    }
+
     public void setEntries(final UnitDefinition currentUnit, final List<GlucoEntry> entries) {
         this.entries.clear();
         this.entries.addAll(entries);
@@ -207,8 +214,6 @@ public class StackedLineChart extends Region {
     }
 
     private void redraw() {
-        boolean darkMode = eu.hansolo.applefx.tools.Helper.isDarkMode();
-
         ctx.clearRect(0, 0, width, height);
         ctx.setFill(darkMode ? Constants.DARK_BACKGROUND : Constants.BRIGHT_BACKGROUND);
         ctx.fillRect(0, 0, width, height);

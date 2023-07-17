@@ -2496,6 +2496,7 @@ public class Main extends Application {
 
         StackedLineChart stackedLineChart = new StackedLineChart();
         stackedLineChart.setPrefSize(700, 400);
+        stackedLineChart.setDarkMode(darkMode);
         stackedLineChart.setEntries(currentUnit, allEntries);
 
         VBox content = new VBox(20, titleLabel, subTitleLabel, hba1cLabel, stackedLineChart);
