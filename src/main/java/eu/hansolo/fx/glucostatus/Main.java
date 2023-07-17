@@ -532,7 +532,7 @@ public class Main extends Application {
 
         if (trayIconSupported) {
             trayIcon = new FXTrayIcon(stage, Helper.createTextTrayIcon(operatingSystem, "--", Color.WHITE));
-            
+
             trayIcon.setTrayIconTooltip(translator.get(I18nKeys.APP_NAME));
             trayIcon.addExitItem(false);
             trayIcon.setApplicationTitle(translator.get(I18nKeys.APP_NAME));
@@ -1250,12 +1250,10 @@ public class Main extends Application {
 
         // Set value specific tray icon
         //if (null != trayIcon && OperatingSystem.MACOS == operatingSystem) {
-        if (null != trayIcon && OperatingSystem.WINDOWS != operatingSystem) {
+        if (null != trayIcon) {
             SwingUtilities.invokeLater(() -> Platform.runLater(() -> {
                 String text = currentValueText + (outdated ? "\u26A0" : "");
                 trayIcon.setGraphic(Helper.createTextTrayIcon(operatingSystem, text, Color.WHITE));
-                //trayIcon.setGraphic(Helper.createTextTrayIconFX(36, 18, text, Color.WHITE), 36, 18);
-                //trayIcon.setGraphic(Helper.createTextTrayIconFX(88, 44, text, Color.WHITE), 88, 44);
                 trayIcon.setTrayIconTooltip(text);
             }));
         }
