@@ -100,6 +100,7 @@ do
   --main-jar ${MAIN_JAR} \
   --java-options -Xmx2048m \
   --java-options '--enable-preview' \
+  --java-options '-Djdk.gtk.version=2' \
   --runtime-image build/java-runtime \
   --icon src/main/resources/eu/hansolo/fx/glucostatus/icon128x128.png \
   --linux-shortcut \
