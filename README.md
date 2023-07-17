@@ -61,16 +61,16 @@ The max acceptable value can be defined in the range of 120-250 mg/dl.
 More info can be found on [this page](https://harmoniccode.blogspot.com/p/glucostatusfx.html)
 
 ## Overview
-![Main Screen](https://i.ibb.co/31qDzym/main-window.png)
+![Main Screen](https://i.ibb.co/1QgxS30/Gluco-Status-FX-Main.png)
 
-![Main Screen Poincare](https://i.ibb.co/mXLwQJR/poincare.png)
+![Main Screen Poincare](https://i.ibb.co/prXFCqt/Gluco-Status-FX-Poincare.png)
 
 ![Settings](https://i.ibb.co/BT53NY4/Monosnap-2022-01-14-16-25-06.png)
 
-![Pattern](https://i.ibb.co/6Rz4kZ6/Monosnap-2022-01-14-16-25-19.png)
+![Pattern](https://i.ibb.co/p1vWMmp/Gluco-Status-FX-Pattern.png)
 
-![Time in range](https://i.ibb.co/1Gmh6tx/Monosnap-2022-01-14-16-25-32.png)
+![Time in range](https://i.ibb.co/DQmsQXg/Gluco-Status-FX-Time-In-Range.png)
 
-![Last 30 days](https://i.ibb.co/zbZxTps/Thirty-Days-View.png)
+![Last 30 days](https://i.ibb.co/SJ3yG6s/Gluco-Status-FX-30-Days.png)
 
-![Overlay](https://i.ibb.co/XzfvDRZ/overlay-dialog.png)
+![Overlay](https://i.ibb.co/bRDBC54/Gluco-Status-FX-Overlay-Days.png)

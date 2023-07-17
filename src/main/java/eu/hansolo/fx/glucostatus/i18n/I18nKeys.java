@@ -139,4 +139,9 @@ public interface I18nKeys {
     String TREND_SINGLE_DOWN                                 = "trend_single_down";
     String TREND_FORTY_FIVE_DOWN                             = "trend_forty_five_down";
     String TREND_FORTY_FIVE_UP                               = "trend_forty_five_up";
+    String RELOAD_BUTTON                                     = "reload_button";
+    String PATTERN_CHART_BUTTON                              = "pattern_chart_button";
+    String THIRTY_DAY_CHART_BUTTON                           = "thirty_day_chart_button";
+    String OVERLAY_CHART_BUTTON                              = "overlay_chart_button";
+    String TIME_IN_RANGE_CHART_BUTTON                        = "time_in_range_chart_button";
 }
