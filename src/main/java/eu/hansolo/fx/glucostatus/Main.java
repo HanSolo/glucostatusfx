@@ -636,7 +636,7 @@ public class Main extends Application {
         }
 
         //macosWindow = new MacosWindow(stage, pane, eu.hansolo.applefx.tools.Helper.isDarkMode(), eu.hansolo.applefx.tools.Helper.getMacosAccentColor(), Style.DECORATED, false);
-        macosWindow = new MacosWindow(stage, pane, eu.hansolo.applefx.tools.Helper.isDarkMode(), eu.hansolo.applefx.tools.Helper.getMacosAccentColor(), Style.DEFAULT, false);
+        macosWindow = new MacosWindow(stage, pane, darkMode, eu.hansolo.applefx.tools.Helper.getMacosAccentColor(), Style.DEFAULT, false);
 
         Scene scene = new Scene(macosWindow);
         scene.getStylesheets().add(Main.class.getResource("glucostatus.css").toExternalForm());
@@ -713,6 +713,7 @@ public class Main extends Application {
             eu.hansolo.applefx.tools.Helper.getAllNodes(prefPane).stream().filter(node -> node instanceof MacosControl).forEach(node -> ((MacosControl) node).setDark(darkMode));
         });
 
+        /*
         if (OperatingSystem.LINUX == operatingSystem) {
             macosWindow.setDark(darkMode);
             Color color = darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT;
@@ -736,6 +737,7 @@ public class Main extends Application {
             prefContentPane.setBackground(new Background(new BackgroundFill(darkMode ? MacosSystemColor.BACKGROUND.dark() : MacosSystemColor.BACKGROUND.aqua(), new CornerRadii(10), Insets.EMPTY)));
             eu.hansolo.applefx.tools.Helper.getAllNodes(prefPane).stream().filter(node -> node instanceof MacosControl).forEach(node -> ((MacosControl) node).setDark(darkMode));
         }
+        */
 
         stage.widthProperty().addListener(o -> {
             chartPane.setMaxWidth(stage.getWidth());
