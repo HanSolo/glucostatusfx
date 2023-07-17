@@ -283,7 +283,7 @@ public class Helper {
         ctx.setFill(OperatingSystem.LINUX == operatingSystem ? Color.rgb(19, 19, 19) : Color.TRANSPARENT);
         ctx.fillRect(0, 0, width, height);
         ctx.setFont(Fonts.sfProRoundedSemiBold(fontSize));
-        ctx.setTextAlign(TextAlignment.CENTER);
+        ctx.setTextAlign(OperatingSystem.LINUX == operatingSystem ? TextAlignment.RIGHT : TextAlignment.CENTER);
         ctx.setTextBaseline(VPos.CENTER);
         ctx.setFontSmoothingType(FontSmoothingType.LCD);
         ctx.setFill(color);
