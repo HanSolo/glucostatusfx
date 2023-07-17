@@ -535,7 +535,8 @@ public class Main extends Application {
                 case WINDOWS -> trayIcon = new FXTrayIcon(stage, getClass().getResource("icon48x48.png"));
                 //case MACOS   -> trayIcon = new FXTrayIcon(stage, Helper.createTextTrayIconFX(36, 18, "--", Color.WHITE));
                 case MACOS   -> trayIcon = new FXTrayIcon(stage, Helper.createTextTrayIcon("--", Color.WHITE));
-                case LINUX   -> trayIcon = new FXTrayIcon(stage, getClass().getResource("icon48x48.png"));
+                //case LINUX   -> trayIcon = new FXTrayIcon(stage, getClass().getResource("icon48x48.png"));
+                case LINUX   -> trayIcon = new FXTrayIcon(stage, Helper.createTextTrayIcon("--", Color.WHITE));
             }
 
             trayIcon.setTrayIconTooltip(translator.get(I18nKeys.APP_NAME));
@@ -1254,7 +1255,8 @@ public class Main extends Application {
         }
 
         // Set value specific tray icon
-        if (null != trayIcon && OperatingSystem.MACOS == operatingSystem) {
+        //if (null != trayIcon && OperatingSystem.MACOS == operatingSystem) {
+        if (null != trayIcon && OperatingSystem.WINDOWS != operatingSystem) {
             SwingUtilities.invokeLater(() -> Platform.runLater(() -> {
                 String text = currentValueText + (outdated ? "\u26A0" : "");
                 trayIcon.setGraphic(Helper.createTextTrayIcon(text, Color.WHITE));
