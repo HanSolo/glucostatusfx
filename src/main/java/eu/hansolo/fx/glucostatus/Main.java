@@ -690,7 +690,7 @@ public class Main extends Application {
         }
         aboutDialog = createAboutDialog();
         macosWindow.darkProperty().addListener((o, ov, nv) -> {
-            darkMode = OperatingSystem.MACOS == operatingSystem ? nv : PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_DARK_MODE, true);
+            darkMode = nv;
             Color color = darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT;
             settingsIcon.setFill(color);
             titleLabel.setDark(darkMode);
@@ -712,6 +712,29 @@ public class Main extends Application {
             prefContentPane.setBackground(new Background(new BackgroundFill(darkMode ? MacosSystemColor.BACKGROUND.dark() : MacosSystemColor.BACKGROUND.aqua(), new CornerRadii(10), Insets.EMPTY)));
             eu.hansolo.applefx.tools.Helper.getAllNodes(prefPane).stream().filter(node -> node instanceof MacosControl).forEach(node -> ((MacosControl) node).setDark(darkMode));
         });
+
+        if (OperatingSystem.MACOS != operatingSystem) {
+            Color color = darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT;
+            settingsIcon.setFill(color);
+            titleLabel.setDark(darkMode);
+            valueLabel.setDark(darkMode);
+            unit.setFill(color);
+            delta4.setFill(color);
+            delta3.setFill(color);
+            delta2.setFill(color);
+            delta1.setFill(color);
+            delta0.setFill(color);
+            matrixButton.setFill(color);
+            reloadButton.setFill(color);
+            patternChartButton.setFill(color);
+            timeInRangeChartButton.setFill(color);
+            stackedButton.setFill(color);
+            drawChart();
+            exclamationMark.setFill(color);
+
+            prefContentPane.setBackground(new Background(new BackgroundFill(darkMode ? MacosSystemColor.BACKGROUND.dark() : MacosSystemColor.BACKGROUND.aqua(), new CornerRadii(10), Insets.EMPTY)));
+            eu.hansolo.applefx.tools.Helper.getAllNodes(prefPane).stream().filter(node -> node instanceof MacosControl).forEach(node -> ((MacosControl) node).setDark(darkMode));
+        }
 
         stage.widthProperty().addListener(o -> {
             chartPane.setMaxWidth(stage.getWidth());

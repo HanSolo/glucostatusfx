@@ -14,6 +14,17 @@ A glucose status monitor for Nightscout implemented in JavaFX.
 ![GitHub all releases](https://img.shields.io/github/downloads/HanSolo/glucostatusfx/total)
 ![license](https://badgen.net/github/license/HanSolo/discocli)
 
+<br>
+<br>
+<b>Running on Linux</b>
+
+When running as jar file you might need to start with on Linux
+
+```java -Djdk.gtk.version=2 -jar GlucoStatusFX-17.0.37.jar```
+
+<br>
+
+
 ## Intro
 GlucoStatusFX is a JavaFX application that will sit in your menu bar and is visualizing
 data coming from a nightscout server.
