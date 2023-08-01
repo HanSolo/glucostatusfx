@@ -370,7 +370,7 @@ public class Helper {
                                          .uri(URI.create(uri))
                                          .setHeader("Accept", "application/json")
                                          .setHeader("User-Agent", "GlucoStatusFX")
-                                         .setHeader("API-SECRET", token)
+                                         .setHeader("API_SECRET", token)
                                          .timeout(Duration.ofSeconds(60))
                                          .build();
 

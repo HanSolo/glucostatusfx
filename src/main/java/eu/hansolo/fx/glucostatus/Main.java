@@ -24,6 +24,7 @@ import com.google.gson.JsonObject;
 import eu.hansolo.applefx.MacosButton;
 import eu.hansolo.applefx.MacosControl;
 import eu.hansolo.applefx.MacosLabel;
+import eu.hansolo.applefx.MacosPasswordField;
 import eu.hansolo.applefx.MacosScrollPane;
 import eu.hansolo.applefx.MacosSeparator;
 import eu.hansolo.applefx.MacosSlider;
@@ -207,7 +208,7 @@ public class Main extends Application {
     private              StackPane                     prefPane;
     private              MacosSwitch                   darkModeSwitch;
     private              MacosTextField                nightscoutUrlTextField;
-    private              MacosTextField                nightscoutTokenTextField;
+    private              MacosPasswordField            nightscoutTokenPasswordField;
     private              MacosSwitch                   unitSwitch;
     private              MacosSwitch                   deltaChartSwitch;
     private              MacosSwitch                   voiceOutputSwitch;
@@ -1122,7 +1123,7 @@ public class Main extends Application {
     private void applySettingsToPreferences() {
         darkModeSwitch.setSelected(PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_DARK_MODE, true));
         nightscoutUrlTextField.setText(PropertyManager.INSTANCE.getString(Constants.PROPERTIES_NIGHTSCOUT_URL));
-        nightscoutTokenTextField.setText(PropertyManager.INSTANCE.getString(Constants.PROPERTIES_NIGHTSCOUT_TOKEN));
+        nightscoutTokenPasswordField.setText(PropertyManager.INSTANCE.getString(Constants.PROPERTIES_NIGHTSCOUT_TOKEN));
         unitSwitch.setSelected(PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_UNIT_MG));
         deltaChartSwitch.setSelected(PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_SHOW_DELTA_CHART));
         voiceOutputSwitch.setSelected(PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_VOICE_OUTPUT, false));
@@ -1150,7 +1151,7 @@ public class Main extends Application {
     private void savePreferencesToSettings() {
         PropertyManager.INSTANCE.setBoolean(Constants.PROPERTIES_DARK_MODE, darkModeSwitch.isSelected());
         PropertyManager.INSTANCE.setString(Constants.PROPERTIES_NIGHTSCOUT_URL, nightscoutUrlTextField.getText());
-        PropertyManager.INSTANCE.setString(Constants.PROPERTIES_NIGHTSCOUT_TOKEN, nightscoutTokenTextField.getText());
+        PropertyManager.INSTANCE.setString(Constants.PROPERTIES_NIGHTSCOUT_TOKEN, nightscoutTokenPasswordField.getText());
         PropertyManager.INSTANCE.setBoolean(Constants.PROPERTIES_UNIT_MG, unitSwitch.isSelected());
         PropertyManager.INSTANCE.setBoolean(Constants.PROPERTIES_SHOW_DELTA_CHART, deltaChartSwitch.isSelected());
         PropertyManager.INSTANCE.setBoolean(Constants.PROPERTIES_VOICE_OUTPUT, voiceOutputSwitch.isSelected());
@@ -1199,7 +1200,7 @@ public class Main extends Application {
             service.start();
         }
 
-        nightscoutToken = nightscoutTokenTextField.getText();
+        nightscoutToken = nightscoutTokenPasswordField.getText();
 
         updateSettings();
         updateUI();
@@ -1811,13 +1812,13 @@ public class Main extends Application {
         MacosLabel nightscoutTokenLabel = new MacosLabel(translator.get(I18nKeys.SETTINGS_NIGHTSCOUT_TOKEN));
         nightscoutTokenLabel.setDark(darkMode);
         nightscoutTokenLabel.setFont(Fonts.sfProTextRegular(14));
-        nightscoutTokenTextField = new MacosTextField();
-        nightscoutTokenTextField.setDark(darkMode);
-        nightscoutTokenTextField.setFont(Fonts.sfProRoundedRegular(14));
-        nightscoutTokenTextField.setPrefWidth(TextField.USE_COMPUTED_SIZE);
-        nightscoutTokenTextField.setMaxWidth(Double.MAX_VALUE);
-        HBox.setHgrow(nightscoutTokenTextField, Priority.ALWAYS);
-        HBox nightscoutTokenBox = new HBox(10, nightscoutTokenLabel, nightscoutTokenTextField);
+        nightscoutTokenPasswordField = new MacosPasswordField();
+        nightscoutTokenPasswordField.setDark(darkMode);
+        nightscoutTokenPasswordField.setFont(Fonts.sfProRoundedRegular(14));
+        nightscoutTokenPasswordField.setPrefWidth(TextField.USE_COMPUTED_SIZE);
+        nightscoutTokenPasswordField.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(nightscoutTokenPasswordField, Priority.ALWAYS);
+        HBox nightscoutTokenBox = new HBox(10, nightscoutTokenLabel, nightscoutTokenPasswordField);
         nightscoutTokenBox.setAlignment(Pos.CENTER);
 
 
