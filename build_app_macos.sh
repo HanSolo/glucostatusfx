@@ -43,7 +43,7 @@ cp build/libs/${MAIN_JAR} build/installer/input/libs/
 # Use jlink to detect all modules that are required to run the application.
 # Starting point for the jdep analysis is the set of jars being used by the
 # application.
-
+echo "-------------------------------------------------------------------------"
 echo "detecting required modules"
 detected_modules=`$JAVA_HOME/bin/jdeps \
   --multi-release ${JAVA_VERSION} \
@@ -52,7 +52,7 @@ detected_modules=`$JAVA_HOME/bin/jdeps \
   --class-path "build/installer/input/libs/*" \
     build/classes/java/main/eu/hansolo/fx/glucostatus/Main.class`
 echo "detected modules: ${detected_modules}"
-
+echo "-------------------------------------------------------------------------"
 
 # ------ MANUAL MODULES -------------------------------------------------------
 # jdk.crypto.ec has to be added manually bound via --bind-services or
@@ -66,6 +66,7 @@ echo "detected modules: ${detected_modules}"
 
 manual_modules=jdk.crypto.ec,jdk.localedata
 echo "manual modules: ${manual_modules}"
+echo "-------------------------------------------------------------------------"
 
 # ------ RUNTIME IMAGE --------------------------------------------------------
 # Use the jlink tool to create a runtime image for our application. We are
@@ -83,12 +84,13 @@ $JAVA_HOME/bin/jlink \
   --include-locales=en,de \
   --output build/java-runtime
 
+
 # ------ PACKAGING ------------------------------------------------------------
 # A loop iterates over the various packaging types supported by jpackage. In
 # the end we will find all packages inside the build/installer directory.
 
 # Somehow before signing there needs to be another step: xattr -cr build/installer/GlucoStatusFX.app
-
+echo "-------------------------------------------------------------------------"
 for type in "app-image" "dmg" "pkg"
 do
   echo "Creating installer of type ... $type"
