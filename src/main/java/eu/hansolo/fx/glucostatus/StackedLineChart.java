@@ -77,7 +77,7 @@ public class StackedLineChart extends Region {
     public StackedLineChart() {
         loadSettings();
 
-        darkMode     = true;
+        darkMode     = PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_DARK_MODE, true);
         entries      = new ArrayList<>();
         entryMap     = new HashMap<>();
         daysToShow   = 14;

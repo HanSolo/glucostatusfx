@@ -98,7 +98,7 @@
          this(List.of(), UnitDefinition.MILLIGRAM_PER_DECILITER);
      }
      public ThirtyDayView(final List<GlucoEntry> glucoEntries, final UnitDefinition unit) {
-         this._dark             = eu.hansolo.applefx.tools.Helper.isDarkMode();
+         this._dark             = PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_DARK_MODE, true);
          this.avgPerDay         = new ConcurrentHashMap<>(32);
          this.timeInRangePerDay = new ConcurrentHashMap<>(32);
          this.unit              = unit;

@@ -185,7 +185,8 @@ public class Helper {
         double hba1c   = 0;
         if (!entries.isEmpty()) {
             average = entries.stream().map(entry -> entry.sgv()).reduce(0.0, Double::sum).doubleValue() / entries.size();
-            hba1c   = (average + 100) / 36.66666;
+            //hba1c   = (46.7 + average) / 28.7;  // formula from 2008
+            hba1c   = (0.0296 * average) + 2.419; // formula from 2014 (https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4771657/)
         }
         return hba1c;
     }
@@ -334,6 +335,20 @@ public class Helper {
 
     public static final CompletableFuture<HttpResponse<String>> checkForUpdateAsync() {
         return getAsync(Constants.RELEASES_URI);
+    }
+
+    public static final double getMedian(final List<GlucoEntry> data) {
+        final List<Double> sgvs = data.stream().map(entry -> entry.sgv()).collect(Collectors.toList());
+        int size = data.size();
+        Collections.sort(sgvs);
+        return size % 2 == 0 ? (sgvs.get((size / 2) - 1) + sgvs.get(size / 2)) / 2.0 : sgvs.get(size / 2);
+    }
+
+    public static final double percentile(List<GlucoEntry> entries, double percentile) {
+        final List<Double> sgvs = entries.stream().map(entry -> entry.sgv()).collect(Collectors.toList());
+        Collections.sort(entries);
+        final int index = (int) Math.ceil(percentile / 100.0 * entries.size());
+        return sgvs.get(index - 1);
     }
 
 

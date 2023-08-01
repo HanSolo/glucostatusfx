@@ -156,131 +156,138 @@ import static eu.hansolo.toolbox.unit.UnitDefinition.MILLIMOL_PER_LITER;
 
 
 public class Main extends Application {
-    private static final VersionNumber              VERSION         = PropertyManager.INSTANCE.getVersionNumber();
-    private static final Insets                     GRAPH_INSETS    = new Insets(5, 10, 5, 10);
-    private static final Interval                   INTERVAL        = Interval.LAST_2160_HOURS;
-    private        final Image                      icon            = new Image(Main.class.getResourceAsStream("icon48x48.png"));
-    private        final Image                      stageIcon       = new Image(Main.class.getResourceAsStream("icon128x128.png"));
-    private        final Translator                 translator      = new Translator(I18nKeys.RESOURCE_NAME);
-    private              ZonedDateTime              lastUpdate      = ZonedDateTime.now().minusMinutes(6);
-    private              ZonedDateTime              lastFullUpdate  = ZonedDateTime.now().minusMinutes(5);
-    private              AtomicBoolean              switchingUnits  = new AtomicBoolean(false);
-    private              String                     nightscoutUrl   = "";
-    private              String                     nightscoutToken = "";
-    private              MacosWindow                macosWindow;
-    private              boolean                    trayIconSupported;
-    private              OsArcMode                  sysinfo;
-    private              OperatingSystem            operatingSystem;
-    private              Architecture               architecture;
-    private static       boolean                    darkMode;
-    private              Color                      accentColor;
-    private              ZonedDateTime              lastNotification;
-    private              ZonedDateTime              lastSpeak;
-    private              String                     voice;
-    private              Notifier                   notifier;
-    private              AudioClip                  notificationSound;
-    private              Dialog                     aboutDialog;
-    private              Stage                      stage;
-    private              Region                     glassOverlay;
-    private              HBox                       buttonHBox;
-    private              AnchorPane                 mainPane;
-    private              SVGPath                    reloadButton;
-    private              SVGPath                    timeInRangeChartButton;
-    private              SVGPath                    patternChartButton;
-    private              SVGPath                    matrixButton;
-    private              SVGPath                    stackedButton;
-    private              SVGPath                    exclamationMark;
-    private              MacosLabel                 titleLabel;
-    private              MacosLabel                 valueLabel;
-    private              HBox                       last5DeltasLabel;
-    private              MacosLabel                 hba1cLabel;
-    private              MacosLabel                 timestampLabel;
-    private              MacosLabel                 rangeAverageLabel;
-    private              Text                       unit;
-    private              Text                       delta0;
-    private              Text                       delta1;
-    private              Text                       delta2;
-    private              Text                       delta3;
-    private              Text                       delta4;
-    private              AnchorPane                 vpane;
-    private              StackPane                  pane;
-    private              StackPane                  prefPane;
-    private              MacosTextField             nightscoutUrlTextField;
-    private              MacosTextField             nightscoutTokenTextField;
-    private              MacosSwitch                unitSwitch;
-    private              MacosSwitch                deltaChartSwitch;
-    private              MacosSwitch                voiceOutputSwitch;
-    private              MacosSlider                voiceOutputIntervalSlider;
-    private              MacosSwitch                tooLowSoundSwitch;
-    private              MacosSwitch                tooLowSpeakSwitch;
-    private              MacosSwitch                enableLowSoundSwitch;
-    private              MacosSwitch                lowSoundSwitch;
-    private              MacosSwitch                lowSpeakSwitch;
-    private              MacosSwitch                enableAcceptableLowSoundSwitch;
-    private              MacosSwitch                acceptableLowSoundSwitch;
-    private              MacosSwitch                enableAcceptableHighSoundSwitch;
-    private              MacosSwitch                acceptableHighSoundSwitch;
-    private              MacosSwitch                enableHighSoundSwitch;
-    private              MacosSwitch                highSoundSwitch;
-    private              MacosSwitch                tooHighSoundSwitch;
-    private              MacosSlider                tooLowIntervalSlider;
-    private              MacosSlider                tooHighIntervalSlider;
-    private              MacosSlider                minAcceptableSlider;
-    private              MacosSlider                minNormalSlider;
-    private              MacosSlider                maxNormalSlider;
-    private              MacosSlider                maxAcceptableSlider;
-    private              Canvas                     canvas;
-    private              GraphicsContext            ctx;
-    private              AnchorPane                 chartPane;
-    private              PoincarePlot               poincarePlot;
-    private              boolean                    deltaChartVisible;
-    private              ToggleGroup                intervalToggleGroup;
-    private              MacosToggleButton          ninetyDays;
-    private              MacosToggleButton          thirtyDays;
-    private              MacosToggleButton          fourteenDays;
-    private              MacosToggleButton          sevenDays;
-    private              MacosToggleButton          seventyTwoHours;
-    private              MacosToggleButton          fourtyEightHours;
-    private              MacosToggleButton          twentyFourHours;
-    private              MacosToggleButton          twelveHours;
-    private              MacosToggleButton          sixHours;
-    private              MacosToggleButton          threeHours;
-    private              MacosToggleButtonBar       toggleButtonBar;
-    private              AnchorPane                 prefContentPane;
-    private              SVGPath                    settingsIcon;
-    private              MacosButton                settingsButton;
-    private              ScheduledService<Void>     service;
-    private              double                     minAcceptable;
-    private              double                     minNormal;
-    private              double                     maxNormal;
-    private              double                     maxAcceptable;
-    private              double                     minAcceptableFactor;
-    private              double                     minNormalFactor;
-    private              double                     maxNormalFactor;
-    private              double                     maxAcceptableFactor;
-    private              UnitDefinition             currentUnit;
-    private              boolean                    outdated;
-    private              ObservableList<GlucoEntry> allEntries;
-    private              List<GlucoEntry>           entries;
-    private              List<Double>               deltas;
-    private              double                     avg;
-    private              BooleanProperty            dialogVisible;
-    private              double                     deltaMin;
-    private              double                     deltaMax;
-    private              GlucoEntry                 currentEntry;
-    private              Color                      currentColor;
-    private              Interval                   currentInterval;
-    private              Font                       ticklabelFont;
-    private              Font                       smallTicklabelFont;
-    private              boolean                    slowlyRising;
-    private              boolean                    slowlyFalling;
-    private              boolean                    hideMenu;
-    private              FXTrayIcon                 trayIcon;
-    private              EventHandler<MouseEvent>   eventConsumer;
-    private              DateTimeFormatter          dtf;
-    private              boolean                    isUpdateAvailable;
-    private              VersionNumber              latestVersion;
-    private              AtomicBoolean              online;
+    private static final VersionNumber                 VERSION         = PropertyManager.INSTANCE.getVersionNumber();
+    private static final Insets                        GRAPH_INSETS    = new Insets(5, 10, 5, 10);
+    private static final Interval                      INTERVAL        = Interval.LAST_2160_HOURS;
+    private final        Image                         icon            = new Image(Main.class.getResourceAsStream("icon48x48.png"));
+    private final        Image                         stageIcon       = new Image(Main.class.getResourceAsStream("icon128x128.png"));
+    private final        Translator                    translator      = new Translator(I18nKeys.RESOURCE_NAME);
+    private              ZonedDateTime                 lastUpdate      = ZonedDateTime.now().minusMinutes(6);
+    private              ZonedDateTime                 lastFullUpdate  = ZonedDateTime.now().minusMinutes(5);
+    private              AtomicBoolean                 switchingUnits  = new AtomicBoolean(false);
+    private              String                        nightscoutUrl   = "";
+    private              String                        nightscoutToken = "";
+    private              MacosWindow                   macosWindow;
+    private              boolean                       trayIconSupported;
+    private              OsArcMode                     sysinfo;
+    private              OperatingSystem               operatingSystem;
+    private              Architecture                  architecture;
+    private              boolean                       darkMode;
+    private              Color                         accentColor;
+    private              ZonedDateTime                 lastNotification;
+    private              ZonedDateTime                 lastSpeak;
+    private              String                        voice;
+    private              Notifier                      notifier;
+    private              AudioClip                     notificationSound;
+    private              Dialog                        aboutDialog;
+    private              Stage                         stage;
+    private              Region                        glassOverlay;
+    private              HBox                          buttonHBox;
+    private              AnchorPane                    mainPane;
+    private              SVGPath                       reloadButton;
+    private              SVGPath                       timeInRangeChartButton;
+    private              SVGPath                       patternChartButton;
+    private              SVGPath                       matrixButton;
+    private              SVGPath                       stackedButton;
+    private              SVGPath                       exclamationMark;
+    private              MacosLabel                    titleLabel;
+    private              MacosLabel                    valueLabel;
+    private              HBox                          last5DeltasLabel;
+    private              MacosLabel                    hba1cLabel;
+    private              MacosLabel                    timestampLabel;
+    private              MacosLabel                    rangeAverageLabel;
+    private              Text                          unit;
+    private              Text                          delta0;
+    private              Text                          delta1;
+    private              Text                          delta2;
+    private              Text                          delta3;
+    private              Text                          delta4;
+    private              AnchorPane                    vpane;
+    private              StackPane                     pane;
+    private              StackPane                     prefPane;
+    private              MacosSwitch                   darkModeSwitch;
+    private              MacosTextField                nightscoutUrlTextField;
+    private              MacosTextField                nightscoutTokenTextField;
+    private              MacosSwitch                   unitSwitch;
+    private              MacosSwitch                   deltaChartSwitch;
+    private              MacosSwitch                   voiceOutputSwitch;
+    private              MacosSlider                   voiceOutputIntervalSlider;
+    private              MacosSwitch                   tooLowSoundSwitch;
+    private              MacosSwitch                   tooLowSpeakSwitch;
+    private              MacosSwitch                   enableLowSoundSwitch;
+    private              MacosSwitch                   lowSoundSwitch;
+    private              MacosSwitch                   lowSpeakSwitch;
+    private              MacosSwitch                   enableAcceptableLowSoundSwitch;
+    private              MacosSwitch                   acceptableLowSoundSwitch;
+    private              MacosSwitch                   enableAcceptableHighSoundSwitch;
+    private              MacosSwitch                   acceptableHighSoundSwitch;
+    private              MacosSwitch                   enableHighSoundSwitch;
+    private              MacosSwitch                   highSoundSwitch;
+    private              MacosSwitch                   tooHighSoundSwitch;
+    private              MacosSlider                   tooLowIntervalSlider;
+    private              MacosSlider                   tooHighIntervalSlider;
+    private              MacosSlider                   minAcceptableSlider;
+    private              MacosSlider                   minNormalSlider;
+    private              MacosSlider                   maxNormalSlider;
+    private              MacosSlider                   maxAcceptableSlider;
+    private              Canvas                        canvas;
+    private              GraphicsContext               ctx;
+    private              AnchorPane                    chartPane;
+    private              PoincarePlot                  poincarePlot;
+    private              boolean                       deltaChartVisible;
+    private              ToggleGroup                   intervalToggleGroup;
+    private              MacosToggleButton             ninetyDays;
+    private              MacosToggleButton             thirtyDays;
+    private              MacosToggleButton             fourteenDays;
+    private              MacosToggleButton             sevenDays;
+    private              MacosToggleButton             seventyTwoHours;
+    private              MacosToggleButton             fourtyEightHours;
+    private              MacosToggleButton             twentyFourHours;
+    private              MacosToggleButton             twelveHours;
+    private              MacosToggleButton             sixHours;
+    private              MacosToggleButton             threeHours;
+    private              MacosToggleButtonBarSeparator sep1;
+    private              MacosToggleButtonBarSeparator sep2;
+    private              MacosToggleButtonBarSeparator sep3;
+    private              MacosToggleButtonBarSeparator sep4;
+    private              MacosToggleButtonBarSeparator sep5;
+    private              MacosToggleButtonBarSeparator sep6;
+    private              MacosToggleButtonBar          toggleButtonBar;
+    private              AnchorPane                    prefContentPane;
+    private              SVGPath                       settingsIcon;
+    private              MacosButton                   settingsButton;
+    private              ScheduledService<Void>        service;
+    private              double                        minAcceptable;
+    private              double                        minNormal;
+    private              double                        maxNormal;
+    private              double                        maxAcceptable;
+    private              double                        minAcceptableFactor;
+    private              double                        minNormalFactor;
+    private              double                        maxNormalFactor;
+    private              double                        maxAcceptableFactor;
+    private              UnitDefinition                currentUnit;
+    private              boolean                       outdated;
+    private              ObservableList<GlucoEntry>    allEntries;
+    private              List<GlucoEntry>              entries;
+    private              List<Double>                  deltas;
+    private              double                        avg;
+    private              BooleanProperty               dialogVisible;
+    private              double                        deltaMin;
+    private              double                        deltaMax;
+    private              GlucoEntry                    currentEntry;
+    private              Color                         currentColor;
+    private              Interval                      currentInterval;
+    private              Font                          ticklabelFont;
+    private              Font                          smallTicklabelFont;
+    private              boolean                       slowlyRising;
+    private              boolean                       slowlyFalling;
+    private              boolean                       hideMenu;
+    private              FXTrayIcon                    trayIcon;
+    private              EventHandler<MouseEvent>      eventConsumer;
+    private              DateTimeFormatter             dtf;
+    private              boolean                       isUpdateAvailable;
+    private              VersionNumber                 latestVersion;
+    private              AtomicBoolean                 online;
 
 
     // ******************** Initialization ************************************
@@ -294,7 +301,7 @@ public class Main extends Application {
         sysinfo           = eu.hansolo.jdktools.util.Helper.getOperaringSystemArchitectureOperatingMode();
         operatingSystem   = sysinfo.operatingSystem();
         architecture      = sysinfo.architecture();
-        darkMode          = OperatingSystem.MACOS == operatingSystem ? eu.hansolo.applefx.tools.Helper.isDarkMode() : PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_DARK_MODE, true);
+        darkMode          = PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_DARK_MODE, true);
         accentColor       = eu.hansolo.applefx.tools.Helper.getMacosAccentColorAsColor();
         currentUnit       = MILLIGRAM_PER_DECILITER;
         outdated          = false;
@@ -347,12 +354,12 @@ public class Main extends Application {
 
         twentyFourHours.setSelected(true);
 
-        MacosToggleButtonBarSeparator sep1 = createSeparator(darkMode);
-        MacosToggleButtonBarSeparator sep2 = createSeparator(darkMode);
-        MacosToggleButtonBarSeparator sep3 = createSeparator(darkMode);
-        MacosToggleButtonBarSeparator sep4 = createSeparator(darkMode);
-        MacosToggleButtonBarSeparator sep5 = createSeparator(darkMode);
-        MacosToggleButtonBarSeparator sep6 = createSeparator(darkMode);
+        sep1 = createSeparator(darkMode);
+        sep2 = createSeparator(darkMode);
+        sep3 = createSeparator(darkMode);
+        sep4 = createSeparator(darkMode);
+        sep5 = createSeparator(darkMode);
+        sep6 = createSeparator(darkMode);
 
         toggleButtonBar = new MacosToggleButtonBar(ninetyDays, thirtyDays, fourteenDays, sevenDays, sep1, seventyTwoHours, sep2, fourtyEightHours, sep3, twentyFourHours, sep4, twelveHours, sep5, sixHours, sep6, threeHours);
         toggleButtonBar.setDark(darkMode);
@@ -519,6 +526,52 @@ public class Main extends Application {
         registerListeners();
     }
 
+    private void reInit() {
+        macosWindow.setDark(darkMode);
+        aboutDialog = createAboutDialog();
+        accentColor = eu.hansolo.applefx.tools.Helper.getMacosAccentColorAsColor();
+        ninetyDays.setDark(darkMode);
+        thirtyDays.setDark(darkMode);
+        fourteenDays.setDark(darkMode);
+        sevenDays.setDark(darkMode);
+        seventyTwoHours.setDark(darkMode);
+        fourtyEightHours.setDark(darkMode);
+        twentyFourHours.setDark(darkMode);
+        twelveHours.setDark(darkMode);
+        sixHours.setDark(darkMode);
+        threeHours.setDark(darkMode);
+        sep1.setDark(darkMode);
+        sep2.setDark(darkMode);
+        sep3.setDark(darkMode);
+        sep4.setDark(darkMode);
+        sep5.setDark(darkMode);
+        sep6.setDark(darkMode);
+        toggleButtonBar.setDark(darkMode);
+
+        Color color = darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT;
+        settingsIcon.setFill(color);
+        titleLabel.setDark(darkMode);
+        valueLabel.setDark(darkMode);
+        unit.setFill(color);
+        delta4.setFill(color);
+        delta3.setFill(color);
+        delta2.setFill(color);
+        delta1.setFill(color);
+        delta0.setFill(color);
+        matrixButton.setFill(color);
+        reloadButton.setFill(color);
+        patternChartButton.setFill(color);
+        timeInRangeChartButton.setFill(color);
+        stackedButton.setFill(color);
+        drawChart();
+        exclamationMark.setFill(color);
+
+        prefContentPane.setBackground(new Background(new BackgroundFill(darkMode ? MacosSystemColor.BACKGROUND.dark() : MacosSystemColor.BACKGROUND.aqua(), new CornerRadii(10), Insets.EMPTY)));
+        eu.hansolo.applefx.tools.Helper.getAllNodes(prefPane).stream().filter(node -> node instanceof MacosControl).forEach(node -> ((MacosControl) node).setDark(darkMode));
+
+        drawChart();
+    }
+
 
     // ******************** App lifecycle *************************************
     @Override public void start(final Stage stage) {
@@ -531,7 +584,7 @@ public class Main extends Application {
         this.trayIconSupported = FXTrayIcon.isSupported();
 
         if (trayIconSupported) {
-            trayIcon = new FXTrayIcon(stage, Helper.createTextTrayIcon(operatingSystem, "--", Color.WHITE));
+            trayIcon = new FXTrayIcon(stage, Helper.createTextTrayIcon(operatingSystem, "--", darkMode ? Color.WHITE : Color.BLACK));
 
             trayIcon.setTrayIconTooltip(translator.get(I18nKeys.APP_NAME));
             trayIcon.addExitItem(false);
@@ -684,55 +737,26 @@ public class Main extends Application {
             service.start();
         }
         aboutDialog = createAboutDialog();
-        macosWindow.darkProperty().addListener((o, ov, nv) -> {
-            darkMode = nv;
-            Color color = darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT;
-            settingsIcon.setFill(color);
-            titleLabel.setDark(darkMode);
-            valueLabel.setDark(darkMode);
-            unit.setFill(color);
-            delta4.setFill(color);
-            delta3.setFill(color);
-            delta2.setFill(color);
-            delta1.setFill(color);
-            delta0.setFill(color);
-            matrixButton.setFill(color);
-            reloadButton.setFill(color);
-            patternChartButton.setFill(color);
-            timeInRangeChartButton.setFill(color);
-            stackedButton.setFill(color);
-            drawChart();
-            exclamationMark.setFill(color);
+        Color color = darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT;
+        settingsIcon.setFill(color);
+        titleLabel.setDark(darkMode);
+        valueLabel.setDark(darkMode);
+        unit.setFill(color);
+        delta4.setFill(color);
+        delta3.setFill(color);
+        delta2.setFill(color);
+        delta1.setFill(color);
+        delta0.setFill(color);
+        matrixButton.setFill(color);
+        reloadButton.setFill(color);
+        patternChartButton.setFill(color);
+        timeInRangeChartButton.setFill(color);
+        stackedButton.setFill(color);
+        drawChart();
+        exclamationMark.setFill(color);
 
-            prefContentPane.setBackground(new Background(new BackgroundFill(darkMode ? MacosSystemColor.BACKGROUND.dark() : MacosSystemColor.BACKGROUND.aqua(), new CornerRadii(10), Insets.EMPTY)));
-            eu.hansolo.applefx.tools.Helper.getAllNodes(prefPane).stream().filter(node -> node instanceof MacosControl).forEach(node -> ((MacosControl) node).setDark(darkMode));
-        });
-
-        /*
-        if (OperatingSystem.LINUX == operatingSystem) {
-            macosWindow.setDark(darkMode);
-            Color color = darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT;
-            settingsIcon.setFill(color);
-            titleLabel.setDark(darkMode);
-            valueLabel.setDark(darkMode);
-            unit.setFill(color);
-            delta4.setFill(color);
-            delta3.setFill(color);
-            delta2.setFill(color);
-            delta1.setFill(color);
-            delta0.setFill(color);
-            matrixButton.setFill(color);
-            reloadButton.setFill(color);
-            patternChartButton.setFill(color);
-            timeInRangeChartButton.setFill(color);
-            stackedButton.setFill(color);
-            drawChart();
-            exclamationMark.setFill(color);
-
-            prefContentPane.setBackground(new Background(new BackgroundFill(darkMode ? MacosSystemColor.BACKGROUND.dark() : MacosSystemColor.BACKGROUND.aqua(), new CornerRadii(10), Insets.EMPTY)));
-            eu.hansolo.applefx.tools.Helper.getAllNodes(prefPane).stream().filter(node -> node instanceof MacosControl).forEach(node -> ((MacosControl) node).setDark(darkMode));
-        }
-        */
+        prefContentPane.setBackground(new Background(new BackgroundFill(darkMode ? MacosSystemColor.BACKGROUND.dark() : MacosSystemColor.BACKGROUND.aqua(), new CornerRadii(10), Insets.EMPTY)));
+        eu.hansolo.applefx.tools.Helper.getAllNodes(prefPane).stream().filter(node -> node instanceof MacosControl).forEach(node -> ((MacosControl) node).setDark(darkMode));
 
         stage.widthProperty().addListener(o -> {
             chartPane.setMaxWidth(stage.getWidth());
@@ -1096,6 +1120,7 @@ public class Main extends Application {
     }
 
     private void applySettingsToPreferences() {
+        darkModeSwitch.setSelected(PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_DARK_MODE, true));
         nightscoutUrlTextField.setText(PropertyManager.INSTANCE.getString(Constants.PROPERTIES_NIGHTSCOUT_URL));
         nightscoutTokenTextField.setText(PropertyManager.INSTANCE.getString(Constants.PROPERTIES_NIGHTSCOUT_TOKEN));
         unitSwitch.setSelected(PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_UNIT_MG));
@@ -1123,6 +1148,7 @@ public class Main extends Application {
     }
 
     private void savePreferencesToSettings() {
+        PropertyManager.INSTANCE.setBoolean(Constants.PROPERTIES_DARK_MODE, darkModeSwitch.isSelected());
         PropertyManager.INSTANCE.setString(Constants.PROPERTIES_NIGHTSCOUT_URL, nightscoutUrlTextField.getText());
         PropertyManager.INSTANCE.setString(Constants.PROPERTIES_NIGHTSCOUT_TOKEN, nightscoutTokenTextField.getText());
         PropertyManager.INSTANCE.setBoolean(Constants.PROPERTIES_UNIT_MG, unitSwitch.isSelected());
@@ -1180,6 +1206,7 @@ public class Main extends Application {
     }
 
     private void updateSettings() {
+        darkMode            = PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_DARK_MODE, true);
         currentUnit         = PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_UNIT_MG) ? MILLIGRAM_PER_DECILITER : MILLIMOL_PER_LITER;
         deltaChartVisible   = PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_SHOW_DELTA_CHART);
         minAcceptable       = PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MIN_ACCEPTABLE);
@@ -1253,7 +1280,7 @@ public class Main extends Application {
         if (null != trayIcon) {
             SwingUtilities.invokeLater(() -> Platform.runLater(() -> {
                 String text = currentValueText + (outdated ? "\u26A0" : "");
-                trayIcon.setGraphic(Helper.createTextTrayIcon(operatingSystem, text, Color.WHITE));
+                trayIcon.setGraphic(Helper.createTextTrayIcon(operatingSystem, text, darkMode ? Color.WHITE : Color.BLACK));
                 trayIcon.setTrayIconTooltip(text);
             }));
         }
@@ -1275,7 +1302,13 @@ public class Main extends Application {
 
             mainPane.setBackground(new Background(new BackgroundFill(currentColor, CornerRadii.EMPTY, Insets.EMPTY)));
             valueLabel.setText(currentValueText);
-            hba1cLabel.setText(allEntries.size() > 89 ? (String.format(Locale.US, "HbA1c %.1f%%", Helper.calcHbA1c(allEntries)) + " (" + INTERVAL.getUiString() + ")") : "-");
+
+            switch(currentInterval) {
+                case LAST_3_HOURS, LAST_6_HOURS, LAST_12_HOURS, LAST_24_HOURS, LAST_48_HOURS, LAST_72_HOURS -> hba1cLabel.setText(String.format(Locale.US, "HbA1c %.1f%%", Helper.calcHbA1c(allEntries.stream().limit(Interval.LAST_168_HOURS.getNoOfEntries()).collect(
+                Collectors.toList()))) + " (" + Interval.LAST_168_HOURS.getUiString() + ")");
+                default -> hba1cLabel.setText(String.format(Locale.US, "HbA1c %.1f%%", Helper.calcHbA1c(entries)) + " (" + currentInterval.getUiString() + ")");
+            }
+
             //timestampLabel.setText(Constants.DTF.format(dateTime) + (outdated ? " \u26A0" : ""));
             timestampLabel.setText(dtf.format(dateTime) + (outdated ? " \u26A0" : ""));
             exclamationMark.setVisible(outdated);
@@ -1299,7 +1332,6 @@ public class Main extends Application {
         double  height          = canvas.getHeight();
         double  availableWidth  = (width - GRAPH_INSETS.getLeft() - GRAPH_INSETS.getRight());
         double  availableHeight = (height - GRAPH_INSETS.getTop() - GRAPH_INSETS.getBottom());
-        //boolean darkMode        = eu.hansolo.applefx.tools.Helper.isDarkMode();
 
         ctx.clearRect(0, 0, width, height);
         ctx.setFill(darkMode ? Color.rgb(30, 28, 26) : Color.rgb(234, 233, 233));
@@ -1747,6 +1779,22 @@ public class Main extends Application {
         AnchorPane.setTopAnchor(settingsLabel, 50d);
         AnchorPane.setLeftAnchor(settingsLabel, 30d);
 
+        MacosLabel darkModeLabel = new MacosLabel(translator.get(I18nKeys.SETTINGS_DARK_MODE));
+        darkModeLabel.setDark(darkMode);
+        darkModeLabel.setFont(Fonts.sfProTextRegular(14));
+        darkModeSwitch = MacosSwitchBuilder.create().dark(darkMode).ios(true).selectedColor(accentColor).build();
+        HBox.setHgrow(darkModeLabel, Priority.ALWAYS);
+        HBox darkModeBox = new HBox(10, darkModeSwitch, darkModeLabel);
+        darkModeBox.setAlignment(Pos.CENTER_LEFT);
+        darkModeSwitch.selectedProperty().addListener((o, ov, nv) -> {
+            this.darkMode = nv;
+            reInit();
+        });
+
+        MacosSeparator s0 = new MacosSeparator(Orientation.HORIZONTAL);
+        s0.setDark(darkMode);
+        VBox.setMargin(s0, new Insets(5, 0, 5, 0));
+
         MacosLabel nightscoutUrlLabel = new MacosLabel(translator.get(I18nKeys.SETTINGS_NIGHTSCOUT_URL));
         nightscoutUrlLabel.setDark(darkMode);
         nightscoutUrlLabel.setFont(Fonts.sfProTextRegular(14));
@@ -2088,7 +2136,7 @@ public class Main extends Application {
         });
 
 
-        VBox settingsVBox = new VBox(5, nightscoutUrlBox, nightscoutTokenBox, s1, unitBox, s2, deltaChartBox, s3,
+        VBox settingsVBox = new VBox(5, darkModeBox, s0, nightscoutUrlBox, nightscoutTokenBox, s1, unitBox, s2, deltaChartBox, s3,
                                      voiceOutputBox, voiceOutputIntervalLabel, voiceOutputIntervalSlider,
                                      notificationsLabel, tooLowBox, lowBox, acceptableLowBox, acceptableHighBox, highBox, tooHighBox, s4,
                                      tooLowIntervalLabel, tooLowIntervalSlider, tooHighIntervalLabel, tooHighIntervalSlider, s5,

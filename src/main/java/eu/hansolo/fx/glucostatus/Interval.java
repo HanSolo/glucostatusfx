@@ -25,13 +25,13 @@ import java.time.format.DateTimeFormatter;
 
 
 public enum Interval {
-    LAST_2160_HOURS(25_920, 2_160, 7_776_000, DateTimeFormatter.ofPattern("DD")),
-    LAST_720_HOURS(8_640, 720, 2_592_000, DateTimeFormatter.ofPattern("DD")),
-    LAST_336_HOURS(4032, 336, 1_209_600, DateTimeFormatter.ofPattern("DD")),
-    LAST_168_HOURS(2_016, 168, 604_800, DateTimeFormatter.ofPattern("DD")),
-    LAST_72_HOURS(864, 72, 259_200, DateTimeFormatter.ofPattern("HH")),
-    LAST_48_HOURS(576, 48, 172_800, DateTimeFormatter.ofPattern("HH")),
-    LAST_24_HOURS(288, 24, 86_400, DateTimeFormatter.ofPattern("HH")),
+    LAST_2160_HOURS(25_920, 2_160, 7_776_000, DateTimeFormatter.ofPattern("DD")), // 90 Days
+    LAST_720_HOURS(8_640, 720, 2_592_000, DateTimeFormatter.ofPattern("DD")),     // 30 Days
+    LAST_336_HOURS(4_032, 336, 1_209_600, DateTimeFormatter.ofPattern("DD")),      // 14 Days
+    LAST_168_HOURS(2_016, 168, 604_800, DateTimeFormatter.ofPattern("DD")),       //  7 Days
+    LAST_72_HOURS(864, 72, 259_200, DateTimeFormatter.ofPattern("HH")),           //  3 Days
+    LAST_48_HOURS(576, 48, 172_800, DateTimeFormatter.ofPattern("HH")),           //  2 Days
+    LAST_24_HOURS(288, 24, 86_400, DateTimeFormatter.ofPattern("HH")),            //  1 Day
     LAST_12_HOURS(144, 12, 43_200, DateTimeFormatter.ofPattern("HH")),
     LAST_6_HOURS(72, 6, 21_600, DateTimeFormatter.ofPattern("HH:mm")),
     LAST_3_HOURS(36, 3, 10_800, DateTimeFormatter.ofPattern("HH:mm"));

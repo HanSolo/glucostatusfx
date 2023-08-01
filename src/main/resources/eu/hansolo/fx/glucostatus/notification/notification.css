@@ -59,7 +59,7 @@
     -fx-content-display : left;
     -fx-graphic-text-gap: 10px;
     -fx-font-family     : "SF Pro Text";
-    -fx-font-weight     : medium;
+    -fx-font-weight     : bold;
 }
 
 .notification-mac .msg-area {

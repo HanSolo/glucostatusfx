@@ -135,7 +135,7 @@ public class PoincarePlot extends Region {
     }
 
     private void redraw() {
-        boolean darkMode = eu.hansolo.applefx.tools.Helper.isDarkMode();
+        boolean darkMode = PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_DARK_MODE, true);
 
         ctx.clearRect(0, 0, width, height);
         ctx.setFill(darkMode ? Constants.DARK_BACKGROUND : Constants.BRIGHT_BACKGROUND);

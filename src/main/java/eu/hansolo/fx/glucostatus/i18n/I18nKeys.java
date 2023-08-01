@@ -98,6 +98,7 @@ public interface I18nKeys {
     String NOTIFICATION_GLUCOSE_LOW                          = "notification_glucose_low";
     String NOTIFICATION_GLUCOSE_TOO_LOW                      = "notification_glucose_too_low";
     String SETTINGS_TITLE                                    = "settings_title";
+    String SETTINGS_DARK_MODE                                = "settings_dark_mode";
     String SETTINGS_NIGHTSCOUT_URL                           = "settings_nightscouturl";
     String SETTINGS_NIGHTSCOUT_TOKEN                         = "settings_nightscout_token";
     String SETTINGS_UNIT                                     = "settings_unit";
