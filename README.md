@@ -20,7 +20,7 @@ A glucose status monitor for Nightscout implemented in JavaFX.
 
 When running as jar file you might need to start with on Linux
 
-```java -Djdk.gtk.version=2 -jar GlucoStatusFX-17.0.39.jar```
+```java -Djdk.gtk.version=2 -jar GlucoStatusFX-17.0.43.jar```
 
 <br>
 
@@ -30,6 +30,15 @@ GlucoStatusFX is a JavaFX application that will sit in your menu bar and is visu
 data coming from a nightscout server.
 To use this app you need to have a nightscout server which url you have to put in the
 text field in the settings dialog.
+
+To set up the nightscout url in the settings dialog, just put in the url of your server e.g.
+
+```https://my-glucose.herokuapp.com```
+
+The api secret field is optional (but it is recommended to set it up as described [here](https://nightscout.github.io/nightscout/setup_variables/))
+
+The token field is also optional (find more info [here](https://nightscout.github.io/nightscout/security/)) 
+
 In the settings dialog you can will find the following parameters:
 
 <b>"Unit mg/dl":</b><br>
@@ -68,15 +77,12 @@ The max normal value can be defined in the range of 120-160 mg/dl.
 The max acceptable value can be defined in the range of 120-250 mg/dl.
 
 
-## More info
-More info can be found on [this page](https://harmoniccode.blogspot.com/p/glucostatusfx.html)
-
 ## Overview
 ![Main Screen](https://i.ibb.co/1QgxS30/Gluco-Status-FX-Main.png)
 
 ![Main Screen Poincare](https://i.ibb.co/prXFCqt/Gluco-Status-FX-Poincare.png)
 
-![Settings](https://i.ibb.co/BT53NY4/Monosnap-2022-01-14-16-25-06.png)
+![Settings](https://i.ibb.co/cvPNcs5/Gluco-Status-FX-Settings.jpg)
 
 ![Pattern](https://i.ibb.co/p1vWMmp/Gluco-Status-FX-Pattern.png)
 

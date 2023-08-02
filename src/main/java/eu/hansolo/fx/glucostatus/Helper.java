@@ -362,7 +362,7 @@ public class Helper {
                          .build();
     }
 
-    public static final HttpResponse<String> get(final String uri, final String token) {
+    public static final HttpResponse<String> get(final String uri, final String apiSecret) {
         if (null == httpClient) { httpClient = createHttpClient(); }
 
         HttpRequest request = HttpRequest.newBuilder()
@@ -370,7 +370,7 @@ public class Helper {
                                          .uri(URI.create(uri))
                                          .setHeader("Accept", "application/json")
                                          .setHeader("User-Agent", "GlucoStatusFX")
-                                         .setHeader("API_SECRET", token)
+                                         .setHeader("API_SECRET", apiSecret)
                                          .timeout(Duration.ofSeconds(60))
                                          .build();
 

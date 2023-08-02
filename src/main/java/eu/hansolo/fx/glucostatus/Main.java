@@ -167,7 +167,8 @@ public class Main extends Application {
     private              ZonedDateTime                 lastFullUpdate  = ZonedDateTime.now().minusMinutes(5);
     private              AtomicBoolean                 switchingUnits  = new AtomicBoolean(false);
     private              String                        nightscoutUrl   = "";
-    private              String                        nightscoutToken = "";
+    private              String                        apiSecret       = "";
+    private              String                        token           = "";
     private              MacosWindow                   macosWindow;
     private              boolean                       trayIconSupported;
     private              OsArcMode                     sysinfo;
@@ -208,6 +209,7 @@ public class Main extends Application {
     private              StackPane                     prefPane;
     private              MacosSwitch                   darkModeSwitch;
     private              MacosTextField                nightscoutUrlTextField;
+    private              MacosPasswordField            apiSecretPasswordField;
     private              MacosPasswordField            nightscoutTokenPasswordField;
     private              MacosSwitch                   unitSwitch;
     private              MacosSwitch                   deltaChartSwitch;
@@ -298,7 +300,8 @@ public class Main extends Application {
         online            = new AtomicBoolean(false);
 
         nightscoutUrl     = PropertyManager.INSTANCE.getString(Constants.PROPERTIES_NIGHTSCOUT_URL);
-        nightscoutToken   = PropertyManager.INSTANCE.getString(Constants.PROPERTIES_NIGHTSCOUT_TOKEN, "");
+        apiSecret         = PropertyManager.INSTANCE.getString(Constants.PROPERTIES_API_SECRET, "");
+        token             = PropertyManager.INSTANCE.getString(Constants.PROPERTIES_NIGHTSCOUT_TOKEN, "");
         sysinfo           = eu.hansolo.jdktools.util.Helper.getOperaringSystemArchitectureOperatingMode();
         operatingSystem   = sysinfo.operatingSystem();
         architecture      = sysinfo.architecture();
@@ -905,7 +908,8 @@ public class Main extends Application {
     private void updateEntries() {
         if (null == nightscoutUrl || nightscoutUrl.isEmpty()) { return; }
         GlucoEntry           entryFound = null;
-        HttpResponse<String> response   = Helper.get(nightscoutUrl + Constants.URL_API + Constants.URL_PARAM_COUNT_1, nightscoutToken);
+        final String         url        = new StringBuilder().append(nightscoutUrl).append(Constants.URL_API).append(Constants.URL_PARAM_COUNT_1).append(token.isEmpty() ? "" : ("?token=" + token)).toString();
+        HttpResponse<String> response   = Helper.get(url, apiSecret);
         if (null != response && null != response.body() && !response.body().isEmpty()) {
             List<GlucoEntry> entry = Helper.getGlucoEntries(response.body());
             entryFound = entry.isEmpty() ? null : entry.get(0);
@@ -1123,7 +1127,8 @@ public class Main extends Application {
     private void applySettingsToPreferences() {
         darkModeSwitch.setSelected(PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_DARK_MODE, true));
         nightscoutUrlTextField.setText(PropertyManager.INSTANCE.getString(Constants.PROPERTIES_NIGHTSCOUT_URL));
-        nightscoutTokenPasswordField.setText(PropertyManager.INSTANCE.getString(Constants.PROPERTIES_NIGHTSCOUT_TOKEN));
+        apiSecretPasswordField.setText(PropertyManager.INSTANCE.getString(Constants.PROPERTIES_API_SECRET, ""));
+        nightscoutTokenPasswordField.setText(PropertyManager.INSTANCE.getString(Constants.PROPERTIES_NIGHTSCOUT_TOKEN, ""));
         unitSwitch.setSelected(PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_UNIT_MG));
         deltaChartSwitch.setSelected(PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_SHOW_DELTA_CHART));
         voiceOutputSwitch.setSelected(PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_VOICE_OUTPUT, false));
@@ -1143,14 +1148,15 @@ public class Main extends Application {
         tooLowIntervalSlider.setValue(PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_CRITICAL_MIN_NOTIFICATION_INTERVAL));
         tooHighIntervalSlider.setValue(PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_CRITICAL_MAX_NOTIFICATION_INTERVAL));
         minAcceptableSlider.setValue(UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MIN_ACCEPTABLE) : Helper.mgPerDeciliterToMmolPerLiter(PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MIN_ACCEPTABLE)));
-        minNormalSlider.setValue(UnitDefinition.MILLIGRAM_PER_DECILITER     == currentUnit ? PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MIN_NORMAL)     : Helper.mgPerDeciliterToMmolPerLiter(PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MIN_NORMAL)));
-        maxNormalSlider.setValue(UnitDefinition.MILLIGRAM_PER_DECILITER     == currentUnit ? PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MAX_NORMAL)     : Helper.mgPerDeciliterToMmolPerLiter(PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MAX_NORMAL)));
+        minNormalSlider.setValue(UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MIN_NORMAL)     : Helper.mgPerDeciliterToMmolPerLiter(PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MIN_NORMAL)));
+        maxNormalSlider.setValue(UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MAX_NORMAL)     : Helper.mgPerDeciliterToMmolPerLiter(PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MAX_NORMAL)));
         maxAcceptableSlider.setValue(UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MAX_ACCEPTABLE) : Helper.mgPerDeciliterToMmolPerLiter(PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MAX_ACCEPTABLE)));
     }
 
     private void savePreferencesToSettings() {
         PropertyManager.INSTANCE.setBoolean(Constants.PROPERTIES_DARK_MODE, darkModeSwitch.isSelected());
         PropertyManager.INSTANCE.setString(Constants.PROPERTIES_NIGHTSCOUT_URL, nightscoutUrlTextField.getText());
+        PropertyManager.INSTANCE.setString(Constants.PROPERTIES_API_SECRET, apiSecretPasswordField.getText());
         PropertyManager.INSTANCE.setString(Constants.PROPERTIES_NIGHTSCOUT_TOKEN, nightscoutTokenPasswordField.getText());
         PropertyManager.INSTANCE.setBoolean(Constants.PROPERTIES_UNIT_MG, unitSwitch.isSelected());
         PropertyManager.INSTANCE.setBoolean(Constants.PROPERTIES_SHOW_DELTA_CHART, deltaChartSwitch.isSelected());
@@ -1171,8 +1177,8 @@ public class Main extends Application {
         PropertyManager.INSTANCE.setDouble(Constants.PROPERTIES_CRITICAL_MIN_NOTIFICATION_INTERVAL, tooLowIntervalSlider.getValue());
         PropertyManager.INSTANCE.setDouble(Constants.PROPERTIES_CRITICAL_MAX_NOTIFICATION_INTERVAL, tooHighIntervalSlider.getValue());
         PropertyManager.INSTANCE.setDouble(Constants.PROPERTIES_MIN_ACCEPTABLE, UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? minAcceptableSlider.getValue() : Helper.mmolPerLiterToMgPerDeciliter(minAcceptableSlider.getValue()));
-        PropertyManager.INSTANCE.setDouble(Constants.PROPERTIES_MIN_NORMAL,     UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? minNormalSlider.getValue()     : Helper.mmolPerLiterToMgPerDeciliter(minNormalSlider.getValue()));
-        PropertyManager.INSTANCE.setDouble(Constants.PROPERTIES_MAX_NORMAL,     UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? maxNormalSlider.getValue()     : Helper.mmolPerLiterToMgPerDeciliter(maxNormalSlider.getValue()));
+        PropertyManager.INSTANCE.setDouble(Constants.PROPERTIES_MIN_NORMAL, UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? minNormalSlider.getValue()     : Helper.mmolPerLiterToMgPerDeciliter(minNormalSlider.getValue()));
+        PropertyManager.INSTANCE.setDouble(Constants.PROPERTIES_MAX_NORMAL, UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? maxNormalSlider.getValue()     : Helper.mmolPerLiterToMgPerDeciliter(maxNormalSlider.getValue()));
         PropertyManager.INSTANCE.setDouble(Constants.PROPERTIES_MAX_ACCEPTABLE, UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? maxAcceptableSlider.getValue() : Helper.mmolPerLiterToMgPerDeciliter(maxAcceptableSlider.getValue()));
 
         PropertyManager.INSTANCE.storeProperties();
@@ -1200,7 +1206,8 @@ public class Main extends Application {
             service.start();
         }
 
-        nightscoutToken = nightscoutTokenPasswordField.getText();
+        apiSecret = apiSecretPasswordField.getText();
+        token     = nightscoutTokenPasswordField.getText();
 
         updateSettings();
         updateUI();
@@ -1418,9 +1425,12 @@ public class Main extends Application {
                         nightStart = true;
                         nightX     = x;
                     }
+
                     if (Constants.NIGHT_END == h && nightStart) {
                         nightStart = false;
-                        nights.add(new eu.hansolo.toolboxfx.geom.Rectangle(nightX, GRAPH_INSETS.getTop(), 10 * oneHourStep, availableHeight));
+                        if (currentInterval != Interval.LAST_12_HOURS) {
+                            nights.add(new eu.hansolo.toolboxfx.geom.Rectangle(nightX, GRAPH_INSETS.getTop(), 10 * oneHourStep, availableHeight));
+                        }
                     }
                 }
                 lastHour = h;
@@ -1799,6 +1809,7 @@ public class Main extends Application {
         MacosLabel nightscoutUrlLabel = new MacosLabel(translator.get(I18nKeys.SETTINGS_NIGHTSCOUT_URL));
         nightscoutUrlLabel.setDark(darkMode);
         nightscoutUrlLabel.setFont(Fonts.sfProTextRegular(14));
+        nightscoutUrlLabel.setMinWidth(120);
         nightscoutUrlTextField = new MacosTextField();
         nightscoutUrlTextField.setDark(darkMode);
         nightscoutUrlTextField.setFont(Fonts.sfProRoundedRegular(14));
@@ -1809,9 +1820,23 @@ public class Main extends Application {
         HBox nightscoutUrlBox = new HBox(10, nightscoutUrlLabel, nightscoutUrlTextField);
         nightscoutUrlBox.setAlignment(Pos.CENTER);
 
+        MacosLabel apiSecretLabel = new MacosLabel(translator.get(I18nKeys.SETTINGS_API_SECRET));
+        apiSecretLabel.setDark(darkMode);
+        apiSecretLabel.setFont(Fonts.sfProTextRegular(14));
+        apiSecretLabel.setMinWidth(120);
+        apiSecretPasswordField = new MacosPasswordField();
+        apiSecretPasswordField.setDark(darkMode);
+        apiSecretPasswordField.setFont(Fonts.sfProRoundedRegular(14));
+        apiSecretPasswordField.setPrefWidth(TextField.USE_COMPUTED_SIZE);
+        apiSecretPasswordField.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(apiSecretPasswordField, Priority.ALWAYS);
+        HBox apiSecretBox = new HBox(10, apiSecretLabel, apiSecretPasswordField);
+        apiSecretBox.setAlignment(Pos.CENTER);
+
         MacosLabel nightscoutTokenLabel = new MacosLabel(translator.get(I18nKeys.SETTINGS_NIGHTSCOUT_TOKEN));
         nightscoutTokenLabel.setDark(darkMode);
         nightscoutTokenLabel.setFont(Fonts.sfProTextRegular(14));
+        nightscoutTokenLabel.setMinWidth(120);
         nightscoutTokenPasswordField = new MacosPasswordField();
         nightscoutTokenPasswordField.setDark(darkMode);
         nightscoutTokenPasswordField.setFont(Fonts.sfProRoundedRegular(14));
@@ -1821,11 +1846,9 @@ public class Main extends Application {
         HBox nightscoutTokenBox = new HBox(10, nightscoutTokenLabel, nightscoutTokenPasswordField);
         nightscoutTokenBox.setAlignment(Pos.CENTER);
 
-
         MacosSeparator s1 = new MacosSeparator(Orientation.HORIZONTAL);
         s1.setDark(darkMode);
         VBox.setMargin(s1, new Insets(5, 0, 5, 0));
-
 
         unitSwitch = MacosSwitchBuilder.create().dark(darkMode).ios(true).selectedColor(accentColor).build();
         MacosLabel unitLabel = new MacosLabel(translator.get(I18nKeys.SETTINGS_UNIT) + currentUnit.UNIT.getUnitShort());
@@ -1890,11 +1913,9 @@ public class Main extends Application {
             switchingUnits.set(false);
         });
 
-
         MacosSeparator s2 = new MacosSeparator(Orientation.HORIZONTAL);
         s2.setDark(darkMode);
         VBox.setMargin(s2, new Insets(5, 0, 5, 0));
-
 
         deltaChartSwitch = MacosSwitchBuilder.create().dark(darkMode).ios(true).selectedColor(accentColor).build();
         MacosLabel deltaChartLabel = new MacosLabel(translator.get(I18nKeys.SETTINGS_SHOW_DELTA_CHART));
@@ -1904,11 +1925,9 @@ public class Main extends Application {
         HBox deltaChartBox = new HBox(10, deltaChartSwitch, deltaChartLabel);
         deltaChartBox.setAlignment(Pos.CENTER_LEFT);
 
-
         MacosSeparator s3 = new MacosSeparator(Orientation.HORIZONTAL);
         s3.setDark(darkMode);
         VBox.setMargin(s3, new Insets(5, 0, 10, 0));
-
 
         voiceOutputSwitch = MacosSwitchBuilder.create().dark(darkMode).ios(true).selectedColor(accentColor).build();
         MacosLabel voiceOutputLabel = createLabel(translator.get(I18nKeys.SETTINGS_VOICE_OUTPUT), 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.ALWAYS);
@@ -2137,7 +2156,7 @@ public class Main extends Application {
         });
 
 
-        VBox settingsVBox = new VBox(5, darkModeBox, s0, nightscoutUrlBox, nightscoutTokenBox, s1, unitBox, s2, deltaChartBox, s3,
+        VBox settingsVBox = new VBox(5, darkModeBox, s0, nightscoutUrlBox, apiSecretBox, nightscoutTokenBox, s1, unitBox, s2, deltaChartBox, s3,
                                      voiceOutputBox, voiceOutputIntervalLabel, voiceOutputIntervalSlider,
                                      notificationsLabel, tooLowBox, lowBox, acceptableLowBox, acceptableHighBox, highBox, tooHighBox, s4,
                                      tooLowIntervalLabel, tooLowIntervalSlider, tooHighIntervalLabel, tooHighIntervalSlider, s5,
