@@ -908,7 +908,7 @@ public class Main extends Application {
     private void updateEntries() {
         if (null == nightscoutUrl || nightscoutUrl.isEmpty()) { return; }
         GlucoEntry           entryFound = null;
-        final String         url        = new StringBuilder().append(nightscoutUrl).append(Constants.URL_API).append(Constants.URL_PARAM_COUNT_1).append(token.isEmpty() ? "" : ("?token=" + token)).toString();
+        final String         url        = new StringBuilder().append(nightscoutUrl).append(Constants.URL_API).append(Constants.URL_PARAM_COUNT_1).append(token.isEmpty() ? "" : ("&token=" + token)).toString();
         HttpResponse<String> response   = Helper.get(url, apiSecret);
         if (null != response && null != response.body() && !response.body().isEmpty()) {
             List<GlucoEntry> entry = Helper.getGlucoEntries(response.body());
