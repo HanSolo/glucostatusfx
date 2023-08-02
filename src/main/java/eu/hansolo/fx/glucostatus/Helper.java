@@ -149,11 +149,13 @@ public class Helper {
 
     public static final Color getColorForValue2(final UnitDefinition unit, final double value) { return Status.getByValue(unit, value).getColor2(); }
 
-    public static final CompletableFuture<List<GlucoEntry>> getEntriesFromInterval(final Interval interval, final String nightscoutUrl) {
-        final long   now  = Instant.now().getEpochSecond();
-        final long   from = (now - interval.getSeconds()) * 1000;
-        final long   to   = now * 1000;
-        final String url  = nightscoutUrl + "?find[date][$gte]=" + from + "&find[date][$lte]=" + to + "&count=" + interval.getNoOfEntries();
+    public static final CompletableFuture<List<GlucoEntry>> getEntriesFromInterval(final Interval interval, final String nightscoutUrl, final String token) {
+        final long          now        = Instant.now().getEpochSecond();
+        final long          from       = (now - interval.getSeconds()) * 1000;
+        final long          to         = now * 1000;
+        final StringBuilder urlBuilder = new StringBuilder().append(nightscoutUrl).append("?find[date][$gte]=").append(from).append("&find[date][$lte]=").append(to).append("&count=").append(interval.getNoOfEntries());
+        if (null != token && !token.isEmpty()) { urlBuilder.append("&token=").append(token); }
+        final String url = urlBuilder.toString();
         CompletableFuture<List<GlucoEntry>> cf = getAsync(url).thenApply(r -> {
             if (null == r || null == r.body() || r.body().isEmpty()) {
                 return new ArrayList<>();
@@ -373,7 +375,6 @@ public class Helper {
                                          .setHeader("API_SECRET", apiSecret)
                                          .timeout(Duration.ofSeconds(60))
                                          .build();
-
         try {
             HttpResponse<String> response = httpClient.send(request, BodyHandlers.ofString());
             if (response.statusCode() == 200) {

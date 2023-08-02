@@ -701,7 +701,7 @@ public class Main extends Application {
             ZonedDateTime now = ZonedDateTime.now();
             if (now.toEpochSecond() - lastUpdate.toEpochSecond() > 300) {
                 allEntries.clear();
-                Helper.getEntriesFromInterval(INTERVAL, nightscoutUrl + Constants.URL_API).thenAccept(l -> allEntries.addAll(l));
+                Helper.getEntriesFromInterval(INTERVAL, nightscoutUrl + Constants.URL_API, token).thenAccept(l -> allEntries.addAll(l));
             }
         });
         stage.setWidth(820);
@@ -714,7 +714,7 @@ public class Main extends Application {
 
     private void postStart() {
         if (null != nightscoutUrl && !nightscoutUrl.isEmpty()) {
-            Helper.getEntriesFromInterval(INTERVAL, nightscoutUrl + Constants.URL_API).thenAccept(l -> {
+            Helper.getEntriesFromInterval(INTERVAL, nightscoutUrl + Constants.URL_API, token).thenAccept(l -> {
                 allEntries.addAll(l);
                 Platform.runLater(() -> {
                     matrixButton.setOpacity(1.0);
@@ -927,7 +927,7 @@ public class Main extends Application {
             patternChartButton.setOpacity(0.5);
             stackedButton.setOpacity(0.5);
             allEntries.clear();
-            Helper.getEntriesFromInterval(INTERVAL, nightscoutUrl + Constants.URL_API).thenAccept(l -> {
+            Helper.getEntriesFromInterval(INTERVAL, nightscoutUrl + Constants.URL_API, token).thenAccept(l -> {
                 allEntries.addAll(l);
                 Platform.runLater(() -> {
                     matrixButton.setOpacity(1.0);
@@ -1188,7 +1188,7 @@ public class Main extends Application {
             updateEntries();
             if (null != service) { service.cancel(); }
 
-            Helper.getEntriesFromInterval(INTERVAL, nightscoutUrl + Constants.URL_API).thenAccept(l -> allEntries.addAll(l));
+            Helper.getEntriesFromInterval(INTERVAL, nightscoutUrl + Constants.URL_API, token).thenAccept(l -> allEntries.addAll(l));
 
             service = new ScheduledService<>() {
                 @Override protected Task<Void> createTask() {
@@ -1397,7 +1397,7 @@ public class Main extends Application {
         List<eu.hansolo.toolboxfx.geom.Rectangle> nights        = new ArrayList<>();
 
         // Draw x-axis label and vertical lines only if interval is smaller than 14 days
-        if (currentInterval.getHours() < 169) {
+        if (currentInterval.getHours() < Interval.LAST_720_HOURS.getHours()) {
 
             // Chart starts at night
             if (Constants.NIGHT_HOURS.contains(startHour)) {
@@ -1441,35 +1441,39 @@ public class Main extends Application {
             }
 
             // Draw nights
-            ctx.save();
-            ctx.setFill(darkMode ? Color.rgb(255, 255, 255, 0.1) : Color.rgb(0, 0, 0, 0.1));
-            nights.forEach(night -> ctx.fillRect(night.getX(), night.getY(), night.width, night.getHeight()));
-            ctx.restore();
+            if (currentInterval.getHours() < Interval.LAST_720_HOURS.getHours()) {
+                ctx.save();
+                ctx.setFill(darkMode ? Color.rgb(255, 255, 255, 0.1) : Color.rgb(0, 0, 0, 0.1));
+                nights.forEach(night -> ctx.fillRect(night.getX(), night.getY(), night.width, night.getHeight()));
+                ctx.restore();
+            }
 
             // Draw vertical lines
-            ctx.setFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
-            ctx.setTextAlign(TextAlignment.CENTER);
-            long interval;
-            switch (currentInterval) {
-                case LAST_168_HOURS, LAST_720_HOURS, LAST_72_HOURS -> interval = Interval.LAST_6_HOURS.getHours();
-                case LAST_48_HOURS -> interval = Interval.LAST_3_HOURS.getHours();
-                default -> interval = 1;
-            }
-            hourCounter = 0;
-            for (long i = startX; i <= deltaTime; i++) {
-                int    h = ZonedDateTime.ofInstant(Instant.ofEpochSecond(i + minEntry.datelong()), ZoneId.systemDefault()).getHour();
-                double x = GRAPH_INSETS.getLeft() + i * stepX;
-                if (h != lastHour && lastHour != -1 && i != startX) {
-                    if (hourCounter % interval == 0) {
-                        ctx.strokeLine(x, GRAPH_INSETS.getTop(), x, height - GRAPH_INSETS.getBottom());
-                        switch (currentInterval) {
-                            case LAST_3_HOURS, LAST_6_HOURS -> ctx.fillText(h + ":00", x, height - GRAPH_INSETS.getBottom() * 0.5);
-                            default -> ctx.fillText(Integer.toString(h), x, height - GRAPH_INSETS.getBottom() * 0.25);
-                        }
-                    }
-                    hourCounter++;
+            if (currentInterval.getHours() < Interval.LAST_336_HOURS.getHours()) {
+                ctx.setFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
+                ctx.setTextAlign(TextAlignment.CENTER);
+                long interval;
+                switch (currentInterval) {
+                    case LAST_168_HOURS, LAST_720_HOURS, LAST_72_HOURS -> interval = Interval.LAST_6_HOURS.getHours();
+                    case LAST_48_HOURS -> interval = Interval.LAST_3_HOURS.getHours();
+                    default -> interval = 1;
                 }
-                lastHour = h;
+                hourCounter = 0;
+                for (long i = startX; i <= deltaTime; i++) {
+                    int    h = ZonedDateTime.ofInstant(Instant.ofEpochSecond(i + minEntry.datelong()), ZoneId.systemDefault()).getHour();
+                    double x = GRAPH_INSETS.getLeft() + i * stepX;
+                    if (h != lastHour && lastHour != -1 && i != startX) {
+                        if (hourCounter % interval == 0) {
+                            ctx.strokeLine(x, GRAPH_INSETS.getTop(), x, height - GRAPH_INSETS.getBottom());
+                            switch (currentInterval) {
+                                case LAST_3_HOURS, LAST_6_HOURS -> ctx.fillText(h + ":00", x, height - GRAPH_INSETS.getBottom() * 0.5);
+                                default -> ctx.fillText(Integer.toString(h), x, height - GRAPH_INSETS.getBottom() * 0.5);
+                            }
+                        }
+                        hourCounter++;
+                    }
+                    lastHour = h;
+                }
             }
         }
 
