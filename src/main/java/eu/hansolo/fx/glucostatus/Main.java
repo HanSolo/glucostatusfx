@@ -1560,7 +1560,7 @@ public class Main extends Application {
         }
         ctx.setLineDashes(2,6);
         ctx.setLineWidth(darkMode ? 2.0 : 2.5);
-        ctx.setStroke(Helper.getColorForValue(currentUnit, avg));
+        ctx.setStroke(darkMode ? Color.WHITE : Color.BLACK);
         ctx.strokeLine(GRAPH_INSETS.getLeft() * 3, average, width - GRAPH_INSETS.getRight(), average);
     }
 
