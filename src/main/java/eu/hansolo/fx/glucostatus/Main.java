@@ -1342,7 +1342,7 @@ public class Main extends Application {
         double  availableHeight = (height - GRAPH_INSETS.getTop() - GRAPH_INSETS.getBottom());
 
         ctx.clearRect(0, 0, width, height);
-        ctx.setFill(darkMode ? Color.rgb(30, 28, 26) : Color.rgb(234, 233, 233));
+        ctx.setFill(darkMode ?Constants.DARK_BACKGROUND : Color.rgb(255, 255, 255));
         ctx.fillRect(0, 0, width, height);
         ctx.setFont(ticklabelFont);
         ctx.setFill(Constants.BRIGHT_TEXT);
@@ -1387,7 +1387,6 @@ public class Main extends Application {
         double        oneHourStep   = Constants.SECONDS_PER_HOUR * stepX;
         long          hourCounter   = 0;
 
-
         // Collect nights
         ZonedDateTime                             startTime     = ZonedDateTime.ofInstant(Instant.ofEpochSecond(startX + minEntry.datelong()), ZoneId.systemDefault());
         ZonedDateTime                             endTime       = ZonedDateTime.ofInstant(Instant.ofEpochSecond(startX + minEntry.datelong() + currentInterval.getSeconds()), ZoneId.systemDefault());
@@ -1428,7 +1427,12 @@ public class Main extends Application {
 
                     if (Constants.NIGHT_END == h && nightStart) {
                         nightStart = false;
-                        if (currentInterval != Interval.LAST_12_HOURS) {
+
+                        if (Interval.LAST_12_HOURS == currentInterval) {
+                            if (nights.isEmpty()) {
+                                nights.add(new eu.hansolo.toolboxfx.geom.Rectangle(nightX, GRAPH_INSETS.getTop(), 10 * oneHourStep, availableHeight));
+                            }
+                        } else {
                             nights.add(new eu.hansolo.toolboxfx.geom.Rectangle(nightX, GRAPH_INSETS.getTop(), 10 * oneHourStep, availableHeight));
                         }
                     }
@@ -1454,7 +1458,7 @@ public class Main extends Application {
                 ctx.setTextAlign(TextAlignment.CENTER);
                 long interval;
                 switch (currentInterval) {
-                    case LAST_168_HOURS, LAST_720_HOURS, LAST_72_HOURS -> interval = Interval.LAST_6_HOURS.getHours();
+                    case LAST_720_HOURS, LAST_168_HOURS, LAST_72_HOURS -> interval = Interval.LAST_6_HOURS.getHours();
                     case LAST_48_HOURS -> interval = Interval.LAST_3_HOURS.getHours();
                     default -> interval = 1;
                 }
@@ -1484,9 +1488,10 @@ public class Main extends Application {
             double y = height - GRAPH_INSETS.getBottom() - i * yLabelStep - yLabelStep;
             ctx.strokeLine(GRAPH_INSETS.getLeft(), y, width - GRAPH_INSETS.getRight(), y);
             ctx.fillText(yAxisLabels.get(i), GRAPH_INSETS.getLeft() * 2.5, y + 4);
+            ctx.fillText(yAxisLabels.get(i), width - GRAPH_INSETS.getRight(), y + 4);
         }
 
-        ctx.setLineWidth(0.5);
+        ctx.setLineWidth(darkMode ? 1.0 : 1.5);
         ctx.setLineDashes();
 
         // Draw acceptable limits
@@ -1500,23 +1505,11 @@ public class Main extends Application {
         double minNormal    = (height - GRAPH_INSETS.getBottom()) - PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MIN_NORMAL) * stepY;
         double maxNormal    = (height - GRAPH_INSETS.getBottom()) - PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MAX_NORMAL) * stepY;
         double heightNormal = (PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MAX_NORMAL) - PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MIN_NORMAL)) * stepY;
-        ctx.setFill(HelperFX.getColorWithOpacity(Constants.GREEN, 0.1));
+        ctx.setFill(HelperFX.getColorWithOpacity(Constants.GREEN, 0.2));
         ctx.setStroke(Constants.GREEN);
-        ctx.setLineWidth(1);
         ctx.fillRect(3 * GRAPH_INSETS.getLeft(), maxNormal, availableWidth - 2 * GRAPH_INSETS.getRight(), heightNormal);
         ctx.strokeLine( 3 * GRAPH_INSETS.getLeft(), minNormal, width - GRAPH_INSETS.getRight(), minNormal);
         ctx.strokeLine(3 * GRAPH_INSETS.getLeft(), maxNormal, width - GRAPH_INSETS.getRight(), maxNormal);
-
-        // Draw average
-        double average;
-        if (UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit) {
-            average = (height - GRAPH_INSETS.getBottom()) - avg * stepY;
-        } else {
-            average = (height - GRAPH_INSETS.getBottom()) - (Helper.mmolPerLiterToMgPerDeciliter(avg)) * stepY;
-        }
-        ctx.setLineDashes(2,6);
-        ctx.setStroke(Helper.getColorForValue(currentUnit, avg));
-        ctx.strokeLine(GRAPH_INSETS.getLeft() * 3, average, width - GRAPH_INSETS.getRight(), average);
 
         // Draw delta chart
         ctx.setLineDashes();
@@ -1548,9 +1541,14 @@ public class Main extends Application {
                                          new Stop(Constants.DEFAULT_MIN_CRITICAL_FACTOR, Constants.RED),
                                          new Stop(1.0, Constants.RED)));
 
-        ctx.setLineWidth(1.5);
+        switch(currentInterval) {
+            case LAST_3_HOURS, LAST_6_HOURS, LAST_12_HOURS   -> ctx.setLineWidth(2.0);
+            case LAST_24_HOURS, LAST_48_HOURS, LAST_72_HOURS -> ctx.setLineWidth(1.5);
+            case LAST_168_HOURS, LAST_336_HOURS              -> ctx.setLineWidth(1.0);
+            case LAST_720_HOURS, LAST_2160_HOURS             -> ctx.setLineWidth(0.75);
+            default                                          -> ctx.setLineWidth(1.0);
+        }
         ctx.beginPath();
-        //ctx.moveTo(GRAPH_INSETS.getLeft() + startX + (entries.get(0).datelong() - minEntry.datelong()) * stepX, height - GRAPH_INSETS.getBottom() - entries.get(0).sgv() * stepY);
         ctx.moveTo(GRAPH_INSETS.getLeft() + startX, height - GRAPH_INSETS.getBottom() - entries.get(0).sgv() * stepY);
         for (int i = 0 ; i < entries.size() ; i++) {
             GlucoEntry entry = entries.get(i);
@@ -1558,6 +1556,18 @@ public class Main extends Application {
         }
         ctx.lineTo(width - GRAPH_INSETS.getRight(), (height - GRAPH_INSETS.getBottom()) - entries.get(entries.size() - 1).sgv() * stepY);
         ctx.stroke();
+
+        // Draw average
+        double average;
+        if (UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit) {
+            average = (height - GRAPH_INSETS.getBottom()) - avg * stepY;
+        } else {
+            average = (height - GRAPH_INSETS.getBottom()) - (Helper.mmolPerLiterToMgPerDeciliter(avg)) * stepY;
+        }
+        ctx.setLineDashes(2,6);
+        ctx.setLineWidth(darkMode ? 2.0 : 2.5);
+        ctx.setStroke(Helper.getColorForValue(currentUnit, avg));
+        ctx.strokeLine(GRAPH_INSETS.getLeft() * 3, average, width - GRAPH_INSETS.getRight(), average);
     }
 
     private void speak(final String voice, final String msg) {
