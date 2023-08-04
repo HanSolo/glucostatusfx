@@ -1540,14 +1540,8 @@ public class Main extends Application {
                                          new Stop(minAcceptableFactor, Constants.ORANGE),
                                          new Stop(Constants.DEFAULT_MIN_CRITICAL_FACTOR, Constants.RED),
                                          new Stop(1.0, Constants.RED)));
-
-        switch(currentInterval) {
-            case LAST_3_HOURS, LAST_6_HOURS, LAST_12_HOURS   -> ctx.setLineWidth(2.0);
-            case LAST_24_HOURS, LAST_48_HOURS, LAST_72_HOURS -> ctx.setLineWidth(1.5);
-            case LAST_168_HOURS, LAST_336_HOURS              -> ctx.setLineWidth(1.0);
-            case LAST_720_HOURS, LAST_2160_HOURS             -> ctx.setLineWidth(0.75);
-            default                                          -> ctx.setLineWidth(1.0);
-        }
+        
+        ctx.setLineWidth(currentInterval.getLineWidth());
         ctx.beginPath();
         ctx.moveTo(GRAPH_INSETS.getLeft() + startX, height - GRAPH_INSETS.getBottom() - entries.get(0).sgv() * stepY);
         for (int i = 0 ; i < entries.size() ; i++) {
