@@ -1540,7 +1540,7 @@ public class Main extends Application {
                                          new Stop(minAcceptableFactor, Constants.ORANGE),
                                          new Stop(Constants.DEFAULT_MIN_CRITICAL_FACTOR, Constants.RED),
                                          new Stop(1.0, Constants.RED)));
-        
+
         ctx.setLineWidth(currentInterval.getLineWidth());
         ctx.beginPath();
         ctx.moveTo(GRAPH_INSETS.getLeft() + startX, height - GRAPH_INSETS.getBottom() - entries.get(0).sgv() * stepY);
