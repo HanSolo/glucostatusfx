@@ -138,7 +138,7 @@ public class PoincarePlot extends Region {
         boolean darkMode = PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_DARK_MODE, true);
 
         ctx.clearRect(0, 0, width, height);
-        ctx.setFill(darkMode ? Constants.DARK_BACKGROUND : Constants.BRIGHT_BACKGROUND);
+        ctx.setFill(darkMode ? Constants.DARK_BACKGROUND : Color.rgb(255, 255, 255));
         ctx.fillRect(0, 0, width, height);
 
         ctx.setFont(ticklabelFont);
