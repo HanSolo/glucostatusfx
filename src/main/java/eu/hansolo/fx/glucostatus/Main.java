@@ -25,6 +25,7 @@ import com.gluonhq.attach.util.Services;
 import com.gluonhq.charm.glisten.control.Alert;
 import eu.hansolo.applefx.MacosButton;
 import eu.hansolo.applefx.MacosLabel;
+import eu.hansolo.applefx.MacosPasswordField;
 import eu.hansolo.applefx.MacosScrollPane;
 import eu.hansolo.applefx.MacosSeparator;
 import eu.hansolo.applefx.MacosSlider;
@@ -119,13 +120,16 @@ import static eu.hansolo.toolbox.unit.UnitDefinition.MILLIMOL_PER_LITER;
 public class Main extends Application {
     private static final Dimension                  IPHONE_SCREEN  = new Dimension(390, 800);//844);
     private static final Insets                     GRAPH_INSETS   = new Insets(5, 10, 5, 10);
+    private static final Interval                   INTERVAL       = Interval.LAST_720_HOURS;
     private static       boolean                    switchingUnits = false;
     private        final Image                      icon           = new Image(Main.class.getResourceAsStream("icon48x48.png"));
     private              ZonedDateTime              lastUpdate     = ZonedDateTime.now().minusMinutes(6);
     private              ZonedDateTime              lastFullUpdate = ZonedDateTime.now().minusMinutes(6);
     private              boolean                    darkMode       = true;
     private              Color                      accentColor    = MacosAccentColor.BLUE.getColorDark();
-    private              String                     nightscoutUrl;
+    private              String                     nightscoutUrl  = "";
+    private              String                     apiSecret      = "";
+    private              String                     token          = "";
     private              ZonedDateTime              lastNotification;
     private              Message.Notifier           notifier;
     private              Region                     glassOverlay;
@@ -153,6 +157,8 @@ public class Main extends Application {
     private              StackPane                  pane;
     private              StackPane                  prefPane;
     private              MacosTextField             nightscoutUrlTextField;
+    private              MacosPasswordField         apiSecretPasswordField;
+    private              MacosPasswordField         nightscoutTokenPasswordField;
     private              MacosSwitch                unitSwitch;
     private              MacosSwitch                deltaChartSwitch;
     private              MacosSwitch                enableLowSoundSwitch;
@@ -250,6 +256,8 @@ public class Main extends Application {
     // ******************** Initialization ************************************
     @Override public void init() {
         nightscoutUrl     = PropertyManager.INSTANCE.getString(Constants.PROPERTIES_NIGHTSCOUT_URL);
+        apiSecret         = PropertyManager.INSTANCE.getString(Constants.PROPERTIES_API_SECRET, "");
+        token             = PropertyManager.INSTANCE.getString(Constants.PROPERTIES_NIGHTSCOUT_TOKEN, "");
         currentUnit       = MILLIGRAM_PER_DECILITER;
         outdated          = false;
         currentInterval   = Interval.LAST_24_HOURS;
@@ -267,6 +275,7 @@ public class Main extends Application {
         ticklabelFont      = Fonts.configRoundedRegular(10);
         smallTicklabelFont = Fonts.configRoundedRegular(8);
 
+        // ToggleButton bar on top of the app
         eventConsumer = evt -> {
             ToggleButton src = (ToggleButton) evt.getSource();
             if (src.isSelected()) { evt.consume(); }
@@ -489,7 +498,7 @@ public class Main extends Application {
             ZonedDateTime now = ZonedDateTime.now();
             if (now.toEpochSecond() - lastUpdate.toEpochSecond() > 300) {
                 allEntries.clear();
-                Helper.getEntriesFromLast30Days(nightscoutUrl + Constants.URL_API).thenAccept(l -> allEntries.addAll(l));
+                Helper.getEntriesFromInterval(INTERVAL, nightscoutUrl + Constants.URL_API, apiSecret, token).thenAccept(l -> allEntries.addAll(l));
             }
         });
 
@@ -498,7 +507,7 @@ public class Main extends Application {
 
     private void postStart() {
         if (null != nightscoutUrl && !nightscoutUrl.isEmpty()) {
-            Helper.getEntriesFromLast30Days(nightscoutUrl + Constants.URL_API).thenAccept(l -> {
+            Helper.getEntriesFromInterval(INTERVAL, nightscoutUrl + Constants.URL_API, apiSecret, token).thenAccept(l -> {
                 allEntries.addAll(l);
                 Platform.runLater(() -> {
                     matrixButton.setOpacity(1.0);
@@ -657,7 +666,8 @@ public class Main extends Application {
     private void updateEntries() {
         if (null == nightscoutUrl || nightscoutUrl.isEmpty()) { return; }
         GlucoEntry           entryFound = null;
-        HttpResponse<String> response   = Helper.get(nightscoutUrl + Constants.URL_API + Constants.URL_PARAM_COUNT_1);
+        final String         url        = new StringBuilder().append(nightscoutUrl).append(Constants.URL_API).append(Constants.URL_PARAM_COUNT_1).append(token.isEmpty() ? "" : ("&token=" + token)).toString();
+        HttpResponse<String> response   = Helper.get(url, apiSecret);
         if (null != response && null != response.body() && !response.body().isEmpty()) {
             List<GlucoEntry> entry = Helper.getGlucoEntries(response.body());
             entryFound = entry.isEmpty() ? null : entry.get(0);
@@ -675,7 +685,7 @@ public class Main extends Application {
             patternChartButton.setOpacity(0.5);
             stackedButton.setOpacity(0.5);
             allEntries.clear();
-            Helper.getEntriesFromLast30Days(nightscoutUrl + Constants.URL_API).thenAccept(l -> {
+            Helper.getEntriesFromInterval(INTERVAL, nightscoutUrl + Constants.URL_API, apiSecret, token).thenAccept(l -> {
                 allEntries.addAll(l);
                 Platform.runLater(() -> {
                     matrixButton.setOpacity(1.0);
@@ -828,6 +838,8 @@ public class Main extends Application {
 
     private void applySettingsToPreferences() {
         nightscoutUrlTextField.setText(PropertyManager.INSTANCE.getString(Constants.PROPERTIES_NIGHTSCOUT_URL));
+        apiSecretPasswordField.setText(PropertyManager.INSTANCE.getString(Constants.PROPERTIES_API_SECRET, ""));
+        nightscoutTokenPasswordField.setText(PropertyManager.INSTANCE.getString(Constants.PROPERTIES_NIGHTSCOUT_TOKEN, ""));
         unitSwitch.setSelected(PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_UNIT_MG));
         deltaChartSwitch.setSelected(PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_SHOW_DELTA_CHART));
         enableLowSoundSwitch.setSelected(PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_SHOW_LOW_VALUE_NOTIFICATION));
@@ -844,6 +856,8 @@ public class Main extends Application {
 
     private void savePreferencesToSettings() {
         PropertyManager.INSTANCE.setString(Constants.PROPERTIES_NIGHTSCOUT_URL, nightscoutUrlTextField.getText());
+        PropertyManager.INSTANCE.setString(Constants.PROPERTIES_API_SECRET, apiSecretPasswordField.getText());
+        PropertyManager.INSTANCE.setString(Constants.PROPERTIES_NIGHTSCOUT_TOKEN, nightscoutTokenPasswordField.getText());
         PropertyManager.INSTANCE.setBoolean(Constants.PROPERTIES_UNIT_MG, unitSwitch.isSelected());
         PropertyManager.INSTANCE.setBoolean(Constants.PROPERTIES_SHOW_DELTA_CHART, deltaChartSwitch.isSelected());
         PropertyManager.INSTANCE.setBoolean(Constants.PROPERTIES_SHOW_LOW_VALUE_NOTIFICATION, enableLowSoundSwitch.isSelected());
@@ -864,7 +878,7 @@ public class Main extends Application {
             updateEntries();
             if (null != service) { service.cancel(); }
 
-            Helper.getEntriesFromLast30Days(nightscoutUrl + Constants.URL_API).thenAccept(l -> allEntries.addAll(l));
+            Helper.getEntriesFromInterval(INTERVAL, nightscoutUrl + Constants.URL_API, apiSecret, token).thenAccept(l -> allEntries.addAll(l));
 
             service = new ScheduledService<>() {
                 @Override protected Task<Void> createTask() {
@@ -881,6 +895,9 @@ public class Main extends Application {
             service.setRestartOnFailure(true);
             service.start();
         }
+
+        apiSecret = apiSecretPasswordField.getText();
+        token     = nightscoutTokenPasswordField.getText();
 
         updateSettings();
         updateUI();
@@ -911,6 +928,10 @@ public class Main extends Application {
         currentEntry = entries.get(0);
         currentColor = null == currentEntry ? Constants.GRAY : Helper.getColorForValue(currentUnit, UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? currentEntry.sgv() : Helper.mgPerDeciliterToMmolPerLiter(currentEntry.sgv()));
 
+        Trend currentTrend     = currentEntry.trend();
+        Trend currentDirection = Trend.getFromText(currentEntry.direction());
+        Trend trend            = (Trend.NONE != currentDirection && currentTrend != currentDirection) ? currentDirection : currentTrend;
+
         deltas.clear();
         if (allEntries.size() > 13) {
             for (int i = 12; i > 0; i--) {
@@ -940,7 +961,7 @@ public class Main extends Application {
 
         String format           = MILLIGRAM_PER_DECILITER == currentUnit ? "%.0f" : "%.1f";
         double currentValue     = UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? currentEntry.sgv() : Helper.mgPerDeciliterToMmolPerLiter(currentEntry.sgv());
-        String currentValueText = new StringBuilder().append(String.format(Locale.US, format, currentValue)).append(" ").append(currentEntry.trend().getSymbol()).toString();
+        String currentValueText = new StringBuilder().append(String.format(Locale.US, format, currentValue)).append(" ").append(trend.getSymbol()).toString();
 
         Instant lastTimestamp = Instant.ofEpochSecond(currentEntry.datelong());
         outdated = (OffsetDateTime.now().toEpochSecond() - lastTimestamp.getEpochSecond() > Constants.TIMEOUT_IN_SECONDS);
@@ -999,7 +1020,7 @@ public class Main extends Application {
         boolean darkMode        = true;
 
         ctx.clearRect(0, 0, width, height);
-        ctx.setFill(darkMode ? Constants.DARK_BACKGROUND : Constants.BRIGHT_BACKGROUND);
+        ctx.setFill(darkMode ? Constants.DARK_BACKGROUND : Color.rgb(255, 255, 255));
         ctx.fillRect(0, 0, width, height);
         ctx.setFont(ticklabelFont);
         ctx.setFill(Constants.BRIGHT_TEXT);
@@ -1046,7 +1067,6 @@ public class Main extends Application {
         double        oneHourStep      = Constants.SECONDS_PER_HOUR * stepX;
         long          hourCounter      = 0;
 
-        
         // Collect nights
         ZonedDateTime startTime     = ZonedDateTime.ofInstant(Instant.ofEpochSecond(startX + minEntry.datelong()), ZoneId.systemDefault());
         ZonedDateTime endTime       = ZonedDateTime.ofInstant(Instant.ofEpochSecond(startX + minEntry.datelong() + currentInterval.getSeconds()), ZoneId.systemDefault());
@@ -1081,12 +1101,20 @@ public class Main extends Application {
                     nightStart = true;
                     nightX = x;
                     }
-                if (Constants.NIGHT_END == h && nightStart) {
-                    nightStart = false;
-                    nights.add(new eu.hansolo.toolboxfx.geom.Rectangle(nightX, GRAPH_INSETS.getTop(), 10 * oneHourStep, availableHeight));
+
+                    if (Constants.NIGHT_END == h && nightStart) {
+                        nightStart = false;
+
+                        if (Interval.LAST_12_HOURS == currentInterval) {
+                            if (nights.isEmpty()) {
+                                nights.add(new eu.hansolo.toolboxfx.geom.Rectangle(nightX, GRAPH_INSETS.getTop(), 10 * oneHourStep, availableHeight));
+                            }
+                        } else {
+                            nights.add(new eu.hansolo.toolboxfx.geom.Rectangle(nightX, GRAPH_INSETS.getTop(), 10 * oneHourStep, availableHeight));
+                        }
                     }
                 }
-            lastHour = h;
+                lastHour = h;
             }
 
         if (nightStart) {
@@ -1135,6 +1163,7 @@ public class Main extends Application {
             double y = height - GRAPH_INSETS.getBottom() - i * yLabelStep - yLabelStep;
             ctx.strokeLine(GRAPH_INSETS.getLeft(), y, width - GRAPH_INSETS.getRight(), y);
             ctx.fillText(yAxisLabels.get(i), GRAPH_INSETS.getLeft() * 2.5, y + 4);
+            ctx.fillText(yAxisLabels.get(i), width - GRAPH_INSETS.getRight(), y + 4);
         }
 
         ctx.setLineWidth(0.5);
@@ -1151,23 +1180,11 @@ public class Main extends Application {
         double minNormal    = (height - GRAPH_INSETS.getBottom()) - PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MIN_NORMAL) * stepY;
         double maxNormal    = (height - GRAPH_INSETS.getBottom()) - PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MAX_NORMAL) * stepY;
         double heightNormal = (PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MAX_NORMAL) - PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MIN_NORMAL)) * stepY;
-        ctx.setFill(HelperFX.getColorWithOpacity(Constants.GREEN, 0.1));
+        ctx.setFill(HelperFX.getColorWithOpacity(Constants.GREEN, 0.2));
         ctx.setStroke(Constants.GREEN);
-        ctx.setLineWidth(1);
         ctx.fillRect(3 * GRAPH_INSETS.getLeft(), maxNormal, availableWidth - 2 * GRAPH_INSETS.getRight(), heightNormal);
         ctx.strokeLine( 3 * GRAPH_INSETS.getLeft(), minNormal, width - GRAPH_INSETS.getRight(), minNormal);
         ctx.strokeLine(3 * GRAPH_INSETS.getLeft(), maxNormal, width - GRAPH_INSETS.getRight(), maxNormal);
-
-        // Draw average
-        double average;
-        if (UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit) {
-            average = (height - GRAPH_INSETS.getBottom()) - avg * stepY;
-        } else {
-            average = (height - GRAPH_INSETS.getBottom()) - (Helper.mmolPerLiterToMgPerDeciliter(avg)) * stepY;
-        }
-        ctx.setLineDashes(2,6);
-        ctx.setStroke(Helper.getColorForValue(currentUnit, avg));
-        ctx.strokeLine(GRAPH_INSETS.getLeft() * 3, average, width - GRAPH_INSETS.getRight(), average);
 
         // Draw delta chart
         ctx.setLineDashes();
@@ -1199,7 +1216,7 @@ public class Main extends Application {
                                          new Stop(Constants.DEFAULT_MIN_CRITICAL_FACTOR, Constants.RED),
                                          new Stop(1.0, Constants.RED)));
 
-        ctx.setLineWidth(2);
+        ctx.setLineWidth(currentInterval.getLineWidth());
         ctx.beginPath();
         ctx.moveTo(GRAPH_INSETS.getLeft() + startX, height - GRAPH_INSETS.getBottom() - entries.get(0).sgv() * stepY);
         for (int i = 0 ; i < entries.size() ; i++) {
@@ -1208,6 +1225,18 @@ public class Main extends Application {
         }
         ctx.lineTo(width - GRAPH_INSETS.getRight(), (height - GRAPH_INSETS.getBottom()) - entries.get(entries.size() - 1).sgv() * stepY);
         ctx.stroke();
+
+        // Draw average
+        double average;
+        if (UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit) {
+            average = (height - GRAPH_INSETS.getBottom()) - avg * stepY;
+        } else {
+            average = (height - GRAPH_INSETS.getBottom()) - (Helper.mmolPerLiterToMgPerDeciliter(avg)) * stepY;
+        }
+        ctx.setLineDashes(2,6);
+        ctx.setLineWidth(darkMode ? 2.0 : 2.5);
+        ctx.setStroke(darkMode ? Color.WHITE : Color.BLACK);
+        ctx.strokeLine(GRAPH_INSETS.getLeft() * 3, average, width - GRAPH_INSETS.getRight(), average);
     }
 
 
@@ -1218,6 +1247,7 @@ public class Main extends Application {
         t.setFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
         return t;
     }
+
     private MacosLabel createLabel(final String text, final double size, final boolean bold, final boolean rounded, final Pos alignment) {
         MacosLabel label = new MacosLabel(text);
         label.setDark(darkMode);
@@ -1287,6 +1317,7 @@ public class Main extends Application {
         MacosLabel nightscoutUrlLabel = new MacosLabel("URL");
         nightscoutUrlLabel.setDark(darkMode);
         nightscoutUrlLabel.setFont(Fonts.configRoundedRegular(14));
+        nightscoutUrlLabel.setMinWidth(120);
         nightscoutUrlTextField = new MacosTextField();
         nightscoutUrlTextField.setDark(darkMode);
         nightscoutUrlTextField.setFont(Fonts.configRoundedRegular(14));
@@ -1297,11 +1328,35 @@ public class Main extends Application {
         HBox nightscoutUrlBox = new HBox(10, nightscoutUrlLabel, nightscoutUrlTextField);
         nightscoutUrlBox.setAlignment(Pos.CENTER);
 
+        MacosLabel apiSecretLabel = new MacosLabel("API secret");
+        apiSecretLabel.setDark(darkMode);
+        apiSecretLabel.setFont(Fonts.configRoundedRegular(14));
+        apiSecretLabel.setMinWidth(120);
+        apiSecretPasswordField = new MacosPasswordField();
+        apiSecretPasswordField.setDark(darkMode);
+        apiSecretPasswordField.setFont(Fonts.configRoundedRegular(14));
+        apiSecretPasswordField.setPrefWidth(TextField.USE_COMPUTED_SIZE);
+        apiSecretPasswordField.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(apiSecretPasswordField, Priority.ALWAYS);
+        HBox apiSecretBox = new HBox(10, apiSecretLabel, apiSecretPasswordField);
+        apiSecretBox.setAlignment(Pos.CENTER);
+
+        MacosLabel nightscoutTokenLabel = new MacosLabel("Token");
+        nightscoutTokenLabel.setDark(darkMode);
+        nightscoutTokenLabel.setFont(Fonts.configRoundedRegular(14));
+        nightscoutTokenLabel.setMinWidth(120);
+        nightscoutTokenPasswordField = new MacosPasswordField();
+        nightscoutTokenPasswordField.setDark(darkMode);
+        nightscoutTokenPasswordField.setFont(Fonts.configRoundedRegular(14));
+        nightscoutTokenPasswordField.setPrefWidth(TextField.USE_COMPUTED_SIZE);
+        nightscoutTokenPasswordField.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(nightscoutTokenPasswordField, Priority.ALWAYS);
+        HBox nightscoutTokenBox = new HBox(10, nightscoutTokenLabel, nightscoutTokenPasswordField);
+        nightscoutTokenBox.setAlignment(Pos.CENTER);
 
         MacosSeparator s1 = new MacosSeparator(Orientation.HORIZONTAL);
         s1.setDark(darkMode);
         VBox.setMargin(s1, new Insets(5, 0, 5, 0));
-
 
         unitSwitch = MacosSwitchBuilder.create().dark(darkMode).ios(true).selectedColor(accentColor).build();
         MacosLabel unitLabel = new MacosLabel("Unit " + currentUnit.UNIT.getUnitShort());
@@ -1366,11 +1421,9 @@ public class Main extends Application {
             switchingUnits = false;
         });
 
-
         MacosSeparator s2 = new MacosSeparator(Orientation.HORIZONTAL);
         s2.setDark(darkMode);
         VBox.setMargin(s2, new Insets(5, 0, 5, 0));
-
 
         deltaChartSwitch = MacosSwitchBuilder.create().dark(darkMode).ios(true).selectedColor(accentColor).build();
         MacosLabel deltaChartLabel = new MacosLabel("Show deltas");
@@ -1379,7 +1432,6 @@ public class Main extends Application {
         HBox.setHgrow(deltaChartLabel, Priority.ALWAYS);
         HBox deltaChartBox = new HBox(10, deltaChartSwitch, deltaChartLabel);
         deltaChartBox.setAlignment(Pos.CENTER_LEFT);
-
 
         MacosSeparator s3 = new MacosSeparator(Orientation.HORIZONTAL);
         s3.setDark(darkMode);
@@ -1429,6 +1481,7 @@ public class Main extends Application {
         VBox.setMargin(s4, new Insets(5, 0, 5, 0));
 
 
+        // Too low interval
         MacosLabel tooLowIntervalLabel = createLabel( "Too low interval: 5 min", 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.SOMETIMES);
 
         tooLowIntervalSlider = new MacosSlider();
@@ -1442,6 +1495,7 @@ public class Main extends Application {
         tooLowIntervalSlider.setBlockIncrement(1);
         tooLowIntervalSlider.valueProperty().addListener((o, ov, nv) -> tooLowIntervalLabel.setText("Too low interval: " + String.format(Locale.US, "%.0f", tooLowIntervalSlider.getValue()) + " min"));
 
+        // Too high interval
         MacosLabel tooHighIntervalLabel = createLabel("Too high interval: 5 min", 14, Constants.BRIGHT_TEXT, false, Pos.CENTER_LEFT, Priority.SOMETIMES);
 
         tooHighIntervalSlider = new MacosSlider();
@@ -1530,7 +1584,7 @@ public class Main extends Application {
         });
 
 
-        VBox settingsVBox = new VBox(10, nightscoutUrlBox, s1, unitBox, s2, deltaChartBox, s3,
+        VBox settingsVBox = new VBox(10, nightscoutUrlBox, apiSecretBox, nightscoutTokenBox, s1, unitBox, s2, deltaChartBox, s3,
                                      notificationsLabel, tooLowBox, lowBox, acceptableLowBox, acceptableHighBox, highBox, tooHighBox, s4,
                                      tooLowIntervalLabel, tooLowIntervalSlider, tooHighIntervalLabel, tooHighIntervalSlider, s5,
                                      rangesLabel, minAcceptableLabel, minAcceptableSlider, minNormalLabel, minNormalSlider, maxNormalLabel, maxNormalSlider, maxAcceptableLabel, maxAcceptableSlider);
@@ -1636,11 +1690,11 @@ public class Main extends Application {
         timeInRangePane.setVisible(true);
 
         double noOfValues = entries.size();
-        double pTooHigh = (entries.stream().filter(entry -> entry.sgv() > Constants.DEFAULT_MAX_CRITICAL).count() / noOfValues);
-        double pHigh    = (entries.stream().filter(entry -> entry.sgv() > PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MAX_NORMAL)).filter(entry -> entry.sgv() <= PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MAX_CRITICAL)).count() / noOfValues);
-        double pNormal  = (entries.stream().filter(entry -> entry.sgv() > PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MIN_NORMAL)).filter(entry -> entry.sgv() <= PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MAX_NORMAL)).count() / noOfValues);
-        double pLow     = (entries.stream().filter(entry -> entry.sgv() > Constants.DEFAULT_MIN_CRITICAL).filter(entry -> entry.sgv() <= PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MIN_NORMAL)).count() / noOfValues);
-        double pTooLow  = (entries.stream().filter(entry -> entry.sgv() < Constants.DEFAULT_MIN_CRITICAL).count() / noOfValues);
+        double pTooHigh   = (entries.stream().filter(entry -> entry.sgv() > Constants.DEFAULT_MAX_CRITICAL).count() / noOfValues);
+        double pHigh      = (entries.stream().filter(entry -> entry.sgv() > PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MAX_NORMAL)).filter(entry -> entry.sgv() <= PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MAX_CRITICAL)).count() / noOfValues);
+        double pNormal    = (entries.stream().filter(entry -> entry.sgv() > PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MIN_NORMAL)).filter(entry -> entry.sgv() <= PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MAX_NORMAL)).count() / noOfValues);
+        double pLow       = (entries.stream().filter(entry -> entry.sgv() > Constants.DEFAULT_MIN_CRITICAL).filter(entry -> entry.sgv() <= PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MIN_NORMAL)).count() / noOfValues);
+        double pTooLow    = (entries.stream().filter(entry -> entry.sgv() < Constants.DEFAULT_MIN_CRITICAL).count() / noOfValues);
 
         titleLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
         
@@ -1784,7 +1838,7 @@ public class Main extends Application {
         double chartStepX = availableWidth / 1440;
         ctx.setLineDashes();
         ctx.setStroke(darkMode ? Color.rgb(255, 255, 255, 0.5) : Color.rgb(0, 0, 0, 0.5));
-        ctx.setFill(darkMode ? Color.rgb(255, 255, 255, 0.15) : Color.rgb(0, 0, 0, 0.1));
+        ctx.setFill(darkMode ? Color.rgb(255, 255, 255, 0.1) : Color.rgb(0, 0, 0, 0.1));
         Pair<List<Point>, List<Point>> pair      = Helper.createValueRangePath(dataMap, StatisticRange.TEN_TO_NINETY, true);
         List<Point>                    maxPoints = pair.getA();
         List<Point> minPoints = pair.getB();

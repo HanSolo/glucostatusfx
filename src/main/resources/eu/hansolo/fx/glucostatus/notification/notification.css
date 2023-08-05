@@ -51,6 +51,7 @@
     -fx-content-display : left;
     -fx-graphic-text-gap: 10px;
     -fx-font-family     : "SF Pro";
+     -fx-font-weight    : bold;
 }
 
 .notification-mac .msg-area {
@@ -59,7 +60,8 @@
     -fx-font-size        : 1.0em;
     -fx-text-fill        : -foreground-color;
     -fx-wrap-text        : true;
-    -fx-font-family     : "SF Pro";
+    -fx-font-family      : "SF Pro";
+     -fx-font-weight     : medium;
 }
 .notification-mac .msg-area .content,
 .notification-mac .msg-area:focused .content {

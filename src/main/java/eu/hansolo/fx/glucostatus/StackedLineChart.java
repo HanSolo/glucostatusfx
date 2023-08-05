@@ -127,8 +127,6 @@ public class StackedLineChart extends Region {
             }
         }
 
-        getStyleClass().add("my-region");
-
         canvas = new Canvas(PREFERRED_WIDTH, PREFERRED_HEIGHT);
         ctx    = canvas.getGraphicsContext2D();
 
@@ -221,7 +219,6 @@ public class StackedLineChart extends Region {
         ctx.setLineDashes(3, 4);
         ctx.setLineWidth(1);
         List<String> axisLabels = MILLIGRAM_PER_DECILITER == unit ? Constants.yAxisLabelsMgPerDeciliter : Constants.yAxisLabelsMmolPerLiter;
-
 
         // Draw nights
         ctx.setFill(darkMode ? Color.rgb(255, 255, 255, 0.1) : Color.rgb(0, 0, 0, 0.1));
@@ -325,7 +322,7 @@ public class StackedLineChart extends Region {
             ctx.fillRoundRect(availableWidth - stepX * i * 1.5 - 10, 10, 20, 24, 7, 7);
             ctx.strokeRoundRect(availableWidth - stepX * i * 1.5 - 10, 10, 20, 24, 7, 7);
             ctx.setFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
-            ctx.fillText(day.name().substring(0, 1), availableWidth - stepX * i * 1.5, 22, 24);
+            ctx.fillText(day.name().substring(0, 1).toUpperCase(), availableWidth - stepX * i * 1.5, 22, 24);
             ctx.setStroke(Constants.DAY_COLOR_MAP.get(day));
             ctx.strokeLine(availableWidth - stepX * i * 1.5 - 10 + 3, 30, availableWidth - stepX * i * 1.5 - 10 + 17, 30);
             dayShapes.add(new DayShape(day, new Rectangle(availableWidth - stepX * i * 1.5 - 10, 10, 20, 24)));

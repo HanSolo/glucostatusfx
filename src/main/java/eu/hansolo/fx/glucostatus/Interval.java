@@ -22,28 +22,30 @@ import java.time.format.DateTimeFormatter;
 
 
 public enum Interval {
-    LAST_720_HOURS(8640, 720, 2_592_000, DateTimeFormatter.ofPattern("DD")),
-    LAST_336_HOURS(4032, 336, 1_209_000, DateTimeFormatter.ofPattern("DD")),
-    LAST_168_HOURS(2016, 168, 604800, DateTimeFormatter.ofPattern("DD")),
-    LAST_72_HOURS(864, 72, 259200, DateTimeFormatter.ofPattern("HH")),
-    LAST_48_HOURS(576, 48, 172800, DateTimeFormatter.ofPattern("HH")),
-    LAST_24_HOURS(288, 24, 86400, DateTimeFormatter.ofPattern("HH")),
-    LAST_12_HOURS(144, 12, 43200, DateTimeFormatter.ofPattern("HH")),
-    LAST_6_HOURS(72, 6, 21600, DateTimeFormatter.ofPattern("HH:mm")),
-    LAST_3_HOURS(36, 3, 10800, DateTimeFormatter.ofPattern("HH:mm"));
+    LAST_720_HOURS(8_640, 720, 2_592_000, DateTimeFormatter.ofPattern("DD"), 0.75),     // 30 Days
+    LAST_336_HOURS(4_032, 336, 1_209_600, DateTimeFormatter.ofPattern("DD"), 1.0),      // 14 Days
+    LAST_168_HOURS(2_016, 168, 604_800, DateTimeFormatter.ofPattern("DD"), 1.0),        //  7 Days
+    LAST_72_HOURS(864, 72, 259_200, DateTimeFormatter.ofPattern("HH"), 1.5),            //  3 Days
+    LAST_48_HOURS(576, 48, 172_800, DateTimeFormatter.ofPattern("HH"), 1.5),            //  2 Days
+    LAST_24_HOURS(288, 24, 86_400, DateTimeFormatter.ofPattern("HH"), 1.5),             //  1 Day
+    LAST_12_HOURS(144, 12, 43_200, DateTimeFormatter.ofPattern("HH"), 2.0),
+    LAST_6_HOURS(72, 6, 21_600, DateTimeFormatter.ofPattern("HH:mm"), 2.0),
+    LAST_3_HOURS(36, 3, 10_800, DateTimeFormatter.ofPattern("HH:mm"), 2.0);
 
     private final int               noOfEntries;
     private final int               hours;
     private final long              seconds;
     private final DateTimeFormatter formatter;
+    private final double            lineWidth;
 
 
     // ******************** Constructors **************************************
-    Interval(final int noOfEntries, final int hours, final int seconds, final DateTimeFormatter formatter) {
+    Interval(final int noOfEntries, final int hours, final int seconds, final DateTimeFormatter formatter, final double lineWidth) {
         this.noOfEntries = noOfEntries;
         this.hours       = hours;
         this.seconds     = seconds;
         this.formatter   = formatter;
+        this.lineWidth   = lineWidth;
     }
 
 
@@ -70,4 +72,6 @@ public enum Interval {
     public long getSeconds() { return seconds; }
 
     public DateTimeFormatter getFormatter() { return formatter; }
+
+    public double getLineWidth() { return lineWidth; }
 }

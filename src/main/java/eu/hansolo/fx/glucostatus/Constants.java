@@ -30,7 +30,7 @@ import java.util.Map;
 
 public class Constants {
     public static final String            HOME_FOLDER        = new StringBuilder(System.getProperty("user.home")).append(File.separator).toString();
-    public static final String            URL_API            = "/api/v1/entries.json";
+    public static final String            URL_API            = "/api/v2/entries.json";
     public static final String            URL_PARAM_COUNT_1  = "?count=1";
     public static final long              TIMEOUT_IN_SECONDS = 480;
     public static final DateTimeFormatter DTF                = DateTimeFormatter.ofPattern("dd/MM/YY HH:mm");
@@ -53,6 +53,8 @@ public class Constants {
     public static final String FIELD_SYS_TIME                                         = "sysTime";
 
     public static final String PROPERTIES_NIGHTSCOUT_URL                              = "NIGHTSCOUT_URL";
+    public static final String PROPERTIES_API_SECRET                                  = "API_SECRET";
+    public static final String PROPERTIES_NIGHTSCOUT_TOKEN                            = "NIGHTSCOUT_TOKEN";
     public static final String PROPERTIES_UNIT_MG                                     = "UNIT_MG";
     public static final String PROPERTIES_SHOW_DELTA_CHART                            = "SHOW_DELTA_CHART";
     public static final String PROPERTIES_VOICE_OUTPUT                                = "VOICE_OUTPUT";

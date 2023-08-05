@@ -35,8 +35,8 @@ public class PoincarePlot extends Region {
     private              double          height;
     private              double          availableWidth;
     private              double          availableHeight;
-    private              double          scaleX;
-    private              double          scaleY;
+    private              double          stepX;
+    private              double          stepY;
     private              double          symbolSize;
     private              double          halfSymbolSize;
     private              Canvas          canvas;
@@ -124,8 +124,8 @@ public class PoincarePlot extends Region {
 
             availableWidth  = (width - GRAPH_INSETS.getLeft() - GRAPH_INSETS.getRight());
             availableHeight = (height - GRAPH_INSETS.getTop() - GRAPH_INSETS.getBottom());
-            scaleX          = width  / range;
-            scaleY          = height / range;
+            stepX           = width / range;
+            stepY           = height / range;
             symbolSize      = clamp(MIN_SYMBOL_SIZE, MAX_SYMBOL_SIZE, size * 0.016);
             halfSymbolSize  = symbolSize * 0.5;
             ticklabelFont   = Fonts.configRoundedRegular(10);
@@ -148,8 +148,6 @@ public class PoincarePlot extends Region {
         ctx.setLineWidth(1);
         List<String> axisLabels = MILLIGRAM_PER_DECILITER == unit ? Constants.yAxisLabelsMgPerDeciliter : Constants.yAxisLabelsMmolPerLiter;
 
-
-
         ctx.setFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
         ctx.setTextAlign(TextAlignment.CENTER);
 
@@ -171,11 +169,12 @@ public class PoincarePlot extends Region {
             ctx.fillText(axisLabels.get(i), x, height - GRAPH_INSETS.getBottom() * 0.25);
         }
 
+        // Draw points
         for (int i = 0 ; i < values.size() - 2 ; i++) {
             final double value     = values.get(i);
             final double nextValue = values.get(i + 1);
-            final double x         = value * scaleX;
-            final double y         = (max - nextValue + min) * scaleY;
+            final double x         = value * stepX;
+            final double y         = (max - nextValue + min) * stepY;
             final Color fill       = Helper.getColorForValue(unit, UnitDefinition.MILLIGRAM_PER_DECILITER == unit ? value : Helper.mgPerDeciliterToMmolPerLiter(value));
 
             ctx.setFill(fill);

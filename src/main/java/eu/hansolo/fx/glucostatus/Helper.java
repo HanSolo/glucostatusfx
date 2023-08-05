@@ -97,10 +97,10 @@ public class Helper {
             String     id         = json.get(FIELD_ID).getAsString();
             double     sgv        = json.has(FIELD_SGV)         ? json.get(FIELD_SGV).getAsDouble()                      : 0;
             long       datelong   = json.has(FIELD_DATE)        ? json.get(FIELD_DATE).getAsLong() / 1000                : 0;
-            OffsetDateTime date       = OffsetDateTime.ofInstant(Instant.ofEpochSecond(datelong), ZoneId.systemDefault());
+            OffsetDateTime date   = OffsetDateTime.ofInstant(Instant.ofEpochSecond(datelong), ZoneId.systemDefault());
             String     dateString = json.has(FIELD_DATE_STRING) ? json.get(FIELD_DATE_STRING).getAsString()              : "";
+            Trend      trend      = json.has(FIELD_TREND)       ? Trend.getFromText(json.get(FIELD_TREND).getAsString()) : Trend.NONE;
             String     direction  = json.has(FIELD_DIRECTION)   ? json.get(FIELD_DIRECTION).getAsString()                : "";
-            Trend      trend      = json.has(FIELD_TREND)       ? Trend.getFromText(direction)                           : Trend.NONE;
             String     device     = json.has(FIELD_DEVICE)      ? json.get(FIELD_DEVICE).getAsString()                   : "";
             String     type       = json.has(FIELD_TYPE)        ? json.get(FIELD_TYPE).getAsString()                     : "";
             int        utcOffset  = json.has(FIELD_UTC_OFFSET)  ? json.get(FIELD_UTC_OFFSET).getAsInt()                  : 0;
@@ -121,11 +121,14 @@ public class Helper {
 
     public static final Color getColorForValue2(final UnitDefinition unit, final double value) { return Status.getByValue(unit, value).getColor2(); }
 
-    public static final CompletableFuture<List<GlucoEntry>> getEntriesFromLast30Days(final String nightscoutUrl) {
-        final long   from = (Instant.now().getEpochSecond() - Interval.LAST_720_HOURS.getSeconds()) * 1000;
-        final long   to   = (Instant.now().getEpochSecond()) * 1000;
-        final String url  = nightscoutUrl + "?find[date][$gte]=" + from + "&find[date][$lte]=" + to + "&count=" + Interval.LAST_720_HOURS.getNoOfEntries();
-        CompletableFuture<List<GlucoEntry>> cf = getAsync(url).thenApply(r -> {
+    public static final CompletableFuture<List<GlucoEntry>> getEntriesFromInterval(final Interval interval, final String nightscoutUrl, final String apiSecret, final String token) {
+        final long          now        = Instant.now().getEpochSecond();
+        final long          from       = (now - interval.getSeconds()) * 1000;
+        final long          to         = now * 1000;
+        final StringBuilder urlBuilder = new StringBuilder().append(nightscoutUrl).append("?find[date][$gte]=").append(from).append("&find[date][$lte]=").append(to).append("&count=").append(interval.getNoOfEntries());
+        if (null != token && !token.isEmpty()) { urlBuilder.append("&token=").append(token); }
+        final String url = urlBuilder.toString();
+        CompletableFuture<List<GlucoEntry>> cf = getAsync(url, apiSecret).thenApply(r -> {
             if (null == r || null == r.body() || r.body().isEmpty()) {
                 return new ArrayList<>();
             } else {
@@ -156,7 +159,8 @@ public class Helper {
         double hba1c   = 0;
         if (!entries.isEmpty()) {
             average = entries.stream().map(entry -> entry.sgv()).reduce(0.0, Double::sum).doubleValue() / entries.size();
-            hba1c   = (average + 100) / 36.66666;
+            //hba1c   = (46.7 + average) / 28.7;  // formula from 2008
+            hba1c   = (0.0296 * average) + 2.419; // formula from 2014 (https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4771657/)
         }
         return hba1c;
     }
@@ -275,17 +279,17 @@ public class Helper {
                          .build();
     }
 
-    public static final HttpResponse<String> get(final String uri) {
+    public static final HttpResponse<String> get(final String uri, final String apiSecret) {
         if (null == httpClient) { httpClient = createHttpClient(); }
 
         HttpRequest request = HttpRequest.newBuilder()
                                          .GET()
                                          .uri(URI.create(uri))
                                          .setHeader("Accept", "application/json")
-                                         .setHeader("User-Agent", "DiscoAPI")
+                                         .setHeader("User-Agent", "GlucoStatusFX")
+                                         .setHeader("API_SECRET", apiSecret)
                                          .timeout(Duration.ofSeconds(60))
                                          .build();
-
         try {
             HttpResponse<String> response = httpClient.send(request, BodyHandlers.ofString());
             if (response.statusCode() == 200) {
@@ -299,14 +303,15 @@ public class Helper {
         }
     }
 
-    public static final CompletableFuture<HttpResponse<String>> getAsync(final String uri) {
+    public static final CompletableFuture<HttpResponse<String>> getAsync(final String uri, final String apiSecret) {
         if (null == httpClientAsync) { httpClientAsync = createHttpClient(); }
 
         final HttpRequest request = HttpRequest.newBuilder()
                                                .GET()
                                                .uri(URI.create(uri))
                                                .setHeader("Accept", "application/json")
-                                               .setHeader("User-Agent", "DiscoAPI")
+                                               .setHeader("User-Agent", "GlucoStatusFX")
+                                               .setHeader("API_SECRET", apiSecret)
                                                .timeout(Duration.ofSeconds(60))
                                                .build();
         return httpClientAsync.sendAsync(request, BodyHandlers.ofString());
