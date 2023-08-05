@@ -149,14 +149,14 @@ public class Helper {
 
     public static final Color getColorForValue2(final UnitDefinition unit, final double value) { return Status.getByValue(unit, value).getColor2(); }
 
-    public static final CompletableFuture<List<GlucoEntry>> getEntriesFromInterval(final Interval interval, final String nightscoutUrl, final String token) {
+    public static final CompletableFuture<List<GlucoEntry>> getEntriesFromInterval(final Interval interval, final String nightscoutUrl, final String apiSecret, final String token) {
         final long          now        = Instant.now().getEpochSecond();
         final long          from       = (now - interval.getSeconds()) * 1000;
         final long          to         = now * 1000;
         final StringBuilder urlBuilder = new StringBuilder().append(nightscoutUrl).append("?find[date][$gte]=").append(from).append("&find[date][$lte]=").append(to).append("&count=").append(interval.getNoOfEntries());
         if (null != token && !token.isEmpty()) { urlBuilder.append("&token=").append(token); }
         final String url = urlBuilder.toString();
-        CompletableFuture<List<GlucoEntry>> cf = getAsync(url).thenApply(r -> {
+        CompletableFuture<List<GlucoEntry>> cf = getAsync(url ,apiSecret).thenApply(r -> {
             if (null == r || null == r.body() || r.body().isEmpty()) {
                 return new ArrayList<>();
             } else {
@@ -335,8 +335,8 @@ public class Helper {
         }
     }
 
-    public static final CompletableFuture<HttpResponse<String>> checkForUpdateAsync() {
-        return getAsync(Constants.RELEASES_URI);
+    public static final CompletableFuture<HttpResponse<String>> checkForUpdateAsync(final String apiSecret) {
+        return getAsync(Constants.RELEASES_URI, apiSecret);
     }
 
     public static final double getMedian(final List<GlucoEntry> data) {
@@ -388,7 +388,7 @@ public class Helper {
         }
     }
 
-    public static final CompletableFuture<HttpResponse<String>> getAsync(final String uri) {
+    public static final CompletableFuture<HttpResponse<String>> getAsync(final String uri, final String apiSecret) {
         if (null == httpClientAsync) { httpClientAsync = createHttpClient(); }
 
         final HttpRequest request = HttpRequest.newBuilder()
@@ -396,6 +396,7 @@ public class Helper {
                                                .uri(URI.create(uri))
                                                .setHeader("Accept", "application/json")
                                                .setHeader("User-Agent", "GlucoStatusFX")
+                                               .setHeader("API_SECRET", apiSecret)
                                                .timeout(Duration.ofSeconds(60))
                                                .build();
         return httpClientAsync.sendAsync(request, BodyHandlers.ofString());

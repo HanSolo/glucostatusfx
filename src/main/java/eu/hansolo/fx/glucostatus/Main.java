@@ -701,7 +701,7 @@ public class Main extends Application {
             ZonedDateTime now = ZonedDateTime.now();
             if (now.toEpochSecond() - lastUpdate.toEpochSecond() > 300) {
                 allEntries.clear();
-                Helper.getEntriesFromInterval(INTERVAL, nightscoutUrl + Constants.URL_API, token).thenAccept(l -> allEntries.addAll(l));
+                Helper.getEntriesFromInterval(INTERVAL, nightscoutUrl + Constants.URL_API, apiSecret, token).thenAccept(l -> allEntries.addAll(l));
             }
         });
         stage.setWidth(820);
@@ -714,7 +714,7 @@ public class Main extends Application {
 
     private void postStart() {
         if (null != nightscoutUrl && !nightscoutUrl.isEmpty()) {
-            Helper.getEntriesFromInterval(INTERVAL, nightscoutUrl + Constants.URL_API, token).thenAccept(l -> {
+            Helper.getEntriesFromInterval(INTERVAL, nightscoutUrl + Constants.URL_API, apiSecret, token).thenAccept(l -> {
                 allEntries.addAll(l);
                 Platform.runLater(() -> {
                     matrixButton.setOpacity(1.0);
@@ -927,7 +927,7 @@ public class Main extends Application {
             patternChartButton.setOpacity(0.5);
             stackedButton.setOpacity(0.5);
             allEntries.clear();
-            Helper.getEntriesFromInterval(INTERVAL, nightscoutUrl + Constants.URL_API, token).thenAccept(l -> {
+            Helper.getEntriesFromInterval(INTERVAL, nightscoutUrl + Constants.URL_API, apiSecret, token).thenAccept(l -> {
                 allEntries.addAll(l);
                 Platform.runLater(() -> {
                     matrixButton.setOpacity(1.0);
@@ -1188,7 +1188,7 @@ public class Main extends Application {
             updateEntries();
             if (null != service) { service.cancel(); }
 
-            Helper.getEntriesFromInterval(INTERVAL, nightscoutUrl + Constants.URL_API, token).thenAccept(l -> allEntries.addAll(l));
+            Helper.getEntriesFromInterval(INTERVAL, nightscoutUrl + Constants.URL_API, apiSecret, token).thenAccept(l -> allEntries.addAll(l));
 
             service = new ScheduledService<>() {
                 @Override protected Task<Void> createTask() {
@@ -1342,7 +1342,7 @@ public class Main extends Application {
         double  availableHeight = (height - GRAPH_INSETS.getTop() - GRAPH_INSETS.getBottom());
 
         ctx.clearRect(0, 0, width, height);
-        ctx.setFill(darkMode ?Constants.DARK_BACKGROUND : Color.rgb(255, 255, 255));
+        ctx.setFill(darkMode ? Constants.DARK_BACKGROUND : Color.rgb(255, 255, 255));
         ctx.fillRect(0, 0, width, height);
         ctx.setFont(ticklabelFont);
         ctx.setFill(Constants.BRIGHT_TEXT);
@@ -1416,7 +1416,7 @@ public class Main extends Application {
             // Full nights
             boolean nightStart = false;
             double  nightX     = -1;
-            for (long i = startX; i <= deltaTime; i++) {
+            for (long i = startX ; i <= deltaTime ; i++) {
                 int    h = ZonedDateTime.ofInstant(Instant.ofEpochSecond(i + minEntry.datelong()), ZoneId.systemDefault()).getHour();
                 double x = GRAPH_INSETS.getLeft() + i * stepX;
                 if (h != lastHour) {
@@ -1579,7 +1579,7 @@ public class Main extends Application {
 
     private void checkForLatestVersion() {
         if (!online.get()) { return; }
-        Helper.checkForUpdateAsync().thenAccept(response -> {
+        Helper.checkForUpdateAsync(apiSecret).thenAccept(response -> {
             if (null == response || null == response.body() || response.body().isEmpty()) {
                 isUpdateAvailable = false;
             } else {
