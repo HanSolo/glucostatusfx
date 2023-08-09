@@ -2317,17 +2317,22 @@ public class Main extends Application {
         if (dialogVisible.get()) { return; }
         dialogVisible.set(true);
 
-        MacosLabel titleLabel = createLabel(translator.get(I18nKeys.PATTERN_TITLE), 24, true, false, Pos.CENTER);
+        Interval usedInterval;
+        switch(currentInterval) {
+            case LAST_3_HOURS, LAST_6_HOURS, LAST_12_HOURS, LAST_24_HOURS, LAST_48_HOURS, LAST_72_HOURS, LAST_168_HOURS -> usedInterval = Interval.LAST_168_HOURS;
+            default                                                                                                     -> usedInterval = currentInterval;
+        }
+        long limit = OffsetDateTime.now().toEpochSecond() - usedInterval.getSeconds();
+        List<GlucoEntry> filteredEntries = allEntries.stream().filter(entry -> entry.datelong() > limit).collect(Collectors.toList());
+
+        MacosLabel titleLabel = createLabel(new StringBuilder().append(translator.get(I18nKeys.PATTERN_TITLE)).append(" (").append(usedInterval.getUiString()).append(")").toString(), 24, true, false, Pos.CENTER);
         titleLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
 
-        MacosLabel hba1cLabel = createLabel(String.format(Locale.US, "HbA1c %.1f%% " + " (" + INTERVAL.getUiString() + ")", Helper.calcHbA1c(allEntries)), 20, false, false, Pos.CENTER);
+        MacosLabel hba1cLabel = createLabel(String.format(Locale.US, "HbA1c %.1f%% " + " (" + usedInterval.getUiString() + ")", Helper.calcHbA1c(filteredEntries)), 20, false, false, Pos.CENTER);
         hba1cLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
 
-        long             limit           = OffsetDateTime.now().toEpochSecond() - Interval.LAST_168_HOURS.getSeconds();
-        List<GlucoEntry> entriesLastWeek = allEntries.stream().filter(entry -> entry.datelong() > limit).collect(Collectors.toList());
-
-        Map<LocalTime, DataPoint>        dataMap         = Statistics.analyze(entriesLastWeek);
-        Pair<List<String>, List<String>> highAndLowZones = Statistics.findTimesWithLowAndHighValues(dataMap, 70, 180);
+        Map<LocalTime, DataPoint>        dataMap         = Statistics.analyze(filteredEntries);
+        Pair<List<String>, List<String>> highAndLowZones = Statistics.findTimesWithLowAndHighValues(dataMap, PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MIN_ACCEPTABLE, 70), PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MAX_ACCEPTABLE, 140));
         List<String>                     lowZones        = highAndLowZones.getA();
         List<String>                     highZones       = highAndLowZones.getB();
 
