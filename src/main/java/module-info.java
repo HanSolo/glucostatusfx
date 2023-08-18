@@ -4,11 +4,11 @@ module eu.hansolo.fx.glucostatus {
     requires java.net.http;
 
     // Java-FX
-    requires transitive javafx.base;
-    requires transitive javafx.graphics;
-    requires transitive javafx.controls;
-    requires transitive javafx.media;
-    requires transitive javafx.swing;
+    requires javafx.base;
+    requires javafx.graphics;
+    requires javafx.controls;
+    requires javafx.media;
+    requires javafx.swing;
 
     // 3rd Party
     requires transitive eu.hansolo.jdktools;

@@ -20,7 +20,7 @@ A glucose status monitor for Nightscout implemented in JavaFX.
 
 When running as jar file you might need to start with on Linux
 
-```java -Djdk.gtk.version=2 -jar GlucoStatusFX-17.0.59.jar```
+```java -Djdk.gtk.version=2 -jar GlucoStatusFX-17.0.61.jar```
 
 <br>
 
