@@ -237,12 +237,7 @@ public class Statistics {
     }
 
     public static double getVariance(final List<GlucoEntry> entries) {
-        double average = getMean(entries);
-        double temp    = 0.0;
-        for (GlucoEntry entry : entries) {
-            temp += ((entry.sgv() - average) * (entry.sgv() - average));
-        }
-        return (temp / entries.size());
+        return eu.hansolo.toolbox.Statistics.getVariance(entries.stream().map(GlucoEntry::sgv).collect(Collectors.toList()));
     }
 
     public static double getStdDev(final List<GlucoEntry> entries) {
@@ -251,30 +246,26 @@ public class Statistics {
 
     public static double getMedian(final List<GlucoEntry> entries) {
         if (entries.isEmpty()) { return 0; }
-        int              noOfEntries   = entries.size();
-        List<GlucoEntry> sortedEntries = entries.stream().sorted(Comparator.comparingDouble(GlucoEntry::sgv)).collect(Collectors.toList());
-        return noOfEntries % 2 == 0 ? (sortedEntries.get(noOfEntries / 2 - 1).sgv() + sortedEntries.get(noOfEntries / 2).sgv()) / 2.0 : sortedEntries.get(noOfEntries / 2).sgv();
+        return eu.hansolo.toolbox.Statistics.getMedian(entries.stream().map(GlucoEntry::sgv).collect(Collectors.toList()));
     }
 
     public static double getMin(final List<GlucoEntry> entries) {
         if (entries.isEmpty()) { return 0; }
-        return entries.stream().min(Comparator.comparingDouble(GlucoEntry::sgv)).get().sgv();
+        return eu.hansolo.toolbox.Statistics.getMin(entries.stream().map(GlucoEntry::sgv).collect(Collectors.toList()));
     }
 
     public static double getMax(final List<GlucoEntry> entries) {
         if (entries.isEmpty()) { return 0; }
-        return entries.stream().max(Comparator.comparingDouble(GlucoEntry::sgv)).get().sgv();
+        return eu.hansolo.toolbox.Statistics.getMax(entries.stream().map(GlucoEntry::sgv).collect(Collectors.toList()));
     }
 
     public static double getAverage(final List<GlucoEntry> entries) {
         if (entries.isEmpty()) { return 0; }
-        return entries.stream().map(entry -> entry.sgv()).reduce(0.0, Double::sum).doubleValue() / entries.size();
+        return eu.hansolo.toolbox.Statistics.getAverage(entries.stream().map(GlucoEntry::sgv).collect(Collectors.toList()));
     }
 
     public static double getPercentile(final List<GlucoEntry> entries, final double percentile) {
-        int              noOfEntries   = entries.size();
-        List<GlucoEntry> sortedEntries = entries.stream().sorted(Comparator.comparingDouble(GlucoEntry::sgv)).collect(Collectors.toList());
-        int              index         = eu.hansolo.toolbox.Helper.clamp(0, noOfEntries - 1, (int)(Math.ceil(percentile / 100.0 * (double) noOfEntries)));
-        return sortedEntries.get(index).sgv();
+        List<Double> values = entries.stream().map(GlucoEntry::sgv).collect(Collectors.toList());
+        return eu.hansolo.toolbox.Statistics.percentile(values, percentile);
     }
 }
