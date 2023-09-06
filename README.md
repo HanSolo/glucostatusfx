@@ -14,6 +14,8 @@ A glucose status monitor for Nightscout implemented in JavaFX.
 ![GitHub all releases](https://img.shields.io/github/downloads/HanSolo/glucostatusfx/total)
 ![license](https://badgen.net/github/license/HanSolo/discocli)
 
+[![JFXCentral](https://img.shields.io/badge/Find_me_on-JFXCentral-blue?logo=googlechrome&logoColor=white)](https://www.jfx-central.com/downloads/glucostatusfx)
+
 <br>
 <br>
 <b>Running on Linux</b>
