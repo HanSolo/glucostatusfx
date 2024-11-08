@@ -74,7 +74,7 @@ jobs:
         run: ./build_app_macos.sh
       - uses: actions/upload-artifact@v4
         with:
-          name: GlucoStatusFX Mac
+          name: GlucoStatusFX Mac x64
           path: |
             build/installer
             build/libs
