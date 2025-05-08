@@ -38,8 +38,6 @@ import eu.hansolo.applefx.MacosWindow;
 import eu.hansolo.applefx.MacosWindow.Style;
 import eu.hansolo.applefx.tools.MacosAccentColor;
 import eu.hansolo.applefx.tools.MacosSystemColor;
-import eu.hansolo.fx.glucostatus.Records.DataPoint;
-import eu.hansolo.fx.glucostatus.Records.GlucoEntry;
 import eu.hansolo.fx.glucostatus.Statistics.StatisticCalculation;
 import eu.hansolo.fx.glucostatus.Statistics.StatisticRange;
 import eu.hansolo.fx.glucostatus.i18n.I18nKeys;
@@ -1690,7 +1688,7 @@ public class Main extends Application {
         versionLabel.setFont(Fonts.sfProTextRegular(14));
         versionLabel.setTextFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
 
-        MacosLabel descriptionLabel = new MacosLabel("\u00A9 Gerrit Grunwald 2022");
+        MacosLabel descriptionLabel = new MacosLabel("\u00A9 Gerrit Grunwald 2025");
         descriptionLabel.setPrefWidth(Label.USE_COMPUTED_SIZE);
         descriptionLabel.setMaxWidth(Double.MAX_VALUE);
         descriptionLabel.setFont(Fonts.sfProTextRegular(12));

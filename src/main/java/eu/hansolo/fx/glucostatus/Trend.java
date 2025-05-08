@@ -58,8 +58,6 @@ public enum Trend {
 
     public String getSpeakText() { return speakText; }
 
-    public String unusedMethod() { return "this method is unused"; }
-
     public static Trend getFromText(final String text) {
         Optional<Trend> optTrend = Arrays.stream(Trend.values()).filter(trend -> trend.getTextKey().toLowerCase().equals(text.toLowerCase())).findFirst();
         if (optTrend.isPresent()) {

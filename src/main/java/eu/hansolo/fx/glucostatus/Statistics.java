@@ -18,19 +18,13 @@
 
 package eu.hansolo.fx.glucostatus;
 
-import eu.hansolo.fx.glucostatus.Records.DataPoint;
-import eu.hansolo.fx.glucostatus.Records.GlucoEntry;
 import eu.hansolo.fx.glucostatus.i18n.I18nKeys;
 import eu.hansolo.fx.glucostatus.i18n.Translator;
 import eu.hansolo.toolbox.tuples.Pair;
-import javafx.animation.Transition;
 
 import java.time.LocalTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

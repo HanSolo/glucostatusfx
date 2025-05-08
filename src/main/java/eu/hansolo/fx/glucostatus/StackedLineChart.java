@@ -1,8 +1,5 @@
 package eu.hansolo.fx.glucostatus;
 
-import eu.hansolo.fx.glucostatus.Records.ButtonShape;
-import eu.hansolo.fx.glucostatus.Records.DayShape;
-import eu.hansolo.fx.glucostatus.Records.GlucoEntry;
 import eu.hansolo.toolbox.unit.UnitDefinition;
 import eu.hansolo.toolboxfx.HelperFX;
 import eu.hansolo.toolboxfx.geom.Rectangle;

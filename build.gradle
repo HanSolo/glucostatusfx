@@ -57,8 +57,8 @@ dependencies {
     implementation "org.openjfx:javafx-controls:${javafxVersion}:${platform}"
     implementation "org.openjfx:javafx-media:${javafxVersion}:${platform}"
     implementation "org.openjfx:javafx-swing:${javafxVersion}:${platform}"
-    implementation 'eu.hansolo:jdktools:21.0.11'
-    implementation 'eu.hansolo:toolbox:21.0.15'
+    implementation 'eu.hansolo:jdktools:21.0.19'
+    implementation 'eu.hansolo:toolbox:21.0.17'
     implementation 'eu.hansolo:toolboxfx:21.0.7'
     implementation 'eu.hansolo:applefx:21.0.3'
     implementation 'com.google.code.gson:gson:2.10.1'

@@ -18,7 +18,6 @@
 
  package eu.hansolo.fx.glucostatus;
 
- import eu.hansolo.fx.glucostatus.Records.GlucoEntry;
  import eu.hansolo.toolbox.tuples.Pair;
  import eu.hansolo.toolbox.unit.UnitDefinition;
  import eu.hansolo.toolboxfx.geom.Rectangle;
@@ -44,7 +43,6 @@
  import java.time.Instant;
  import java.time.LocalDate;
  import java.time.LocalTime;
- import java.time.Year;
  import java.time.ZoneId;
  import java.time.ZonedDateTime;
  import java.time.format.TextStyle;
@@ -62,35 +60,37 @@
 
  @DefaultProperty("children")
  public class ThirtyDayView extends Region {
-     private static final double                          PREFERRED_WIDTH   = 400;
-     private static final double                          PREFERRED_HEIGHT  = 300;
-     private static final double                          MINIMUM_WIDTH     = 50;
-     private static final double                          MINIMUM_HEIGHT    = 50;
-     private static final double                          MAXIMUM_WIDTH     = 4096;
-     private static final double                          MAXIMUM_HEIGHT    = 4096;
-     private static final int                             SLEEP_DURATION    = 3000;
-     private static final PseudoClass                     DARK_PSEUDO_CLASS = PseudoClass.getPseudoClass("dark");
-     private              boolean                         _dark;
-     private              BooleanProperty                 dark;
-     private              String                          userAgentStyleSheet;
-     private              double                          boxWidth;
-     private              double                          boxHeight;
-     private              double                          boxCenterX;
-     private              double                          boxCenterY;
-     private              double                          boxRadius;
-     private              double                          boxOffset;
-     private              double                          doubleBoxOffset;
-     private              double                          width;
-     private              double                          height;
-     private              double                          size;
-     private              Canvas                          canvas;
-     private              GraphicsContext                 ctx;
-     private              UnitDefinition                  unit;
-     private              Map<LocalDate, Double>          avgPerDay;
-     private              Map<LocalDate, Double>          timeInRangePerDay;
-     private              Map<LocalDate, Rectangle>       boxes;
-     private              Map<Rectangle, PauseTransition> transitionMap;
-     private              List<LocalDate>                 selectedDates;
+     private static final double                             PREFERRED_WIDTH   = 400;
+     private static final double                             PREFERRED_HEIGHT  = 300;
+     private static final double                             MINIMUM_WIDTH     = 50;
+     private static final double                             MINIMUM_HEIGHT    = 50;
+     private static final double                             MAXIMUM_WIDTH     = 4096;
+     private static final double                             MAXIMUM_HEIGHT    = 4096;
+     private static final int                                SLEEP_DURATION    = 3000;
+     private static final PseudoClass                        DARK_PSEUDO_CLASS = PseudoClass.getPseudoClass("dark");
+     private              Optional<Entry<LocalDate, Double>> optBestDay        = Optional.empty();
+     private              Optional<Entry<LocalDate, Double>> optWorstDay       = Optional.empty();
+     private              boolean                            _dark;
+     private              BooleanProperty                    dark;
+     private              String                             userAgentStyleSheet;
+     private              double                             boxWidth;
+     private              double                             boxHeight;
+     private              double                             boxCenterX;
+     private              double                             boxCenterY;
+     private              double                             boxRadius;
+     private              double                             boxOffset;
+     private              double                             doubleBoxOffset;
+     private              double                             width;
+     private              double                             height;
+     private              double                             size;
+     private              Canvas                             canvas;
+     private              GraphicsContext                    ctx;
+     private              UnitDefinition                     unit;
+     private              Map<LocalDate, Double>             avgPerDay;
+     private              Map<LocalDate, Double>             timeInRangePerDay;
+     private              Map<LocalDate, Rectangle>          boxes;
+     private              Map<Rectangle, PauseTransition>    transitionMap;
+     private              List<LocalDate>                    selectedDates;
 
 
      // ******************** Constructors **************************************
@@ -236,6 +236,10 @@
 
          this.avgPerDay.clear();
          aggregatedEntries.entrySet().forEach(entry -> this.avgPerDay.put(entry.getKey(), (entry.getValue().getA() / entry.getValue().getB())));
+
+         this.optBestDay  = this.avgPerDay.entrySet().stream().min(Map.Entry.comparingByValue());
+         this.optWorstDay = this.avgPerDay.entrySet().stream().max(Map.Entry.comparingByValue());
+
          redraw();
      }
 
@@ -320,10 +324,10 @@
 
          ctx.setFont(font);
          for (int i = 0 ; i < 30 ; i++) {
-             LocalDate date = currentDate.minusDays(i);
-             double  posX       = boxWidth + indexX * boxWidth;
-             double  posY       = boxHeight + indexY * boxHeight;
-             boolean showValue  = !selectedDates.isEmpty() && selectedDates.contains(date);
+             LocalDate date       = currentDate.minusDays(i);
+             double    posX       = boxWidth + indexX * boxWidth;
+             double    posY       = boxHeight + indexY * boxHeight;
+             boolean   showValue  = !selectedDates.isEmpty() && selectedDates.contains(date);
 
              Double value = avgPerDay.get(date);
              if (null == value) { value = 0.0; }
@@ -339,6 +343,25 @@
                  }
              }
              boxes.put(date, new Rectangle(posX + boxOffset, posY + boxOffset, boxWidth - doubleBoxOffset, boxHeight - doubleBoxOffset));
+
+             if (optBestDay.isPresent()) {
+                 if (date.equals(optBestDay.get().getKey()) && value == optBestDay.get().getValue()) {
+                     ctx.save();
+                     ctx.setStroke(Constants.GREEN);
+                     ctx.setLineWidth(3);
+                     ctx.strokeRoundRect(posX + boxOffset, posY + boxOffset, boxWidth - doubleBoxOffset, boxHeight - doubleBoxOffset, boxRadius, boxRadius);
+                     ctx.restore();
+                 }
+             }
+             if (optWorstDay.isPresent()) {
+                 if (date.equals(optWorstDay.get().getKey()) && value == optWorstDay.get().getValue()) {
+                     ctx.save();
+                     ctx.setStroke(Constants.RED);
+                     ctx.setLineWidth(3);
+                     ctx.strokeRoundRect(posX + boxOffset, posY + boxOffset, boxWidth - doubleBoxOffset, boxHeight - doubleBoxOffset, boxRadius, boxRadius);
+                     ctx.restore();
+                 }
+             }
 
              if (showValue) {
                  ctx.setFill(isDark() ? valueColor : valueColor.darker());
