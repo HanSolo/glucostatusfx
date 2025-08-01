@@ -94,10 +94,10 @@ public class Constants {
 
 
     public static final Color         GRAY                                                   = Color.color(0.5, 0.5, 0.5);
-    public static final Color         RED                                                    = Color.color(0.94, 0.11, 0.13);
-    public static final Color         ORANGE                                                 = Color.color(0.93, 0.43, 0.00);
-    public static final Color         YELLOW                                                 = Color.color(1.00, 0.74, 0.01);
-    public static final Color         GREEN                                                  = Color.color(0.57, 0.79, 0.23);
+    public static final Color         RED                                                    = Color.color(0.996, 0.000, 0.000);
+    public static final Color         ORANGE                                                 = Color.color(1.000, 0.365, 0.004);
+    public static final Color         YELLOW                                                 = Color.color(1.000, 0.659, 0.000);
+    public static final Color         GREEN                                                  = Color.color(0.000, 0.761, 0.004);
     public static final Color         DARK_GREEN                                             = Color.color(0.0, 0.5, 0.13);
     public static final Color         LIGHT_BLUE                                             = Color.color(0.01, 0.6, 0.93);
     public static final Color         BLUE                                                   = Color.color(0.00, 0.43, 1.00);
