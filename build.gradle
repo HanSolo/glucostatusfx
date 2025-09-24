@@ -48,6 +48,7 @@ ext {
     ciGHToken       = System.getenv('GH_TOKEN')
     gpgkey          = System.getenv("GPG_PRIVATE_KEY")
     gpgpassphrase   = System.getenv("PASSPHRASE")
+    mainClassName   = 'eu.hansolo.fx.glucostatus.Launcher'
 }
 
 dependencies {
@@ -57,20 +58,20 @@ dependencies {
     implementation "org.openjfx:javafx-controls:${javafxVersion}:${platform}"
     implementation "org.openjfx:javafx-media:${javafxVersion}:${platform}"
     implementation "org.openjfx:javafx-swing:${javafxVersion}:${platform}"
-    implementation 'eu.hansolo:jdktools:21.0.19'
-    implementation 'eu.hansolo:toolbox:21.0.17'
+    implementation 'eu.hansolo:jdktools:21.0.21'
+    implementation 'eu.hansolo:toolbox:21.0.25'
     implementation 'eu.hansolo:toolboxfx:21.0.7'
-    implementation 'eu.hansolo:applefx:21.0.3'
-    implementation 'com.google.code.gson:gson:2.10.1'
+    implementation 'eu.hansolo:applefx:25.0.0'
+    implementation 'com.google.code.gson:gson:2.13.2'
     //implementation 'com.dustinredmond.fxtrayicon:FXTrayIcon:4.0.1'
     implementation 'com.dustinredmond.fxtrayicon:FXTrayIcon:3.1.2'
 }
 
 application {
     mainModule = 'eu.hansolo.fx.glucostatus'
+    mainClass  = "eu.hansolo.fx.glucostatus.Launcher"
 }
 
-mainClassName = 'eu.hansolo.fx.glucostatus.Launcher'
 description   = 'GlucostatusFX is a tool to visualize data coming from a nightscout server'
 
 
@@ -106,14 +107,15 @@ jar {
 
 
 // start app from gradle
-task Main(type: JavaExec) {
+tasks.register('Main', JavaExec) {
     mainClass = "eu.hansolo.fx.glucostatus.Launcher"
     classpath = sourceSets.main.runtimeClasspath
 }
 
 
 // create properties file including the version
-task createProperties(dependsOn: processResources) {
+tasks.register('createProperties') {
+    dependsOn processResources
     doLast {
         new File("$buildDir//classes/java/main/eu/hansolo/fx/glucostatus/version.properties").withWriter { w ->
             Properties p = new Properties()

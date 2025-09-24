@@ -18,9 +18,9 @@
 # limitations under the License.
 #
 
-JAVA_VERSION=23
-MAIN_JAR="GlucoStatusFX-23.0.3.jar"
-APP_VERSION=23.0.3
+JAVA_VERSION=25
+MAIN_JAR="GlucoStatusFX-25.0.0.jar"
+APP_VERSION=25.0.0
 
 echo "java home: $JAVA_HOME"
 echo "project version: $PROJECT_VERSION"
