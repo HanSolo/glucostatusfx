@@ -22,13 +22,18 @@ import eu.hansolo.fx.glucostatus.i18n.I18nKeys;
 import eu.hansolo.fx.glucostatus.i18n.Translator;
 import eu.hansolo.toolbox.tuples.Pair;
 
+import java.time.Instant;
 import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Gatherer;
+import java.util.stream.Gatherers;
 
 
 public class Statistics {
@@ -41,6 +46,8 @@ public class Statistics {
         AVERAGE,
         MEDIAN
     }
+
+    public record ChartData(long timestamp, double value) {}
 
     public  static final DateTimeFormatter TF         = DateTimeFormatter.ofPattern("HH:mm");
     private static final Translator        translator = new Translator(I18nKeys.RESOURCE_NAME);
@@ -261,5 +268,17 @@ public class Statistics {
     public static double getPercentile(final List<GlucoEntry> entries, final double percentile) {
         List<Double> values = entries.stream().map(GlucoEntry::sgv).collect(Collectors.toList());
         return eu.hansolo.toolbox.Statistics.percentile(values, percentile);
+    }
+
+    public static List<ChartData> runningAverage(final List<GlucoEntry> entries) {
+        return entries.stream()
+                      .map(entry -> new ChartData(entry.datelong(), entry.sgv()))
+                      .gather(Gatherers.windowSliding(3))
+                      .map(chartDataList -> generateAverage(chartDataList)).toList();
+    }
+    private static ChartData generateAverage(final List<ChartData> chartDataList) {
+        final long   timestamp = chartDataList.size() % 2 == 0 ? chartDataList.stream().mapToLong(chartData -> chartData.timestamp).sum() / 2 : chartDataList.get((int)Math.floor(chartDataList.size() / 2.0)).timestamp;
+        final double average   = chartDataList.stream().mapToDouble(chartData -> chartData.value).sum() / ((double) chartDataList.size());
+        return new ChartData(timestamp, average);
     }
 }

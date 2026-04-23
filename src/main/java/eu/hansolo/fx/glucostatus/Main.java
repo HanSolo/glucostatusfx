@@ -38,6 +38,8 @@ import eu.hansolo.applefx.MacosWindow;
 import eu.hansolo.applefx.MacosWindow.Style;
 import eu.hansolo.applefx.tools.MacosAccentColor;
 import eu.hansolo.applefx.tools.MacosSystemColor;
+import eu.hansolo.fx.glucostatus.GlucoseTrendPredictor.GlucoseReading;
+import eu.hansolo.fx.glucostatus.GlucoseTrendPredictor.Warning;
 import eu.hansolo.fx.glucostatus.Statistics.StatisticCalculation;
 import eu.hansolo.fx.glucostatus.Statistics.StatisticRange;
 import eu.hansolo.fx.glucostatus.i18n.I18nKeys;
@@ -167,6 +169,7 @@ public class Main extends Application {
     private              String                        nightscoutUrl   = "";
     private              String                        apiSecret       = "";
     private              String                        token           = "";
+    private              GlucoseTrendPredictor         predictor       = new GlucoseTrendPredictor();
     private              MacosWindow                   macosWindow;
     private              boolean                       trayIconSupported;
     private              OsArcMode                     sysinfo;
@@ -700,6 +703,7 @@ public class Main extends Application {
             if (now.toEpochSecond() - lastUpdate.toEpochSecond() > 300) {
                 allEntries.clear();
                 Helper.getEntriesFromInterval(INTERVAL, nightscoutUrl + Constants.URL_API, apiSecret, token).thenAccept(l -> allEntries.addAll(l));
+                predict(allEntries);
             }
         });
         stage.setWidth(820);
@@ -714,6 +718,7 @@ public class Main extends Application {
         if (null != nightscoutUrl && !nightscoutUrl.isEmpty()) {
             Helper.getEntriesFromInterval(INTERVAL, nightscoutUrl + Constants.URL_API, apiSecret, token).thenAccept(l -> {
                 allEntries.addAll(l);
+                predict(allEntries);
                 Platform.runLater(() -> {
                     matrixButton.setOpacity(1.0);
                     patternChartButton.setOpacity(1.0);
@@ -916,6 +921,9 @@ public class Main extends Application {
         if (allEntries.get(0).datelong() == entryFound.datelong()) { return; }
         allEntries.remove(allEntries.size() - 1);
         allEntries.add(0, entryFound);
+
+        predict(allEntries);
+
         lastUpdate = ZonedDateTime.now();
     }
 
@@ -971,10 +979,46 @@ public class Main extends Application {
         return false;
     }
 
+    private void predict(final List<GlucoEntry> entries) {
+        if (entries.size() > 8) {
+            List<GlucoseReading> readings = entries.stream().limit(8).map(glucoEntry -> new GlucoseReading(Instant.ofEpochSecond(glucoEntry.datelong()), glucoEntry.sgv())).toList();
+            predictor.predict(readings).ifPresent(p -> {
+                if (!p.isReliable()) {
+                    System.out.println("Sensor noise detected — prediction suppressed");
+                    return;
+                }
+                System.out.printf("Projected glucose in 10 min: %d mg/dL%n", (int) p.projectedValue());
+                System.out.println("Trend: " + p.glucoTrend());
+                notifyIfNeeded(p.projectedValue());
+                /*
+                switch (p.glucoTrend()) {
+                    case FALLING_RAPIDLY -> {}
+                    case FALLING         -> {}
+                    case FALLING_SLOWLY  -> {}
+                    case STABLE          -> {}
+                    case RISING_SLOWLY   -> {}
+                    case RISING          -> {}
+                    case RISING_RAPIDLY  -> {}
+                }
+                */
+                /*
+                p.warning().ifPresent(w -> switch (w) {
+                    case Warning.PredictedLow  wl -> System.out.printf("⚠️  LOW predicted:     %d mg/dL%n", (int) wl.projectedValue());
+                    case Warning.PredictedHigh wh -> System.out.printf("⚠️  HIGH predicted:    %d mg/dL%n", (int) wh.projectedValue());
+                    case Warning.ApproachingLow  al -> System.out.printf("⚡ Approaching low:   %d mg/dL%n", (int) al.projectedValue());
+                    case Warning.ApproachingHigh ah -> System.out.printf("⚡ Approaching high:  %d mg/dL%n", (int) ah.projectedValue());
+                });
+                */
+            });
+        }
+    }
+
     private void notifyIfNeeded() {
+        notifyIfNeeded(currentEntry.sgv());
+    }
+    private void notifyIfNeeded(final double value) {
         Trend         trend                                  = currentEntry.trend();
         ZonedDateTime now                                    = ZonedDateTime.now();
-        double        value                                  = currentEntry.sgv();
         boolean       voiceOutput                            = PropertyManager.INSTANCE.getBoolean(Constants.PROPERTIES_VOICE_OUTPUT, false);
         double        voiceOutputInterval                    = PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_VOICE_OUTPUT_INTERVAL, 5.0) * 60.0;
         double        maxCritical                            = PropertyManager.INSTANCE.getDouble(Constants.PROPERTIES_MAX_CRITICAL);
@@ -1187,6 +1231,8 @@ public class Main extends Application {
             if (null != service) { service.cancel(); }
 
             Helper.getEntriesFromInterval(INTERVAL, nightscoutUrl + Constants.URL_API, apiSecret, token).thenAccept(l -> allEntries.addAll(l));
+
+            predict(allEntries);
 
             service = new ScheduledService<>() {
                 @Override protected Task<Void> createTask() {
