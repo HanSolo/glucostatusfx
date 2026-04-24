@@ -166,9 +166,9 @@ public class Main extends Application {
     private              AtomicBoolean                 switchingUnits  = new AtomicBoolean(false);
     private              String                        nightscoutUrl   = "";
     private              String                        apiSecret       = "";
-    private              String                        token           = "";
-    private              GlucoseTrendPredictor         predictor       = new GlucoseTrendPredictor();
-    private              MacosWindow                   macosWindow;
+    private String      token     = "";
+    private Predictor   predictor = new Predictor();
+    private MacosWindow macosWindow;
     private              boolean                       trayIconSupported;
     private              OsArcMode                     sysinfo;
     private              OperatingSystem               operatingSystem;
@@ -978,15 +978,16 @@ public class Main extends Application {
     }
 
     private void predict(final List<GlucoEntry> entries) {
-        if (entries.size() > 8) {
-            final List<GlucoEntry> last8Entries = entries.subList(Math.max(entries.size() - 8, 0), entries.size());
+        if (entries.size() >= 8) {
+            entries.sort(Comparator.comparingLong(GlucoEntry::datelong));
+            final List<GlucoEntry> last8Entries = entries.subList(entries.size() - 8, entries.size());
             predictor.predict(last8Entries).ifPresent(p -> {
                 if (!p.isReliable()) {
                     System.out.println("Sensor noise detected — prediction suppressed");
                     return;
                 }
-                System.out.printf("Projected glucose in 10 min: %d mg/dL%n", (int) p.projectedValue());
-                System.out.println("Trend: " + p.glucoTrend());
+                //System.out.printf("Projected glucose in 10 min: %d mg/dL%n", (int) p.projectedValue());
+                //System.out.println("Trend: " + p.glucoTrend());
                 notifyIfNeeded(p.projectedValue());
                 /*
                 switch (p.glucoTrend()) {

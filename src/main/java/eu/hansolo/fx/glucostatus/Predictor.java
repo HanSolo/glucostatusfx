@@ -1,14 +1,12 @@
 package eu.hansolo.fx.glucostatus;
 
+import eu.hansolo.fx.glucostatus.Predictor.Warning.PredictedTooLow;
+
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
-public class GlucoseTrendPredictor {
-
-    // -------------------------------------------------------------------------
-    // Data Models
-    // -------------------------------------------------------------------------
+public class Predictor {
 
     public enum GlucoTrend {
         RISING_RAPIDLY,  // > 2 mg/dL/min
@@ -20,7 +18,8 @@ public class GlucoseTrendPredictor {
         FALLING_RAPIDLY
     }
 
-    public sealed interface Warning permits Warning.PredictedLow, Warning.PredictedHigh, Warning.ApproachingLow, Warning.ApproachingHigh {
+    public sealed interface Warning permits Warning.PredictedTooLow, Warning.PredictedLow, Warning.PredictedHigh, Warning.ApproachingLow, Warning.ApproachingHigh {
+        record PredictedTooLow(double projectedValue) implements Warning {}
         record PredictedLow(double projectedValue)    implements Warning {}
         record PredictedHigh(double projectedValue)   implements Warning {}
         record ApproachingLow(double projectedValue)  implements Warning {}
@@ -35,44 +34,39 @@ public class GlucoseTrendPredictor {
     // -------------------------------------------------------------------------
 
     public record Config(
-    int readingCount,           // Number of past readings to use
+    int    noOfEntries,         // Number of past entries to use (8-10)
     double lambda,              // Exponential decay weight (0.5–0.9)
     double projectionMinutes,   // Minutes ahead to project
     double maxPhysioRatePerMin, // Physiological max rate mg/dL/min
     double warningMargin,       // Warn this many mg/dL before threshold
+    double tooLowThreshold,     // Too low glucose threshold (mg/dl)
     double lowThreshold,        // Low glucose threshold (mg/dL)
     double highThreshold        // High glucose threshold (mg/dL)
     ) {
         public static Config defaults() {
             return new Config(
-            8,     // 40 minutes of history
-            0.7,   // exponential decay
-            10.0,  // project 10 minutes ahead
-            4.0,   // max 4 mg/dL/min physiologically
-            15.0,  // warn 15 mg/dL before threshold
-            70.0,  // low threshold
-            180.0  // high threshold
+            8, // 40 minutes of history
+            0.7,          // exponential decay
+            10.0,         // project 10 minutes ahead
+            4.0,          // max 4 mg/dL/min physiologically
+            15.0,         // warn 15 mg/dL before threshold
+            55.0,         // too low threshold
+            70.0,         // low threshold
+            180.0         // high threshold
             );
         }
     }
 
-    // -------------------------------------------------------------------------
-    // Fields
-    // -------------------------------------------------------------------------
 
     private final Config config;
 
-    public GlucoseTrendPredictor() {
+    public Predictor() {
         this(Config.defaults());
     }
 
-    public GlucoseTrendPredictor(Config config) {
+    public Predictor(Config config) {
         this.config = config;
     }
-
-    // -------------------------------------------------------------------------
-    // Public API
-    // -------------------------------------------------------------------------
 
     /**
      * Predict glucose value at +10 minutes given recent entries.
@@ -84,7 +78,7 @@ public class GlucoseTrendPredictor {
     public Optional<GlucosePrediction> predict(final List<GlucoEntry> entries) {
         if (entries.size() < 3) return Optional.empty();
 
-        List<GlucoEntry> recent = tail(entries, config.readingCount());
+        List<GlucoEntry> recent = tail(entries, config.noOfEntries());
         Instant anchor = Instant.ofEpochSecond(recent.getFirst().datelong());
 
         // Convert to (minutes since oldest, value) pairs
@@ -171,8 +165,10 @@ public class GlucoseTrendPredictor {
         else                           return GlucoTrend.FALLING_RAPIDLY;
     }
 
-    private Optional<Warning> evaluateWarning(double projectedValue) {
-        if (projectedValue < config.lowThreshold()) {
+    private Optional<Warning> evaluateWarning(final double projectedValue) {
+        if (projectedValue < config.tooLowThreshold()) {
+            return Optional.of(new PredictedTooLow(projectedValue));
+        } else if (projectedValue < config.lowThreshold()) {
             return Optional.of(new Warning.PredictedLow(projectedValue));
         } else if (projectedValue < config.lowThreshold() + config.warningMargin()) {
             return Optional.of(new Warning.ApproachingLow(projectedValue));
