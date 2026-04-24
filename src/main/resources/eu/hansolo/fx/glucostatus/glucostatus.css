@@ -21,6 +21,10 @@
     src: url('SF-Pro-Text-Regular.ttf');
 }
 
+.macos-content-pane {
+    -fx-background-radius: 0 0 14 14, 0 0 13.5 13.5, 0 0 13.5 13.5;
+}
+
 .gluco-status {
 
 }
