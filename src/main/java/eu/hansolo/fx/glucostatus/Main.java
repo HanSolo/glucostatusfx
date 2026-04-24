@@ -1367,9 +1367,8 @@ public class Main extends Application {
             drawChart();
         });
 
-        predict();
-
-        notifyIfNeeded();
+        //predict();
+        //notifyIfNeeded();
     }
 
     private void drawChart() {
