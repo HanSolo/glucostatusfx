@@ -10,8 +10,6 @@ public class GlucoseTrendPredictor {
     // Data Models
     // -------------------------------------------------------------------------
 
-    public record GlucoseReading(Instant timestamp, double value) {}
-
     public enum GlucoTrend {
         RISING_RAPIDLY,  // > 2 mg/dL/min
         RISING,          // 1–2 mg/dL/min
@@ -77,25 +75,25 @@ public class GlucoseTrendPredictor {
     // -------------------------------------------------------------------------
 
     /**
-     * Predict glucose value at +10 minutes given recent readings.
+     * Predict glucose value at +10 minutes given recent entries.
      * Readings must be sorted oldest → newest.
      *
-     * @param readings CGM readings in chronological order
+     * @param entries CGM entries in chronological order
      * @return prediction, or empty if insufficient data
      */
-    public Optional<GlucosePrediction> predict(final List<GlucoseReading> readings) {
-        if (readings.size() < 3) return Optional.empty();
+    public Optional<GlucosePrediction> predict(final List<GlucoEntry> entries) {
+        if (entries.size() < 3) return Optional.empty();
 
-        List<GlucoseReading> recent = tail(readings, config.readingCount());
-        Instant anchor = recent.getFirst().timestamp();
+        List<GlucoEntry> recent = tail(entries, config.readingCount());
+        Instant anchor = Instant.ofEpochSecond(recent.getFirst().datelong());
 
         // Convert to (minutes since oldest, value) pairs
         double[] xs = new double[recent.size()];
         double[] ys = new double[recent.size()];
 
         for (int i = 0; i < recent.size(); i++) {
-            xs[i] = (recent.get(i).timestamp().getEpochSecond() - anchor.getEpochSecond()) / 60.0;
-            ys[i] = recent.get(i).value();
+            xs[i] = (recent.get(i).datelong() - anchor.getEpochSecond()) / 60.0;
+            ys[i] = recent.get(i).sgv();
         }
 
         double[] weights    = exponentialWeights(recent.size());

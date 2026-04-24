@@ -38,8 +38,6 @@ import eu.hansolo.applefx.MacosWindow;
 import eu.hansolo.applefx.MacosWindow.Style;
 import eu.hansolo.applefx.tools.MacosAccentColor;
 import eu.hansolo.applefx.tools.MacosSystemColor;
-import eu.hansolo.fx.glucostatus.GlucoseTrendPredictor.GlucoseReading;
-import eu.hansolo.fx.glucostatus.GlucoseTrendPredictor.Warning;
 import eu.hansolo.fx.glucostatus.Statistics.StatisticCalculation;
 import eu.hansolo.fx.glucostatus.Statistics.StatisticRange;
 import eu.hansolo.fx.glucostatus.i18n.I18nKeys;
@@ -127,8 +125,8 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.SwingUtilities;
+import java.awt.Desktop;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -497,13 +495,13 @@ public class Main extends Application {
         AnchorPane.setLeftAnchor(problemPane, 0d);
 
         chartPane = new AnchorPane(canvas, poincarePlot, problemPane);
-        chartPane.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, new CornerRadii(10), Insets.EMPTY)));
+        chartPane.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, new CornerRadii(Constants.CORNER_RADIUS), Insets.EMPTY)));
         chartPane.setMinWidth(650);
         chartPane.setMinHeight(100);
 
         glassOverlay = new Region();
         glassOverlay.setOpacity(0.0);
-        glassOverlay.setBackground(new Background(new BackgroundFill(Color.rgb(0, 0, 0, 0.5), new CornerRadii(10), Insets.EMPTY)));
+        glassOverlay.setBackground(new Background(new BackgroundFill(Color.rgb(0, 0, 0, 0.5), new CornerRadii(Constants.CORNER_RADIUS), Insets.EMPTY)));
         glassOverlay.setVisible(false);
         glassOverlay.setManaged(false);
 
@@ -571,7 +569,7 @@ public class Main extends Application {
         drawChart();
         exclamationMark.setFill(color);
 
-        prefContentPane.setBackground(new Background(new BackgroundFill(darkMode ? MacosSystemColor.BACKGROUND.dark() : MacosSystemColor.BACKGROUND.aqua(), new CornerRadii(10), Insets.EMPTY)));
+        prefContentPane.setBackground(new Background(new BackgroundFill(darkMode ? MacosSystemColor.BACKGROUND.dark() : MacosSystemColor.BACKGROUND.aqua(), new CornerRadii(Constants.CORNER_RADIUS), Insets.EMPTY)));
         eu.hansolo.applefx.tools.Helper.getAllNodes(prefPane).stream().filter(node -> node instanceof MacosControl).forEach(node -> ((MacosControl) node).setDark(darkMode));
 
         drawChart();
@@ -762,7 +760,7 @@ public class Main extends Application {
         drawChart();
         exclamationMark.setFill(color);
 
-        prefContentPane.setBackground(new Background(new BackgroundFill(darkMode ? MacosSystemColor.BACKGROUND.dark() : MacosSystemColor.BACKGROUND.aqua(), new CornerRadii(10), Insets.EMPTY)));
+        prefContentPane.setBackground(new Background(new BackgroundFill(darkMode ? MacosSystemColor.BACKGROUND.dark() : MacosSystemColor.BACKGROUND.aqua(), new CornerRadii(Constants.CORNER_RADIUS), Insets.EMPTY)));
         eu.hansolo.applefx.tools.Helper.getAllNodes(prefPane).stream().filter(node -> node instanceof MacosControl).forEach(node -> ((MacosControl) node).setDark(darkMode));
 
         stage.widthProperty().addListener(o -> {
@@ -981,8 +979,8 @@ public class Main extends Application {
 
     private void predict(final List<GlucoEntry> entries) {
         if (entries.size() > 8) {
-            List<GlucoseReading> readings = entries.stream().limit(8).map(glucoEntry -> new GlucoseReading(Instant.ofEpochSecond(glucoEntry.datelong()), glucoEntry.sgv())).toList();
-            predictor.predict(readings).ifPresent(p -> {
+            final List<GlucoEntry> last8Entries = entries.subList(Math.max(entries.size() - 8, 0), entries.size());
+            predictor.predict(last8Entries).ifPresent(p -> {
                 if (!p.isReliable()) {
                     System.out.println("Sensor noise detected — prediction suppressed");
                     return;
@@ -1797,7 +1795,7 @@ public class Main extends Application {
         aboutBox.setMinSize(260, 282);
         aboutBox.setMaxSize(260, 282);
         aboutBox.setPrefSize(260, 282);
-        aboutBox.setBackground(new Background(new BackgroundFill(darkMode ? MacosSystemColor.BACKGROUND.dark() : MacosSystemColor.BACKGROUND.aqua(), new CornerRadii(10), Insets.EMPTY)));
+        aboutBox.setBackground(new Background(new BackgroundFill(darkMode ? MacosSystemColor.BACKGROUND.dark() : MacosSystemColor.BACKGROUND.aqua(), new CornerRadii(Constants.CORNER_RADIUS), Insets.EMPTY)));
 
 
         if (OperatingSystem.LINUX == operatingSystem && (Architecture.AARCH64 == architecture || Architecture.ARM64 == architecture)) {
@@ -1812,7 +1810,7 @@ public class Main extends Application {
             aboutDialog.getDialogPane().setContent(glassPane);
         }
 
-        aboutDialog.getDialogPane().setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, new CornerRadii(10), Insets.EMPTY)));
+        aboutDialog.getDialogPane().setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, new CornerRadii(Constants.CORNER_RADIUS), Insets.EMPTY)));
 
         aboutDialog.setOnShowing(e -> aboutDialogStage.centerOnScreen());
 
@@ -2226,7 +2224,7 @@ public class Main extends Application {
         AnchorPane.setLeftAnchor(scrollPane, 30d);
 
         prefContentPane = new AnchorPane(backButton, settingsLabel, scrollPane);
-        prefContentPane.setBackground(new Background(new BackgroundFill(darkMode ? MacosSystemColor.BACKGROUND.dark() : MacosSystemColor.BACKGROUND.aqua(), new CornerRadii(10), Insets.EMPTY)));
+        prefContentPane.setBackground(new Background(new BackgroundFill(darkMode ? MacosSystemColor.BACKGROUND.dark() : MacosSystemColor.BACKGROUND.aqua(), new CornerRadii(Constants.CORNER_RADIUS), Insets.EMPTY)));
 
         StackPane prefPane = new StackPane(prefContentPane);
         return prefPane;
@@ -2286,7 +2284,7 @@ public class Main extends Application {
 
         VBox       content          = new VBox(20, titleLabel, timeIntervalLabel, inRangeBox);
         content.setAlignment(Pos.CENTER);
-        content.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, new CornerRadii(10), Insets.EMPTY)));
+        content.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, new CornerRadii(Constants.CORNER_RADIUS), Insets.EMPTY)));
 
         Dialog dialog = new Dialog();
         dialog.initOwner(stage);
@@ -2303,8 +2301,8 @@ public class Main extends Application {
         };
         dialogPane.getStylesheets().add(Main.class.getResource("glucostatus.css").toExternalForm());
 
-        dialogPane.setBackground(new Background(new BackgroundFill(darkMode ? Constants.DARK_BACKGROUND : Color.WHITE, new CornerRadii(10), Insets.EMPTY)));
-        dialogPane.setBorder(new Border(new BorderStroke(Color.rgb(78, 77, 76), BorderStrokeStyle.SOLID, new CornerRadii(10), new BorderWidths(1))));
+        dialogPane.setBackground(new Background(new BackgroundFill(darkMode ? Constants.DARK_BACKGROUND : Color.WHITE, new CornerRadii(Constants.CORNER_RADIUS), Insets.EMPTY)));
+        dialogPane.setBorder(new Border(new BorderStroke(Color.rgb(78, 77, 76), BorderStrokeStyle.SOLID, new CornerRadii(Constants.CORNER_RADIUS), new BorderWidths(1))));
         dialogPane.setContent(content);
         dialog.setDialogPane(dialogPane);
 
@@ -2477,7 +2475,7 @@ public class Main extends Application {
 
         VBox content = new VBox(20, titleLabel, hba1cLabel, zones, canvas);
         content.setAlignment(Pos.CENTER);
-        content.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, new CornerRadii(10), Insets.EMPTY)));
+        content.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, new CornerRadii(Constants.CORNER_RADIUS), Insets.EMPTY)));
 
         Dialog dialog = new Dialog();
         dialog.setTitle("");
@@ -2493,8 +2491,8 @@ public class Main extends Application {
         };
         dialogPane.getStylesheets().add(Main.class.getResource("glucostatus.css").toExternalForm());
 
-        dialogPane.setBackground(new Background(new BackgroundFill(darkMode ? Constants.DARK_BACKGROUND : Color.WHITE, new CornerRadii(10), Insets.EMPTY)));
-        dialogPane.setBorder(new Border(new BorderStroke(Color.rgb(78, 77, 76), BorderStrokeStyle.SOLID, new CornerRadii(10),new BorderWidths(1))));
+        dialogPane.setBackground(new Background(new BackgroundFill(darkMode ? Constants.DARK_BACKGROUND : Color.WHITE, new CornerRadii(Constants.CORNER_RADIUS), Insets.EMPTY)));
+        dialogPane.setBorder(new Border(new BorderStroke(Color.rgb(78, 77, 76), BorderStrokeStyle.SOLID, new CornerRadii(Constants.CORNER_RADIUS),new BorderWidths(1))));
         dialogPane.setContent(content);
         dialog.setDialogPane(dialogPane);
 
@@ -2549,7 +2547,7 @@ public class Main extends Application {
 
         VBox content = new VBox(20, titleLabel, subTitleLabel, hba1cLabel, thirtyDayView);
         content.setAlignment(Pos.CENTER);
-        content.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, new CornerRadii(10), Insets.EMPTY)));
+        content.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, new CornerRadii(Constants.CORNER_RADIUS), Insets.EMPTY)));
 
         Dialog dialog = new Dialog();
         dialog.setTitle("");
@@ -2565,8 +2563,8 @@ public class Main extends Application {
         };
         dialogPane.getStylesheets().add(Main.class.getResource("glucostatus.css").toExternalForm());
 
-        dialogPane.setBackground(new Background(new BackgroundFill(darkMode ? Constants.DARK_BACKGROUND : Color.WHITE , new CornerRadii(10), Insets.EMPTY)));
-        dialogPane.setBorder(new Border(new BorderStroke(Color.rgb(78, 77, 76), BorderStrokeStyle.SOLID, new CornerRadii(10),new BorderWidths(1))));
+        dialogPane.setBackground(new Background(new BackgroundFill(darkMode ? Constants.DARK_BACKGROUND : Color.WHITE , new CornerRadii(Constants.CORNER_RADIUS), Insets.EMPTY)));
+        dialogPane.setBorder(new Border(new BorderStroke(Color.rgb(78, 77, 76), BorderStrokeStyle.SOLID, new CornerRadii(Constants.CORNER_RADIUS),new BorderWidths(1))));
         dialogPane.setContent(content);
         dialog.setDialogPane(dialogPane);
 
@@ -2622,7 +2620,7 @@ public class Main extends Application {
 
         VBox content = new VBox(20, titleLabel, subTitleLabel, hba1cLabel, stackedLineChart);
         content.setAlignment(Pos.CENTER);
-        content.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, new CornerRadii(10), Insets.EMPTY)));
+        content.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, new CornerRadii(Constants.CORNER_RADIUS), Insets.EMPTY)));
 
         Dialog dialog = new Dialog();
         dialog.setTitle("");
@@ -2638,8 +2636,8 @@ public class Main extends Application {
         };
         dialogPane.getStylesheets().add(Main.class.getResource("glucostatus.css").toExternalForm());
 
-        dialogPane.setBackground(new Background(new BackgroundFill(darkMode ? Constants.DARK_BACKGROUND : Color.WHITE , new CornerRadii(10), Insets.EMPTY)));
-        dialogPane.setBorder(new Border(new BorderStroke(Color.rgb(78, 77, 76), BorderStrokeStyle.SOLID, new CornerRadii(10),new BorderWidths(1))));
+        dialogPane.setBackground(new Background(new BackgroundFill(darkMode ? Constants.DARK_BACKGROUND : Color.WHITE , new CornerRadii(Constants.CORNER_RADIUS), Insets.EMPTY)));
+        dialogPane.setBorder(new Border(new BorderStroke(Color.rgb(78, 77, 76), BorderStrokeStyle.SOLID, new CornerRadii(Constants.CORNER_RADIUS),new BorderWidths(1))));
         dialogPane.setContent(content);
         dialog.setDialogPane(dialogPane);
 

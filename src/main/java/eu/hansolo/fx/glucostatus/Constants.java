@@ -36,6 +36,7 @@ public class Constants {
     public static final long              TIMEOUT_IN_SECONDS                          = 480;
     public static final DateTimeFormatter DTF                                         = DateTimeFormatter.ofPattern("dd/MM/YY HH:mm");
     public static final String            ALARM_SOUND_FILENAME                        = "alarm.wav";
+    public static final double            CORNER_RADIUS                               = 10;
 
     public static final String        FIELD_ID                                               = "_id";
     public static final String        FIELD_SGV                                              = "sgv";
