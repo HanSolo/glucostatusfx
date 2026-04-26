@@ -103,6 +103,15 @@ public class Constants {
     public static final Color         LIGHT_BLUE                                             = Color.color(0.01, 0.6, 0.93);
     public static final Color         BLUE                                                   = Color.color(0.00, 0.43, 1.00);
 
+    public static final Color         ICON_GRAY                                              = Color.color(0.5, 0.5, 0.5, 0.75);
+    public static final Color         ICON_RED                                               = Color.color(0.996, 0.000, 0.000, 0.75);
+    public static final Color         ICON_ORANGE                                            = Color.color(1.000, 0.365, 0.004, 0.75);
+    public static final Color         ICON_YELLOW                                            = Color.color(1.000, 0.659, 0.000, 0.75);
+    public static final Color         ICON_GREEN                                             = Color.color(0.000, 0.761, 0.004, 0.75);
+    public static final Color         ICON_DARK_GREEN                                        = Color.color(0.0, 0.5, 0.13, 0.75);
+    public static final Color         ICON_LIGHT_BLUE                                        = Color.color(0.01, 0.6, 0.93, 0.75);
+    public static final Color         ICON_BLUE                                              = Color.color(0.00, 0.43, 1.00, 0.75);
+
     public static final Color         DARK_BACKGROUND                                        = Color.rgb(33, 28, 29);
     public static final Color         BRIGHT_BACKGROUND                                      = Color.rgb(236, 235, 235);
     public static final Color         BRIGHT_TEXT                                            = Color.rgb(255, 246, 245);

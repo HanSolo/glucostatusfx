@@ -271,17 +271,19 @@ public class Helper {
         return avgPoints;
     }
 
-    public static final BufferedImage createTextTrayIcon(final OperatingSystem operatingSystem, final String text, final Color color) {
-        final int    width    = 44;
-        final int    height   = 22;
+    public static final BufferedImage createTextTrayIcon(final OperatingSystem operatingSystem, final String text, final Color color, final Color backgroundColor) {
+        final int    width    = operatingSystem == OperatingSystem.MACOS ? 60 : 44;
+        final int    height   = operatingSystem == OperatingSystem.MACOS ? 24 : 22;
         final double x        = width / 2;
         final double y        = height / 2;
         final double fontSize = OperatingSystem.MACOS != operatingSystem ? 8 : 0.6363636364 * height;
 
         final Canvas          canvas = new Canvas(width, height);
         final GraphicsContext ctx    = canvas.getGraphicsContext2D();
-        ctx.setFill(OperatingSystem.LINUX == operatingSystem ? Color.rgb(19, 19, 19) : Color.TRANSPARENT);
-        ctx.fillRect(0, 0, width, height);
+
+        ctx.setFill(backgroundColor);
+        ctx.fillRoundRect(0, 0, width, height, height, height);
+
         ctx.setFont(Fonts.sfProRoundedSemiBold(fontSize));
         ctx.setTextAlign(OperatingSystem.MACOS != operatingSystem ? TextAlignment.RIGHT : TextAlignment.CENTER);
         ctx.setTextBaseline(VPos.CENTER);

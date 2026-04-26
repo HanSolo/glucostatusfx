@@ -155,20 +155,20 @@ import static eu.hansolo.toolbox.unit.UnitDefinition.MILLIMOL_PER_LITER;
 
 
 public class Main extends Application {
-    private static final VersionNumber                 VERSION         = PropertyManager.INSTANCE.getVersionNumber();
-    private static final Insets                        GRAPH_INSETS    = new Insets(5, 10, 5, 10);
-    private static final Interval                      INTERVAL        = Interval.LAST_2160_HOURS;
-    private final        Image                         icon            = new Image(Main.class.getResourceAsStream("icon48x48.png"));
-    private final        Image                         stageIcon       = new Image(Main.class.getResourceAsStream("icon128x128.png"));
-    private final        Translator                    translator      = new Translator(I18nKeys.RESOURCE_NAME);
-    private              ZonedDateTime                 lastUpdate      = ZonedDateTime.now().minusMinutes(6);
-    private              ZonedDateTime                 lastFullUpdate  = ZonedDateTime.now().minusMinutes(5);
-    private              AtomicBoolean                 switchingUnits  = new AtomicBoolean(false);
-    private              String                        nightscoutUrl   = "";
-    private              String                        apiSecret       = "";
-    private String      token     = "";
-    private Predictor   predictor = new Predictor();
-    private MacosWindow macosWindow;
+    private static final VersionNumber                 VERSION        = PropertyManager.INSTANCE.getVersionNumber();
+    private static final Insets                        GRAPH_INSETS   = new Insets(5, 10, 5, 10);
+    private static final Interval                      INTERVAL       = Interval.LAST_2160_HOURS;
+    private final        Image                         icon           = new Image(Main.class.getResourceAsStream("icon48x48.png"));
+    private final        Image                         stageIcon      = new Image(Main.class.getResourceAsStream("icon128x128.png"));
+    private final        Translator                    translator     = new Translator(I18nKeys.RESOURCE_NAME);
+    private              ZonedDateTime                 lastUpdate     = ZonedDateTime.now().minusMinutes(6);
+    private              ZonedDateTime                 lastFullUpdate = ZonedDateTime.now().minusMinutes(5);
+    private              AtomicBoolean                 switchingUnits = new AtomicBoolean(false);
+    private              String                        nightscoutUrl  = "";
+    private              String                        apiSecret      = "";
+    private              String                        token          = "";
+    private              Predictor                     predictor      = new Predictor();
+    private              MacosWindow                   macosWindow;
     private              boolean                       trayIconSupported;
     private              OsArcMode                     sysinfo;
     private              OperatingSystem               operatingSystem;
@@ -587,7 +587,7 @@ public class Main extends Application {
         this.trayIconSupported = FXTrayIcon.isSupported();
 
         if (trayIconSupported) {
-            trayIcon = new FXTrayIcon(stage, Helper.createTextTrayIcon(operatingSystem, "--", darkMode ? Color.WHITE : Color.BLACK));
+            trayIcon = new FXTrayIcon(stage, Helper.createTextTrayIcon(operatingSystem, "--", darkMode ? Color.WHITE : Color.BLACK, currentColor.deriveColor(1.0, 1.0, 1.0, 0.75)));
 
             trayIcon.setTrayIconTooltip(translator.get(I18nKeys.APP_NAME));
             trayIcon.addExitItem(false);
@@ -979,15 +979,15 @@ public class Main extends Application {
 
     private void predict(final List<GlucoEntry> entries) {
         if (entries.size() >= 8) {
-            entries.sort(Comparator.comparingLong(GlucoEntry::datelong));
-            final List<GlucoEntry> last8Entries = entries.subList(entries.size() - 8, entries.size());
+            entries.sort(Comparator.comparingLong(GlucoEntry::datelong).reversed()); // newest value on top
+            final List<GlucoEntry> last8Entries = entries.subList(0, 8);
             predictor.predict(last8Entries).ifPresent(p -> {
                 if (!p.isReliable()) {
                     System.out.println("Sensor noise detected — prediction suppressed");
                     return;
                 }
                 //System.out.printf("Projected glucose in 10 min: %d mg/dL%n", (int) p.projectedValue());
-                //System.out.println("Trend: " + p.glucoTrend());
+                System.out.println("Trend: " + p.glucoTrend());
                 notifyIfNeeded(p.projectedValue());
                 /*
                 switch (p.glucoTrend()) {
@@ -1331,7 +1331,7 @@ public class Main extends Application {
         if (null != trayIcon) {
             SwingUtilities.invokeLater(() -> Platform.runLater(() -> {
                 String text = currentValueText + (outdated ? "\u26A0" : "");
-                trayIcon.setGraphic(Helper.createTextTrayIcon(operatingSystem, text, darkMode ? Color.WHITE : Color.BLACK));
+                trayIcon.setGraphic(Helper.createTextTrayIcon(operatingSystem, text, darkMode ? Color.WHITE : Color.BLACK, currentColor.deriveColor(1.0, 1.0, 1.0, 0.75)));
                 trayIcon.setTrayIconTooltip(text);
             }));
         }
