@@ -981,15 +981,15 @@ public class Main extends Application {
         if (!online.get() || outdated) { return; }
 
         if (entries.size() >= 8) {
-            entries.sort(Comparator.comparingLong(GlucoEntry::datelong).reversed()); // newest value on top
-            final List<GlucoEntry> last8Entries = entries.subList(0, 8);
+            entries.sort(Comparator.comparingLong(GlucoEntry::datelong)); // sorted oldest to newest
+            final List<GlucoEntry> last8Entries = entries.subList((entries.size() - 8), entries.size());
             predictor.predict(last8Entries).ifPresent(p -> {
                 if (!p.isReliable()) {
                     System.out.println("Sensor noise detected — prediction suppressed");
                     return;
                 }
                 //System.out.printf("Projected glucose in 10 min: %d mg/dL%n", (int) p.projectedValue());
-                System.out.println("Trend: " + p.glucoTrend());
+                //System.out.println("Trend: " + p.glucoTrend());
                 notifyIfNeeded(p.projectedValue());
                 /*
                 switch (p.glucoTrend()) {

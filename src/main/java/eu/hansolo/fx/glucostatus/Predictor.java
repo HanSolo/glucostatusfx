@@ -3,6 +3,7 @@ package eu.hansolo.fx.glucostatus;
 import eu.hansolo.fx.glucostatus.Predictor.Warning.PredictedTooLow;
 
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -68,6 +69,7 @@ public class Predictor {
         this.config = config;
     }
 
+
     /**
      * Predict glucose value at +10 minutes given recent entries.
      * Readings must be sorted oldest → newest.
@@ -77,7 +79,7 @@ public class Predictor {
      */
     public Optional<GlucosePrediction> predict(final List<GlucoEntry> entries) {
         if (entries.size() < 3) return Optional.empty();
-
+        //entries.forEach(entry -> { System.out.println(entry.datelong() + " -> " + entry.sgv()); });
         List<GlucoEntry> recent = tail(entries, config.noOfEntries());
         Instant anchor = Instant.ofEpochSecond(recent.getFirst().datelong());
 
