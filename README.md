@@ -8,10 +8,8 @@ A glucose status monitor for Nightscout implemented in JavaFX.
 <br>
 <br>
 
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/HanSolo/glucostatusfx/ci)
 ![latest tag](https://badgen.net/github/tag/HanSolo/glucostatusfx)
 ![stars](https://badgen.net/github/stars/HanSolo/glucostatusfx)
-![GitHub all releases](https://img.shields.io/github/downloads/HanSolo/glucostatusfx/total)
 ![license](https://badgen.net/github/license/HanSolo/discocli)
 
 [![JFXCentral](https://img.shields.io/badge/Find_me_on-JFXCentral-blue?logo=googlechrome&logoColor=white)](https://www.jfx-central.com/downloads/glucostatusfx)
@@ -22,7 +20,7 @@ A glucose status monitor for Nightscout implemented in JavaFX.
 
 When running as jar file you might need to start with on Linux
 
-```java -Djdk.gtk.version=2 -jar GlucoStatusFX-17.0.61.jar```
+```java -Djdk.gtk.version=2 -jar GlucoStatusFX-25.0.0.jar```
 
 <br>
 
@@ -80,16 +78,16 @@ The max acceptable value can be defined in the range of 120-250 mg/dl.
 
 
 ## Overview
-![Main Screen](https://i.ibb.co/1QgxS30/Gluco-Status-FX-Main.png)
+![Main Screen](https://github.com/HanSolo/glucostatusfx/raw/main/resources/MainScreen.png)
 
-![Main Screen Poincare](https://i.ibb.co/prXFCqt/Gluco-Status-FX-Poincare.png)
+![Main Screen Poincare](https://github.com/HanSolo/glucostatusfx/raw/main/resources/MainPoincareScreen.png)
 
-![Settings](https://i.ibb.co/cvPNcs5/Gluco-Status-FX-Settings.jpg)
+![Settings](https://github.com/HanSolo/glucostatusfx/raw/main/resources/SettingsScreen.png)
 
-![Pattern](https://i.ibb.co/p1vWMmp/Gluco-Status-FX-Pattern.png)
+![Pattern](https://github.com/HanSolo/glucostatusfx/raw/main/resources/PatternScreen.png)
 
-![Time in range](https://i.ibb.co/DQmsQXg/Gluco-Status-FX-Time-In-Range.png)
+![Time in range](https://github.com/HanSolo/glucostatusfx/raw/main/resources/TimeInRangeScreen.png)
 
-![Last 30 days](https://i.ibb.co/SJ3yG6s/Gluco-Status-FX-30-Days.png)
+![Last 30 days](https://github.com/HanSolo/glucostatusfx/raw/main/resources/Last30DaysScreen.png)
 
-![Overlay](https://i.ibb.co/bRDBC54/Gluco-Status-FX-Overlay-Days.png)
+![Overlay](https://github.com/HanSolo/glucostatusfx/raw/main/resources/OverlaySelectedDaysScreen.png)
