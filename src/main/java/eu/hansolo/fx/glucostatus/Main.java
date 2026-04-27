@@ -978,6 +978,8 @@ public class Main extends Application {
     }
 
     private void predict(final List<GlucoEntry> entries) {
+        if (!online.get() || outdated) { return; }
+
         if (entries.size() >= 8) {
             entries.sort(Comparator.comparingLong(GlucoEntry::datelong).reversed()); // newest value on top
             final List<GlucoEntry> last8Entries = entries.subList(0, 8);
