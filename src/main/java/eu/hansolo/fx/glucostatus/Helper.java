@@ -272,7 +272,8 @@ public class Helper {
     }
 
     public static final BufferedImage createTextTrayIcon(final OperatingSystem operatingSystem, final String text, final Color color, final Color backgroundColor) {
-        final int    width    = operatingSystem == OperatingSystem.MACOS ? 60 : 44;
+        final int    length   = text.length();
+        final int    width    = operatingSystem == OperatingSystem.MACOS ? length <= 3 ? 60 : 76 : length <= 3 ? 44 : 60;
         final int    height   = operatingSystem == OperatingSystem.MACOS ? 24 : 22;
         final double x        = width / 2;
         final double y        = height / 2;
