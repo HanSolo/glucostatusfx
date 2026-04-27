@@ -70,6 +70,7 @@ import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
+import javafx.geometry.VPos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
@@ -1575,25 +1576,61 @@ public class Main extends Application {
 
         // Draw line chart
         ctx.setLineDashes();
-        ctx.setStroke(new LinearGradient(0, GRAPH_INSETS.getTop(), 0, height - GRAPH_INSETS.getBottom(), false, CycleMethod.NO_CYCLE,
-                                         new Stop(0.0, Constants.RED),
-                                         new Stop(Constants.DEFAULT_MAX_CRITICAL_FACTOR, Constants.RED),
-                                         new Stop(maxAcceptableFactor, Constants.ORANGE),
-                                         new Stop(maxNormalFactor, Constants.GREEN),
-                                         new Stop(minNormalFactor, Constants.GREEN),
-                                         new Stop(minAcceptableFactor, Constants.ORANGE),
-                                         new Stop(Constants.DEFAULT_MIN_CRITICAL_FACTOR, Constants.RED),
-                                         new Stop(1.0, Constants.RED)));
-
-        ctx.setLineWidth(currentInterval.getLineWidth());
+        if (currentInterval == Interval.LAST_3_HOURS || currentInterval == Interval.LAST_6_HOURS || currentInterval == Interval.LAST_12_HOURS) {
+            ctx.setStroke(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
+            ctx.setLineWidth(1);
+        } else {
+            ctx.setStroke(new LinearGradient(0, GRAPH_INSETS.getTop(), 0, height - GRAPH_INSETS.getBottom(), false, CycleMethod.NO_CYCLE,
+                                             new Stop(0.0, Constants.RED),
+                                             new Stop(Constants.DEFAULT_MAX_CRITICAL_FACTOR, Constants.RED),
+                                             new Stop(maxAcceptableFactor, Constants.ORANGE),
+                                             new Stop(maxNormalFactor, Constants.GREEN),
+                                             new Stop(minNormalFactor, Constants.GREEN),
+                                             new Stop(minAcceptableFactor, Constants.ORANGE),
+                                             new Stop(Constants.DEFAULT_MIN_CRITICAL_FACTOR, Constants.RED),
+                                             new Stop(1.0, Constants.RED)));
+            ctx.setLineWidth(currentInterval.getLineWidth());
+        }
         ctx.beginPath();
         ctx.moveTo(GRAPH_INSETS.getLeft() + startX, height - GRAPH_INSETS.getBottom() - entries.get(0).sgv() * stepY);
         for (int i = 0 ; i < entries.size() ; i++) {
             GlucoEntry entry = entries.get(i);
-            ctx.lineTo(GRAPH_INSETS.getLeft() + startX + (entry.datelong() - minEntry.datelong()) * stepX, (height - GRAPH_INSETS.getBottom()) - entry.sgv() * stepY);
+            final double x = GRAPH_INSETS.getLeft() + startX + (entry.datelong() - minEntry.datelong()) * stepX;
+            final double y = (height - GRAPH_INSETS.getBottom()) - entry.sgv() * stepY;
+            ctx.lineTo(x, y);
         }
         ctx.lineTo(width - GRAPH_INSETS.getRight(), (height - GRAPH_INSETS.getBottom()) - entries.get(entries.size() - 1).sgv() * stepY);
         ctx.stroke();
+
+        // Different chart for last 3 and 6 hours
+        if (currentInterval == Interval.LAST_3_HOURS || currentInterval == Interval.LAST_6_HOURS ||  currentInterval == Interval.LAST_12_HOURS) {
+            ctx.save();
+            ctx.setTextAlign(TextAlignment.CENTER);
+            ctx.setTextBaseline(VPos.CENTER);
+            ctx.setFont(Fonts.sfProTextRegular(10));
+            ctx.setStroke(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
+            final String format   = MILLIGRAM_PER_DECILITER == currentUnit ? "%.0f" : "%.1f";
+            final int    divider  = currentInterval == Interval.LAST_3_HOURS ? 2 : currentInterval == Interval.LAST_6_HOURS ? 3 : 5;
+            final double radius   = currentInterval == Interval.LAST_3_HOURS ? 4 : currentInterval == Interval.LAST_6_HOURS ? 3.5 : 2.5;
+            final double diameter = radius * 2;
+            for (int i = 0 ; i < entries.size() ; i++) {
+                GlucoEntry entry = entries.get(i);
+                final double x = GRAPH_INSETS.getLeft() + startX + (entry.datelong() - minEntry.datelong()) * stepX;
+                final double y = (height - GRAPH_INSETS.getBottom()) - entry.sgv() * stepY;
+
+                ctx.setFill(Helper.getColorForValue2(currentUnit, entry.sgv()));
+                ctx.fillOval(x - radius, y - radius, diameter, diameter);
+                ctx.strokeOval(x - radius, y - radius, diameter, diameter);
+
+                if (i % divider == 0 && (x > 40 && x < width - 40)) {
+                    final double currentValue = UnitDefinition.MILLIGRAM_PER_DECILITER == currentUnit ? entry.sgv() : Helper.mgPerDeciliterToMmolPerLiter(entry.sgv());
+                    ctx.setFill(darkMode ? Constants.BRIGHT_TEXT : Constants.DARK_TEXT);
+                    ctx.fillText(String.format(Locale.US, format, currentValue), x, y < 26 ? (y + 16) : (y - 16));
+                }
+            }
+            ctx.restore();
+        }
+
 
         // Draw average
         double average;

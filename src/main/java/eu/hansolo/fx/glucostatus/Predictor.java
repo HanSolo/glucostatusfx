@@ -83,6 +83,10 @@ public class Predictor {
         List<GlucoEntry> recent = tail(entries, config.noOfEntries());
         Instant anchor = Instant.ofEpochSecond(recent.getFirst().datelong());
 
+        final double currentValue = entries.getLast().sgv();
+        final double lastValue    = entries.get(recent.size() - 1).sgv();
+        final boolean isTrendDown = currentValue < lastValue;
+
         // Convert to (minutes since oldest, value) pairs
         double[] xs = new double[recent.size()];
         double[] ys = new double[recent.size()];
@@ -106,7 +110,7 @@ public class Predictor {
         boolean isReliable = Math.abs(slope) <= config.maxPhysioRatePerMin();
 
         GlucoTrend        glucoTrend = classifyTrend(slope);
-        Optional<Warning> warning    = evaluateWarning(projectedValue);
+        Optional<Warning> warning    = evaluateWarning(projectedValue, isTrendDown);
 
         return Optional.of(new GlucosePrediction(projectedValue, glucoTrend, warning, isReliable));
     }
@@ -167,16 +171,16 @@ public class Predictor {
         else                           return GlucoTrend.FALLING_RAPIDLY;
     }
 
-    private Optional<Warning> evaluateWarning(final double projectedValue) {
-        if (projectedValue < config.tooLowThreshold()) {
+    private Optional<Warning> evaluateWarning(final double projectedValue, final boolean isTrendDown) {
+        if (projectedValue < config.tooLowThreshold() && isTrendDown) {
             return Optional.of(new PredictedTooLow(projectedValue));
-        } else if (projectedValue < config.lowThreshold()) {
+        } else if (projectedValue < config.lowThreshold() && isTrendDown) {
             return Optional.of(new Warning.PredictedLow(projectedValue));
-        } else if (projectedValue < config.lowThreshold() + config.warningMargin()) {
+        } else if (projectedValue < config.lowThreshold() + config.warningMargin() && isTrendDown) {
             return Optional.of(new Warning.ApproachingLow(projectedValue));
-        } else if (projectedValue > config.highThreshold()) {
+        } else if (projectedValue > config.highThreshold() && !isTrendDown) {
             return Optional.of(new Warning.PredictedHigh(projectedValue));
-        } else if (projectedValue > config.highThreshold() - config.warningMargin()) {
+        } else if (projectedValue > config.highThreshold() - config.warningMargin() && !isTrendDown) {
             return Optional.of(new Warning.ApproachingHigh(projectedValue));
         }
         return Optional.empty();
